@@ -1,0 +1,9 @@
+setup.py
+DatasetGenerator/DatasetGeneratorWorkChain.py
+DatasetGenerator/dataset_generator_functions.py
+DatasetGenerator/run_datasetgenerator.py
+DatasetGenerator.egg-info/PKG-INFO
+DatasetGenerator.egg-info/SOURCES.txt
+DatasetGenerator.egg-info/dependency_links.txt
+DatasetGenerator.egg-info/entry_points.txt
+DatasetGenerator.egg-info/top_level.txt
