@@ -47,6 +47,7 @@ kpoints.set_kpoints_mesh([1, 1, 1])
 
 
 # structure= [load_node(46114), load_node(46115)] #mote2
+#you should add yours node 
 structure = [load_node(219)] #gr 1x1
 code = load_code('pw@cm01')
 # code = load_code('qe-7.2@leonardo_scratch_qe_gpu')
