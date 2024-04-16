@@ -3,27 +3,28 @@ from aiida import load_profile
 from aiida.engine import submit, run
 from aiida.tools.groups import GroupPath
 from aiida.plugins import DataFactory
+from aiida.plugins import WorkflowFactory
 
 KpointsData = DataFactory("core.array.kpoints")
-from DatasetGeneratorWorkChain import DatasetGeneratorWorkChain
+DatasetGeneratorWorkChain = WorkflowFactory('datasetgenerator')
 load_profile()
 
 machine = {
 'time'                             : "00:10:00",
 'nodes'                            : 1,
 'mem'                              : "10GB",
-'taskpn'                           : 8,
-'taskps'                           : "1",
-'cpupt'                            : "1",
-# 'account'                          : "IscrB_DeepVTe2",
-'partition'                        : "cm01,cm02,cm03,cm04",
-'gpu'                              : "0",
+'taskpn'                           : 1,
+#'taskps'                           : "1",
+'cpupt'                            : "8",
+ 'account'                         : "IscrB_DeepVTe2",
+'partition'                        : "boost_usr_prod",
+'gpu'                              : "1",
 'pool'                             : "1",
 'poolx'                            : "1",
 'pools'                            : "1",
 'pooln'                            : "1",
 'poolp'                            : "1",
-# 'qos'                              : "normal"
+'qos'                              : "boost_qos_dbg"
 }
 
 description = "test_gr"
@@ -48,17 +49,17 @@ kpoints.set_kpoints_mesh([1, 1, 1])
 
 # structure= [load_node(46114), load_node(46115)] #mote2
 #you should add yours node 
-structure = [load_node(3256)] #gr 1x1
-code = load_code('pw@cm01')
-# code = load_code('qe-7.2@leonardo_scratch_qe_gpu')
+structure = [load_node(219)] #gr 1x1
+#code = load_code('pw@cm01')
+code = load_code('qe7.2-pw@leo2_scratch_bind')
 pseudo_family_label = Str('SSSP/1.3/PBE/precision')
 pseudo_family = load_group('SSSP/1.3/PBE/precision')
 
 
 rattle_params = {
-    'rattle_radius_list'    : [0.2, 0.1],
-    'sigma_strain_list'     : [0.90, 0.95, 1.00, 1.05, 1.10],
-    'n_configs'             : 5,
+    'rattle_radius_list'    : [0],
+    'sigma_strain_list'     : [1.00],
+    'n_configs'             : 1,
     'frac_vacancies'        : 0.4,
     'vacancies_per_config'  : 1,
     'do_equilibrium'        : True
@@ -107,10 +108,10 @@ builder.scf.pw.metadata.options.max_memory_kb = mem
 builder.scf.pw.metadata.options.resources = {'num_machines': machine["nodes"], 'num_mpiprocs_per_machine': machine["taskpn"], 'num_cores_per_mpiproc': machine['cpupt']}
 
 # if 'leonardo' in code.full_label:
-    # builder.scf.pw.metadata.options.account = machine['account']
-# builder.scf.pw.metadata.options.queue_name = machine['partition']
-# builder.scf.pw.metadata.options.custom_scheduler_commands=f'#SBATCH --gres=gpu:{machine["gpu"]} '
-    # builder.scf.pw.metadata.options.qos = machine['qos']
+builder.scf.pw.metadata.options.account = machine['account']
+builder.scf.pw.metadata.options.queue_name = machine['partition']
+builder.scf.pw.metadata.options.custom_scheduler_commands=f'#SBATCH --gres=gpu:{machine["gpu"]} '
+builder.scf.pw.metadata.options.qos = machine['qos']
 
 # print(builder.structure_list.numsteps)
 #submit(builder) #.id
