@@ -22,32 +22,32 @@ SinglefileData = DataFactory('core.singlefile')
 
 
 
-@calcfunction
-def RattleGenerator(structure, rattle_radius, sigma_strain, n_vacancies=1):
-    """Calculation function to rattle a structure
+# @calcfunction
+# def RattleGenerator(structure, rattle_radius, sigma_strain, n_vacancies=1):
+#     """Calculation function to rattle a structure
 
-    :param structure: An AiiDA `StructureData` to rattle
-    :param rattle_radius: Float with the rattle radius
-    :param sigma_strain: Float with strain factor
-    :param n_vacancies: Int with number of vacancies to introduce
-    """
-    from aiida.orm import List
-    from aiida.plugins import DataFactory
-    from ase import Atoms
-    import numpy as np
+#     :param structure: An AiiDA `StructureData` to rattle
+#     :param rattle_radius: Float with the rattle radius
+#     :param sigma_strain: Float with strain factor
+#     :param n_vacancies: Int with number of vacancies to introduce
+#     """
+#     from aiida.orm import List
+#     from aiida.plugins import DataFactory
+#     from ase import Atoms
+#     import numpy as np
 
-    StructureData = DataFactory('structure')
+#     StructureData = DataFactory('structure')
 
 
-    ase_structure = structure.get_ase()
-    seed = randint(1, 100000)
-    ase_structure.rattle(rattle_radius, seed=seed)
-    ase_structure.set_cell(ase_structure.get_cell() * sigma_strain, scale_atoms=True)
-    for _ in range(int(n_vacancies)):
-        rnd = randint(0, len(ase_structure.get_positions())-1)
-        del ase_structure[rnd]
+#     ase_structure = structure.get_ase()
+#     seed = randint(1, 100000)
+#     ase_structure.rattle(rattle_radius, seed=seed)
+#     ase_structure.set_cell(ase_structure.get_cell() * sigma_strain, scale_atoms=True)
+#     for _ in range(int(n_vacancies)):
+#         rnd = randint(0, len(ase_structure.get_positions())-1)
+#         del ase_structure[rnd]
 
-    return StructureData(ase=ase_structure, label='RattleStructure')
+#     return StructureData(ase=ase_structure, label='RattleStructure')
 
 
 
@@ -113,12 +113,12 @@ class DatasetGeneratorWorkChain(ProtocolMixin, WorkChain):
         # spec.input("code", valid_type=Code)
         # spec.input("pseudo_family_label", valid_type=Str)
         spec.input_namespace("structures", valid_type=StructureData)
-        spec.input("rattle_params", valid_type=Dict)
+        #spec.input("rattle_params", valid_type=Dict)
         spec.output("xyz_dataset", valid_type=SinglefileData)
         spec.output("dataset_list", valid_type=List)
         spec.outline(
             # cls.setup,
-            cls.check_inputs,
+            #cls.check_inputs,
             cls.run_rattle_qe,
             while_(cls.err_300)(cls.error_check),
             cls.error_check,
@@ -175,12 +175,13 @@ class DatasetGeneratorWorkChain(ProtocolMixin, WorkChain):
 
     def _run_rattle_and_submit(self, structure, rattle_radius=0.0, sigma_strain=1.0, n_vacancies=0):
         self.config += 1
-        mod_structure = RattleGenerator(structure, rattle_radius, sigma_strain, n_vacancies=n_vacancies)
+        #mod_structure = RattleGenerator(structure, rattle_radius, sigma_strain, n_vacancies=n_vacancies)
         
         default_inputs = {'CONTROL': {'calculation': 'scf', 'tstress': True, 'tprnfor': True}}
 
         inputs = AttributeDict(self.exposed_inputs(PwBaseWorkChain, namespace='scf'))
-        inputs.pw.structure = mod_structure
+        #inputs.pw.structure = mod_structure
+        inputs.pw.structure = structure
         # inputs.pw.pseudos = load_group('SSSP/1.2/PBE/efficiency')
         inputs.metadata.call_link_label = f'scf_config_{self.config}'
         inputs.pw.parameters = Dict(recursive_merge(default_inputs, inputs.pw.parameters.get_dict()))
@@ -191,70 +192,73 @@ class DatasetGeneratorWorkChain(ProtocolMixin, WorkChain):
         self.report(f'launched PwBaseWorkChain for configuration {self.config} <{future.pk}>')
         self.to_context(pw_calculations=append_(future))
 
-    def check_inputs(self):
-        """Check inputs."""
-        rattle_params = self.inputs.rattle_params.get_dict()
-        rattle_radius_list = rattle_params['rattle_radius_list']
-        sigma_strain_list = rattle_params['sigma_strain_list']
-        n_configs = rattle_params['n_configs']
-        frac_vacancies = rattle_params['frac_vacancies']
-        vacancies_per_config = rattle_params['vacancies_per_config']
+    # def check_inputs(self):
+    #     """Check inputs."""
+    #     rattle_params = self.inputs.rattle_params.get_dict()
+    #     rattle_radius_list = rattle_params['rattle_radius_list']
+    #     sigma_strain_list = rattle_params['sigma_strain_list']
+    #     n_configs = rattle_params['n_configs']
+    #     frac_vacancies = rattle_params['frac_vacancies']
+    #     vacancies_per_config = rattle_params['vacancies_per_config']
 
-        for r in rattle_radius_list:
-            if r < 0.0:
-                raise ValueError('rattle_radius must be non-negative')
-        for s in sigma_strain_list:
-            if s <= 0.0:
-                raise ValueError('sigma_strain must be positive')
-            elif s > 1.5:
-                raise Warning('sigma_strain is greater than 1.5')
-            elif s < 0.5:
-                raise Warning('sigma_strain is less than 0.5')
-        if n_configs < 1:
-            raise ValueError('n_configs must be at least 1')
-        if frac_vacancies < 0.0 or frac_vacancies > 1.0:
-            raise ValueError('frac_vacancies must be between 0 and 1')
-        if vacancies_per_config < 0:
-            raise ValueError('vacancies_per_config must be non-negative')
+    #     for r in rattle_radius_list:
+    #         if r < 0.0:
+    #             raise ValueError('rattle_radius must be non-negative')
+    #     for s in sigma_strain_list:
+    #         if s <= 0.0:
+    #             raise ValueError('sigma_strain must be positive')
+    #         elif s > 1.5:
+    #             raise Warning('sigma_strain is greater than 1.5')
+    #         elif s < 0.5:
+    #             raise Warning('sigma_strain is less than 0.5')
+    #     if n_configs < 1:
+    #         raise ValueError('n_configs must be at least 1')
+    #     if frac_vacancies < 0.0 or frac_vacancies > 1.0:
+    #         raise ValueError('frac_vacancies must be between 0 and 1')
+    #     if vacancies_per_config < 0:
+    #         raise ValueError('vacancies_per_config must be non-negative')
         
 
     def run_rattle_qe(self):
         """Run calculations for dataset generation."""
 
 
-        rattle_params = self.inputs.rattle_params.get_dict()
-        rattle_radius_list = rattle_params['rattle_radius_list']
-        sigma_strain_list = rattle_params['sigma_strain_list']
-        n_configs = rattle_params['n_configs']
-        frac_vacancies = rattle_params['frac_vacancies']
-        vacancies_per_config = rattle_params['vacancies_per_config']
-        if 'do_equilibrium' in rattle_params:
-            do_equilibrium = rattle_params['do_equilibrium']
-        else:
-            do_equilibrium = True
+        # rattle_params = self.inputs.rattle_params.get_dict()
+        # rattle_radius_list = rattle_params['rattle_radius_list']
+        # sigma_strain_list = rattle_params['sigma_strain_list']
+        # n_configs = rattle_params['n_configs']
+        # frac_vacancies = rattle_params['frac_vacancies']
+        # vacancies_per_config = rattle_params['vacancies_per_config']
+        # if 'do_equilibrium' in rattle_params:
+        #     do_equilibrium = rattle_params['do_equilibrium']
+        # else:
+        #     do_equilibrium = True
 
         self.config = 0
         
-        for structure in [s for s in self.inputs.structures.values()]:
-            # self.config += 1
-            equilibrium_calculation = False
+        # for structure in [s for s in self.inputs.structures.values()]:
+        #     # self.config += 1
+        #     equilibrium_calculation = False
 
-            for r in rattle_radius_list:
-                for s in sigma_strain_list:
-                    for i in range(int(n_configs)):
-                        # config += 1
-                        if i > int(n_configs) * frac_vacancies:
-                            n_vacancies = vacancies_per_config
-                        else:
-                            n_vacancies = 0
+        #     for r in rattle_radius_list:
+        #         for s in sigma_strain_list:
+        #             for i in range(int(n_configs)):
+        #                 # config += 1
+        #                 if i > int(n_configs) * frac_vacancies:
+        #                     n_vacancies = vacancies_per_config
+        #                 else:
+        #                     n_vacancies = 0
 
-                        self._run_rattle_and_submit(structure, r, s, n_vacancies)
+        #                 self._run_rattle_and_submit(structure, r, s, n_vacancies)
                         
-                        if r == 0.0 and s == 1.0 and n_vacancies == 0:
-                            equilibrium_calculation = True
+        #                 if r == 0.0 and s == 1.0 and n_vacancies == 0:
+        #                     equilibrium_calculation = True
 
-            if not equilibrium_calculation and do_equilibrium:
-                self._run_rattle_and_submit(structure, 0.0, 1.0, 0)
+        #     if not equilibrium_calculation and do_equilibrium:
+        #         self._run_rattle_and_submit(structure, 0.0, 1.0, 0)
+        for structure in [s for s in self.inputs.structures.values()]:
+            self._run_rattle_and_submit(structure, 0.0, 1.0, 0)
+
 
     
     def results(self):
