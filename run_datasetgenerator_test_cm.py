@@ -8,7 +8,6 @@ from RuttleStructure.RuttleStructureWorkChain import RuttleStructureWorkChain
 
 KpointsData = DataFactory("core.array.kpoints")
 DatasetGeneratorWorkChain = WorkflowFactory('datasetgenerator')
-#RuttleStructureWorkChain = WorkflowFactory('ruttlestructure')
 load_profile()
 
 machine = {
@@ -45,12 +44,6 @@ kpoints = KpointsData()
 kpoints.set_kpoints_mesh([1, 1, 1])
 
 
-
-
-
-
-# structure= [load_node(46114), load_node(46115)] #mote2
-#you should add yours node 
 structures = [load_node(3139), load_node(3153)] #gr 1x1
 structure_uuids = [structure.uuid for structure in structures]
 code = load_code('pw@cm01')
@@ -60,7 +53,7 @@ pseudo_family = load_group('SSSP/1.3/PBE/precision')
 
 
 rattle_params = {
-    'rattle_radius_list'    : [0.0],
+    'rattle_radius_list'    : [0.2, 0.1],
     'sigma_strain_list'     : [1.00],
     'n_configs'             : 1,
     'frac_vacancies'        : 0.4,
@@ -72,14 +65,8 @@ rattle_params = {
 
 result = run(RuttleStructureWorkChain, structure_uuids=List(structure_uuids), rattle_params = Dict(rattle_params))
 
-print("result!!!!!!!!!!!!!!!!")
-print(result)
-
-structures_parameters_list = result['structures_parameters_list']
-print(structures_parameters_list)
-
 mod_structures = []
-for structure_entry in structures_parameters_list:
+for structure_entry in result['structures_parameters_list']:
 	structure_uuid = structure_entry['out_structure_pk']
 	structure = load_node(structure_uuid)
 	mod_structures.append(structure)
@@ -89,17 +76,11 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=mod_str
 
 
 builder = DatasetGeneratorWorkChain.get_builder_from_protocol(code=code, structure_list=mod_structures)
-# builder.structure = [structure]
-# builder.code = code
-# builder.pseudo_family_label = pseudo_family_label
-#builder.rattle_params = Dict(rattle_params)
 
 
 builder.scf.pw.metadata.options.withmpi=True
 builder.scf.pw.metadata.description = description
-# builder.scf.pw.pseudos = pseudo_family
 builder.scf.pw.pseudos = pseudo_family.get_pseudos(structure=structures[0])
-print(builder.scf.pw.pseudos)
 builder.scf.kpoints = kpoints
 builder.scf.pw.parameters = Dict({'SYSTEM': 
                                   {
@@ -130,6 +111,4 @@ builder.scf.pw.metadata.options.resources = {'num_machines': machine["nodes"], '
 #builder.scf.pw.metadata.options.custom_scheduler_commands=f'#SBATCH --gres=gpu:{machine["gpu"]} '
 #builder.scf.pw.metadata.options.qos = machine['qos']
 
-# print(builder.structure_list.numsteps)
-#submit(builder) #.id
 run(builder)

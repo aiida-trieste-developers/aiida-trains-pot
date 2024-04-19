@@ -16,7 +16,7 @@ from ase.calculators.singlepoint import SinglePointCalculator
 
 
 PwBaseWorkChain = WorkflowFactory('quantumespresso.pw.base')
-StructureData = DataFactory('structure')
+StructureData = DataFactory('core.structure')
 TrajectoryData = DataFactory('core.array.trajectory')
 SinglefileData = DataFactory('core.singlefile')
 
