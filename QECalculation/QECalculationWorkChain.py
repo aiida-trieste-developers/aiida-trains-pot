@@ -58,7 +58,7 @@ class QECalculationWorkChain(ProtocolMixin, WorkChain):
         spec.output("dataset_list", valid_type=List)
         spec.outline(
             cls.run_rattle_qe,
-            while_(cls.err_300)(cls.error_check),
+            # while_(cls.err_300)(cls.error_check),
             cls.error_check,
             cls.finalize,
             cls.results,
@@ -170,16 +170,16 @@ class QECalculationWorkChain(ProtocolMixin, WorkChain):
             if calc.exit_status != 0:
                 if calc.exit_status in [300]:
                     restart_builder = calc.get_builder_restart()
-                    restart_builder.scf.pw.metadata.options.resources['num_machines']=4
+                    # restart_builder.scf.pw.metadata.options.resources['num_machines']=4
                     _, node = launch.run.get_node(restart_builder)
                     self.report(f'restarting calculation {calc.pk} <{calc.uuid}>')
                     self.ctx.pw_calculations[ii] = node
                 else:
                     self.ctx.pw_calculations.pop(ii)
 
-    def err_300(self):
-        """Check for errors."""
-        for ii, calc in enumerate(self.ctx.pw_calculations): 
-            if calc.exit_status in [300]:
-                return True
-        return False
+    # def err_300(self):
+    #     """Check for errors."""
+    #     for ii, calc in enumerate(self.ctx.pw_calculations): 
+    #         if calc.exit_status in [300]:
+    #             return True
+    #     return False
