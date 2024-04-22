@@ -5,9 +5,10 @@ from aiida.tools.groups import GroupPath
 from aiida.plugins import DataFactory
 from aiida.plugins import WorkflowFactory
 from RuttleStructure.RuttleStructureWorkChain import RuttleStructureWorkChain
+#from QECalculation.QECalculationWorkChain import QECalculationWorkChain
 
 KpointsData = DataFactory("core.array.kpoints")
-DatasetGeneratorWorkChain = WorkflowFactory('datasetgenerator')
+QECalculationWorkChain = WorkflowFactory('qecalculation')
 load_profile()
 
 machine = {
@@ -75,7 +76,7 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=mod_str
 
 
 
-builder = DatasetGeneratorWorkChain.get_builder_from_protocol(code=code, structure_list=mod_structures)
+builder = QECalculationWorkChain.get_builder_from_protocol(code=code, structure_list=mod_structures)
 
 
 builder.scf.pw.metadata.options.withmpi=True

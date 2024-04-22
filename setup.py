@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name='DatasetGenerator',
-    packages=['DatasetGenerator'],
+    name='QECalculation',
+    packages=['QECalculation'],
     entry_points={
-        'aiida.workflows': ["datasetgenerator = DatasetGenerator.DatasetGeneratorWorkChain:DatasetGeneratorWorkChain"]
+        'aiida.workflows': ["qecalculation = QECalculation.QECalculationWorkChain:QECalculationWorkChain"]
     }
 )
