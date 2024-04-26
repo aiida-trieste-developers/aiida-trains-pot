@@ -5,7 +5,7 @@ from aiida.tools.groups import GroupPath
 from aiida.plugins import DataFactory
 from aiida.plugins import WorkflowFactory
 from RuttleStructure.RuttleStructureWorkChain import RuttleStructureWorkChain
-#from QECalculation.QECalculationWorkChain import QECalculationWorkChain
+from LoadStructure.pdb_loader import load_structures_from_folder
 
 KpointsData = DataFactory("core.array.kpoints")
 QECalculationWorkChain = WorkflowFactory('qecalculation')
@@ -45,8 +45,16 @@ kpoints = KpointsData()
 kpoints.set_kpoints_mesh([1, 1, 1])
 
 
-structures = [load_node(3139), load_node(3153)] #gr 1x1
-structure_uuids = [structure.uuid for structure in structures]
+
+
+# Set the folder path
+
+folder_path = 'Data/FLAKES_10R_2'
+
+structure_uuids = load_structures_from_folder(folder_path)
+#structures = [load_node(3139), load_node(3153)] #gr 1x1
+#structure_uuids = [structure.uuid for structure in structures['structures']]
+
 code = load_code('pw@cm01')
 #code = load_code('qe7.2-pw@leo2_scratch_bind')
 pseudo_family_label = Str('SSSP/1.3/PBE/precision')
@@ -64,7 +72,7 @@ rattle_params = {
 
 
 
-result = run(RuttleStructureWorkChain, structure_uuids=List(structure_uuids), rattle_params = Dict(rattle_params))
+result = run(RuttleStructureWorkChain, structure_uuids=structure_uuids['uuids'], rattle_params = Dict(rattle_params))
 
 mod_structures = []
 for structure_entry in result['structures_parameters_list']:
@@ -81,7 +89,7 @@ builder = QECalculationWorkChain.get_builder_from_protocol(code=code, structure_
 
 builder.scf.pw.metadata.options.withmpi=True
 builder.scf.pw.metadata.description = description
-builder.scf.pw.pseudos = pseudo_family.get_pseudos(structure=structures[0])
+builder.scf.pw.pseudos = pseudo_family.get_pseudos(structure=mod_structures[0])
 builder.scf.kpoints = kpoints
 builder.scf.pw.parameters = Dict({'SYSTEM': 
                                   {
