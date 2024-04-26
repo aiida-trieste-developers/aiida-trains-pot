@@ -52,8 +52,6 @@ kpoints.set_kpoints_mesh([1, 1, 1])
 folder_path = 'Data/FLAKES_10R_2'
 
 structure_uuids = load_structures_from_folder(folder_path)
-print("structures['structures']")
-print(structure_uuids['uuids'])
 #structures = [load_node(3139), load_node(3153)] #gr 1x1
 #structure_uuids = [structure.uuid for structure in structures['structures']]
 

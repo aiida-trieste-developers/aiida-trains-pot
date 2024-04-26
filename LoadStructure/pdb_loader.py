@@ -13,7 +13,7 @@ def load_structures_from_folder(folder_path):
     for filename in os.listdir(full_folder_path):
         # Check if the file is a PDB file
 
-        if filename.endswith('.pdb'):
+        if filename.endswith('.cif'):
             pdb_file = os.path.join(full_folder_path, filename)
             # Read the structure from the PDB file using ASE
             atoms = read(pdb_file)
