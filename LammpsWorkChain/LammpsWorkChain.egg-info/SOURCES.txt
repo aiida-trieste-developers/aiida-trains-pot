@@ -1,0 +1,7 @@
+setup.py
+LammpsWorkChain/LammpsWorkChain.py
+LammpsWorkChain.egg-info/PKG-INFO
+LammpsWorkChain.egg-info/SOURCES.txt
+LammpsWorkChain.egg-info/dependency_links.txt
+LammpsWorkChain.egg-info/entry_points.txt
+LammpsWorkChain.egg-info/top_level.txt

@@ -1,0 +1,3 @@
+[aiida.workflows]
+lammpsworkchain = LammpsWorkChain.LammpsWorkChain:LammpsWorkChain
+
