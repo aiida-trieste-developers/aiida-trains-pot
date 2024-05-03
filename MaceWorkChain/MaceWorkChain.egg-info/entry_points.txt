@@ -1,0 +1,3 @@
+[aiida.workflows]
+maceworkchain = MaceWorkChain.MaceWorkChain:MaceWorkChain
+

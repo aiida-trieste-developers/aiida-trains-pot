@@ -141,8 +141,8 @@ print(structure_uuids)
 
 rattle_params = {
     'rattle_radius_list'    : [0.2, 0.1],
-    'sigma_strain_list'     : [1.00],
-    'n_configs'             : 1,
+    'sigma_strain_list'     : [0.9, 0.95, 1.00, 1.05, 1.1],
+    'n_configs'             : 50,
     'frac_vacancies'        : 0.4,
     'vacancies_per_config'  : 1,
     'do_equilibrium'        : True
@@ -159,7 +159,7 @@ for structure_entry in result_rattle_structures['structures_parameters_list']:
 print("Modified Structures")
 print(mod_structures)	
 
-machine_QE, time_sec_QE, mem_QE = get_machine("machine_leonardo")
+machine_QE, time_sec_QE, mem_QE = get_machine("machine_cm")
 
 description_QE = "test_gr"
 
@@ -200,15 +200,15 @@ set_lammps_builder_parameters(builder_lammps, description_lammps, machine_lammps
 
 #for temp in range(200, 1850, 50):
 temp=300
-for structure in mod_structures:
-	calc = submit(builder_lammps,
-		          code			=	code_lammps,
-		          structure		=	structure,
-		          potential		=	potential,
-		          temperature		=	Float(temp),
-		          pressure	    	=	Float(0.0),
-		          dt			=	Float(0.00242),
-		          num_steps		=	Int(200),
-		          parent_folder 	=	Str(Path(__file__).resolve().parent),
-		         )
-	print(f'Running calculation with temp = {temp}; PK = {calc.pk}; structure = {structure.pk}')
+#for structure in mod_structures:
+#	calc = submit(builder_lammps,
+#		          code			=	code_lammps,
+#		          structure		=	structure,
+#		          potential		=	potential,
+#		          temperature		=	Float(temp),
+#		          pressure	    	=	Float(0.0),
+#		          dt			=	Float(0.00242),
+#		          num_steps		=	Int(200),
+#		          parent_folder 	=	Str(Path(__file__).resolve().parent),
+#		         )
+#	print(f'Running calculation with temp = {temp}; PK = {calc.pk}; structure = {structure.pk}')
