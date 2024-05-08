@@ -3,7 +3,7 @@ label: 'mace'
 description: 'mace'
 default_calc_job_plugin: 'mace-base'
 filepath_executable: 'mace_run_train'
-computer: 'leo2_scratch_bind'
+computer: 'leo1_scratch_bind'
 prepend_text: |
   source /leonardo_scratch/fast/IscrB_DeepVTe2/py_env/mace/bin/activate
 

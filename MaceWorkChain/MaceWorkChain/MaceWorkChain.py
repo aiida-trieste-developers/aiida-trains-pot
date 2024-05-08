@@ -20,6 +20,26 @@ load_profile()
 MaceCalculation = CalculationFactory('mace_base')
 
 @calcfunction
+def WriteDataset(**params):
+    """Calculation function to write a dataset to a file
+
+    :param structures: A list of AiiDA `StructureData` nodes
+    """
+    from ase.io import write
+    from aiida.orm import SinglefileData
+    import os
+
+    dataset_list = []
+    for key, value in params.items():
+
+        dataset_list.append({'aiida_model': value['aiida_model'],
+                             'aiida_swa_model': value['aiida_swa_model'],
+                             'mace': value['mace'],
+                             })
+
+    return {'aiida_model':dataset_list['aiida_model'], 'aiida_swa_model':dataset_list['aiida_swa_model'], 'mace':dataset_list['mace']}
+
+@calcfunction
 def split_dataset(dataset):
     """Divide dataset into training, validation and test sets."""
     # data = self.inputs.dataset_list.get_list()
@@ -74,6 +94,11 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
 
         spec.input("code", valid_type=Code)
         spec.input("dataset_list", valid_type=List)
+        spec.input("parent_folder", valid_type=Str)
+        spec.output("aiida_model",valid_type=SinglefileData)
+        spec.output("aiida_swa_model",valid_type=SinglefileData)
+        spec.output("mace",valid_type=SinglefileData)
+        spec.output("validation_set", valid_type=List)
         # spec.input("dt", valid_type=Float)
         # spec.input("num_steps", valid_type=Int)
         # spec.input("pressure", valid_type=Float)
@@ -83,8 +108,8 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
 
         spec.outline(
             cls.run_mace,
-            cls.finalize,
-            # cls.save_files
+            cls.results,
+            cls.finalize            
         )
 
         # spec.output("coord_lmmpstrj", valid_type=SinglefileData, help="trajectory coord lammpstrj file")
@@ -97,7 +122,7 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
         # spec.output("log_lammps", valid_type=SinglefileData, help="log lammps file")
 
     @classmethod
-    def get_builder_from_protocol(
+    def get_builder_from_protocol( 
         cls, **kwargs):
         
         builder = cls.get_builder()
@@ -117,8 +142,8 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
         self.report(f"Training set size: {len(train_set.get_list())}")
         self.report(f"Validation set size: {len(validation_set.get_list())}")
         self.report(f"Test set size: {len(test_set.get_list())}")
-
-
+        
+        self.out("validation_set", validation_set)  
 
         future = self.submit(MaceCalculation,
                              code=self.inputs.code,
@@ -129,7 +154,30 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
 
         self.report(f'Launched MACE calculation <{future.pk}>')
         self.to_context(mace_calculations=append_(future))
+  
+    """TODO"""	
+    def results(self):
+        """Process results."""
+        inputs = {}
 
+        #count = 0
+        #for value in self.ctx.mace_calculations:
+        #    count += 1            
+        #    self.report(f'Self.ctx.mace_calculations <{value.pk}>')
+        #    inputs[f'conf{count}'] = {"aiida_model": value.base.links.get_outgoing().get_node_by_label("aiida_model"), "aiida_swa_model": value.base.links.get_outgoing().get_node_by_label("aiida_swa_model"), "mace": value.base.links.get_outgoing().get_node_by_label("mace")}
+        
+        #out= WriteDataset(**inputs)
+        #aiida_model = out['aiida_model']
+        #aiida_swa_model = out['aiida_swa_model']
+        #mace = out['mace']
+
+        #self.out("aiida_model", aiida_model)  
+        #self.out("aiida_swa_model", aiida_swa_model)  
+        #self.out("mace", mace)  
+        self.report(f'Self.ctx.mace_calculations 2 <{value.pk}>')
+        self.out("aiida_model", self.ctx.mace_calculations.base.links.get_outgoing().get_node_by_label("aiida_model"))  
+        self.out("aiida_swa_model", self.ctx.mace_calculations.base.links.get_outgoing().get_node_by_label("aiida_swa_model"))  
+        self.out("mace", self.ctx.mace_calculations.base.links.get_outgoing().get_node_by_label("mace"))  
 
     
 
@@ -139,6 +187,9 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
 
 
         self.out_many(self.exposed_outputs(self.ctx.mace_calculations[0], MaceCalculation, namespace="mace_out"))
+        
+        
+        
         # for ii, val in enumerate(self.ctx.lammps_calculations):
         #     self.out(f'rdf', val.outputs.rdf)
         #     self.out(f'coord_lmmpstrj', val.outputs.coord_lmmpstrj)
@@ -151,19 +202,32 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
 
 
 
-    # def save_files(self):
-    #     """Create folder and save files."""
-    #     folder = f'{self.inputs.parent_folder.value}/LAMMPS_pot{self.inputs.potential.pk}_str{self.inputs.structure.pk}_DT{self.inputs.dt.value}_N{self.inputs.num_steps.value}_P{self.inputs.pressure.value}_T{self.inputs.temperature.value}'
-    #     os.makedirs(folder, exist_ok=True)
-    #     retrived = self.ctx.lammps_calculations[0].get_retrieved_node()
+    def save_files(self):
+        """Create folder and save files."""
+        folder = f'{self.inputs.parent_folder.value}/Data/MAVE_pot{self.inputs.dataset_list.pk}'
+        os.makedirs(folder, exist_ok=True)
+        retrived = self.ctx.mace_calculations[0].get_retrieved_node()
+        
+        for r in retrived.list_objects():
+            self.report(r.name)
+            with retrived.open(r.name, 'rb') as handle:
+                with open(f'{folder}/{r.name}', "w") as f:
+                    try:
+                        f.write(handle.read().decode('utf-8'))
+                    except:
+                        pass
+                        
+        retrived = self.ctx.mace_calculations[0].outputs.retrieved
+        
+        for r in retrieved.list_object_names():
+            self.report(r.name)
+            with retrived.open(r.name, 'rb') as handle:
+                with open(f'{folder}/{r.name}', "w") as f:
+                    try:
+                        f.write(handle.read().decode('utf-8'))
+                    except:
+                        pass
 
-
-    #     for r in retrived.list_objects():
-    #         self.report(r.name)
-    #         with retrived.open(r.name, 'rb') as handle:
-    #             with open(f'{folder}/{r.name}', "w") as f:
-    #                 try:
-    #                     f.write(handle.read().decode('utf-8'))
-    #                 except:
-    #                     pass
+                        
+                
 

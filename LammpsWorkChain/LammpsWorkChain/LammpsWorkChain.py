@@ -194,7 +194,7 @@ write_restart lmp_restart.rest"""
 
     def save_files(self):
         """Create folder and save files."""
-        folder = f'{self.inputs.parent_folder.value}/LAMMPS_pot{self.inputs.potential.pk}_str{self.inputs.structure.pk}_DT{self.inputs.dt.value}_N{self.inputs.num_steps.value}_P{self.inputs.pressure.value}_T{self.inputs.temperature.value}'
+        folder = f'{self.inputs.parent_folder.value}/Data/LAMMPS_pot{self.inputs.potential.pk}_str{self.inputs.structure.pk}_DT{self.inputs.dt.value}_N{self.inputs.num_steps.value}_P{self.inputs.pressure.value}_T{self.inputs.temperature.value}'
         os.makedirs(folder, exist_ok=True)
         retrived = self.ctx.lammps_calculations[0].get_retrieved_node()
 

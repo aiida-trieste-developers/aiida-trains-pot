@@ -1,0 +1,5 @@
+/var/spool/slurmd/job4343355/slurm_script: line 27: Default: command not found
+/leonardo_scratch/fast/IscrB_DeepVTe2/py_env/mace/lib/python3.10/site-packages/torch/jit/_check.py:172: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn("The TorchScript type system doesn't support "
+python: can't open file '/leonardo/home/userexternal/dbidoggi/software/mace/mace/cli/create_lammps_model.py': [Errno 13] Permission denied
+python: can't open file '/leonardo/home/userexternal/dbidoggi/software/mace/mace/cli/create_lammps_model.py': [Errno 13] Permission denied

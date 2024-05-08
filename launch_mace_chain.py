@@ -34,7 +34,7 @@ code = load_code("mace@leo2_scratch_bind")
 
 
 machine = {
-'time'                             : "24:00:00",
+'time'                             : "00:30:00",
 'nodes'                            : 1,
 'mem'                              : "70GB",
 'taskpn'                           : 1,
@@ -42,13 +42,15 @@ machine = {
 'cpupt'                            : "8",
 'account'                          : "IscrB_DeepVTe2",
 'partition'                        : "boost_usr_prod",
+#'partition'                        : "lrd_all_serial",
 'gpu'                              : "1",
 'pool'                             : "1",
 'poolx'                            : "1",
 'pools'                            : "1",
 'pooln'                            : "1",
 'poolp'                            : "1",
-'qos'                              : "normal"
+#'qos'                              : "normal"
+'qos'                              : "boost_qos_dbg"
 }
 
 
@@ -83,7 +85,7 @@ time_sec=int(time[0])*3600+int(time[1])*60+int(time[2])
 # potential = nnip_group.nodes[0]
 # structure = structure_group.nodes[0]
 
-#dataset = load_node(17125)
+#dataset = load_node(22888)
 dataset = load_node(22289) 
 #print("dataset")
 #print(dataset)
@@ -112,8 +114,9 @@ builder.mace.metadata.options.import_sys_environment = False
 print(builder)
 
 calc = submit(builder,
-                code=code,
-                dataset_list = dataset,
+                code		=	code,
+                dataset_list 	= 	dataset,
+                parent_folder 	=	Str(Path(__file__).resolve().parent)
                 )
 
 # run(builder, code=code, structure=structure, potential=potential, temperature=Float(200.0), dt=Float(0.00242))
