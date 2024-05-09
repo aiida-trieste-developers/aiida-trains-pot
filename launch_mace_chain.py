@@ -85,8 +85,8 @@ time_sec=int(time[0])*3600+int(time[1])*60+int(time[2])
 # potential = nnip_group.nodes[0]
 # structure = structure_group.nodes[0]
 
-#dataset = load_node(22888)
-dataset = load_node(22289) 
+dataset = load_node(22888)
+#dataset = load_node(22289) 
 #print("dataset")
 #print(dataset)
 

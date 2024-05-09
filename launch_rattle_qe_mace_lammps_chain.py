@@ -8,13 +8,14 @@ from aiida.engine import submit, run
 from aiida.orm import load_group, load_node, Float, load_code, Int, Str,StructureData, SinglefileData, Dict
 import numpy as np
 from LoadStructure.pdb_loader import load_structures_from_folder
-from RuttleStructure.RuttleStructureWorkChain import RuttleStructureWorkChain
+#from RuttleStructure.RuttleStructureWorkChain import RuttleStructureWorkChain
 
 
 LammpsWorkChain = WorkflowFactory('lammpsworkchain')
 KpointsData = DataFactory("core.array.kpoints")
 QECalculationWorkChain = WorkflowFactory('qecalculation')
 MaceWorkChain = WorkflowFactory('maceworkchain')
+RuttleStructureWorkChain = WorkflowFactory('rattleworkchain')
 aiida.load_profile()
 
 def get_machine(machine_str):	
@@ -161,10 +162,10 @@ print("Extracted Structures")
 print(structure_uuids)
 
 rattle_params = {
-    'rattle_radius_list'    : [0.1, 0.2, 0.3, 0.4],
-    'sigma_strain_list'     : [0.9, 0.95, 1.00, 1.05, 1.1],
-#    'rattle_radius_list'    : [0.1],
-#    'sigma_strain_list'     : [1.00],
+#    'rattle_radius_list'    : [0.1, 0.2, 0.3, 0.4],
+#    'sigma_strain_list'     : [0.9, 0.95, 1.00, 1.05, 1.1],
+    'rattle_radius_list'    : [0.1],
+    'sigma_strain_list'     : [1.00],
     'n_configs'             : 2,
     'frac_vacancies'        : 0.4,
     'vacancies_per_config'  : 1,
@@ -206,7 +207,7 @@ set_qe_builder_parameters(builder_QE, "machine_cm", description_QE, pseudo_famil
 
 results_QE = run(builder_QE)
 print("Results QE")
-print(results_QE)	
+print(results_QE['dataset_list'])	
 
 # Create or load code
 code_mace = load_code("mace@leo2_scratch_bind")
@@ -218,13 +219,13 @@ dataset_mace = results_QE['dataset_list']
 builder_mace = MaceWorkChain.get_builder_from_protocol()
 set_mace_builder_parameters(builder_mace, description_mace, machine_mace, time_sec_mace, mem_mace)
 
-calc_mace = submit(builder_mace,
-                code=code_mace,
-                dataset_list = dataset_mace,
-                parent_folder 	=	Str(Path(__file__).resolve().parent)
-                )
-print("calc_mace['validation list']")
-print(calc_mace)
+#calc_mace = submit(builder_mace,
+#                code=code_mace,
+#                dataset_list = dataset_mace,
+#                parent_folder 	=	Str(Path(__file__).resolve().parent)
+#                )
+#print("calc_mace['validation list']")
+#print(calc_mace)
 
 # Create or load code
 code_lammps = load_code("lmp4mace@leo2_scratch_bind")

@@ -54,7 +54,7 @@ def WriteDataset(**params):
     return {'structures_parameters_list': List(structures_parameters_list)}
 
 
-class RuttleStructureWorkChain(WorkChain):
+class RattleWorkChain(WorkChain):
     """WorkChain to generate a training dataset with ruttle parameters."""
 
     @classmethod
