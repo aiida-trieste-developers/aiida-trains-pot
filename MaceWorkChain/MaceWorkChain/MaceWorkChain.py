@@ -2,7 +2,7 @@
 """Equation of State WorkChain."""
 from aiida.engine import WorkChain, append_, calcfunction, workfunction
 from aiida import load_profile
-from aiida.orm import Code, Float, Str, StructureData, Int, Float, SinglefileData, List
+from aiida.orm import Code, RemoteData, Str, FolderData, SinglefileData, List
 from aiida_quantumespresso.workflows.protocols.utils import ProtocolMixin
 from aiida.plugins import CalculationFactory
 import random
@@ -58,7 +58,7 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
         """Specify inputs and outputs."""
         super().define(spec)
         spec.expose_inputs(MaceCalculation, namespace="mace", exclude=('training_set','validation_set','test_set'), namespace_options={'validator': None})
-        spec.expose_outputs(MaceCalculation, namespace="mace_out")
+        #spec.expose_outputs(MaceCalculation, namespace="mace_out")
 
         spec.input("code", valid_type=Code)
         spec.input("dataset_list", valid_type=List)
@@ -66,19 +66,20 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
         spec.output("aiida_model",valid_type=SinglefileData)
         spec.output("aiida_swa_model",valid_type=SinglefileData)
         spec.output("mace",valid_type=SinglefileData)
+        spec.output("remote_folder",valid_type=RemoteData)
+        spec.output("retrieved",valid_type=FolderData)
         spec.output("validation_set", valid_type=List)
 
         spec.outline(
             cls.run_mace,
             cls.finalize,
             # cls.save_files
-            cls.results,
+            # cls.results,
             #cls.finalize            
         )
 
     @classmethod
-    def get_builder_from_protocol( 
-        cls, **kwargs):
+    def get_builder_from_protocol(cls, **kwargs):
 
         builder = cls.get_builder()
         return builder
@@ -93,9 +94,8 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
         self.report(f"Training set size: {len(train_set.get_list())}")
         self.report(f"Validation set size: {len(validation_set.get_list())}")
         self.report(f"Test set size: {len(test_set.get_list())}")
-
-
         
+           
         self.out("validation_set", validation_set)  
 
         future = self.submit(MaceCalculation,
@@ -105,39 +105,27 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
                              test_set=test_set,
                              **self.exposed_inputs(MaceCalculation, namespace="mace"))
 
-        self.report(f'Launched MACE calculation <{future.pk}>')
+        self.report(f'Results v0')
         self.to_context(mace_calculations=append_(future))
 
-
-    """TODO"""	
-    def results(self):
-        """Process results."""
-        inputs = {}
-
-        self.report(f'Self.ctx.mace_calculations 2')
-        self.out("aiida_model", self.ctx.mace_calculations.base.links.get_outgoing().get_node_by_label("aiida_model"))  
-        self.out("aiida_swa_model", self.ctx.mace_calculations.base.links.get_outgoing().get_node_by_label("aiida_swa_model"))  
-        self.out("mace", self.ctx.mace_calculations.base.links.get_outgoing().get_node_by_label("mace"))  
-
-
+  
 
     def finalize(self):
         """Finalize."""
+                
+        # Iterate over the output links of the calculation node
+        for link in self.ctx.mace_calculations[0].get_outgoing().all():
+            name = link.link_label
+            value = link.node
+            # Output each output independently
+            self.report(f'Result <{name}>')
+            self.out(name, value)
 
 
+        #self.report(f'Second type of result')
         #self.out_many(self.exposed_outputs(self.ctx.mace_calculations[0], MaceCalculation, namespace="mace_out"))
-
-        # for ii, val in enumerate(self.ctx.lammps_calculations):
-        #     self.out(f'rdf', val.outputs.rdf)
-        #     self.out(f'coord_lmmpstrj', val.outputs.coord_lmmpstrj)
-        #     self.out(f'msd', val.outputs.msd)
-        #     self.out(f'lammps_out', val.outputs.lammps_out)
-        #     self.out(f'final_structure', val.outputs.final_structure)
-        #     self.out(f'lmp_restart', val.outputs.lmp_restart)
-        #     self.out(f'coord_atom', val.outputs.coord_atom)
-        #     self.out(f'log_lammps', val.outputs.log_lammps)
-
-
+        
+        
     def save_files(self):
         """Create folder and save files."""
         folder = f'{self.inputs.parent_folder.value}/Data/MAVE_pot{self.inputs.dataset_list.pk}'

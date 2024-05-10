@@ -1,7 +1,0 @@
-setup.py
-MaceWorkChain/MaceWorkChain.py
-MaceWorkChain.egg-info/PKG-INFO
-MaceWorkChain.egg-info/SOURCES.txt
-MaceWorkChain.egg-info/dependency_links.txt
-MaceWorkChain.egg-info/entry_points.txt
-MaceWorkChain.egg-info/top_level.txt

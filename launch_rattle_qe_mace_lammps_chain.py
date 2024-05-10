@@ -219,13 +219,13 @@ dataset_mace = results_QE['dataset_list']
 builder_mace = MaceWorkChain.get_builder_from_protocol()
 set_mace_builder_parameters(builder_mace, description_mace, machine_mace, time_sec_mace, mem_mace)
 
-#calc_mace = submit(builder_mace,
-#                code=code_mace,
-#                dataset_list = dataset_mace,
-#                parent_folder 	=	Str(Path(__file__).resolve().parent)
-#                )
-#print("calc_mace['validation list']")
-#print(calc_mace)
+calc_mace = submit(builder_mace,
+                code=code_mace,
+                dataset_list = dataset_mace,
+                parent_folder 	=	Str(Path(__file__).resolve().parent)
+                )
+print("calc_mace['validation list']")
+print(calc_mace)
 
 # Create or load code
 code_lammps = load_code("lmp4mace@leo2_scratch_bind")

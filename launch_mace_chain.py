@@ -8,7 +8,8 @@ from aiida.engine import submit, run
 from aiida.orm import load_group, Float, load_code, Int, Str, load_node
 import numpy as np
 
-MaceWorkChain = WorkflowFactory('maceworkchain2')
+#MaceWorkChain = WorkflowFactory('maceworkchain')
+from MaceWorkChain.MaceWorkChain import MaceWorkChain
 
 aiida.load_profile()
 
