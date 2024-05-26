@@ -6,14 +6,6 @@ from aiida.tools.groups import GroupPath
 
 DatasetGeneratorWorkChain = WorkflowFactory('NNIPdevelopement.datageneration')
 load_profile()
-# rattle.params.rattle_fraction", val
-# rattle.params.max_sigma_strain", va
-# rattle.params.n_configs", valid_typ
-# rattle.params.frac_vacancies", vali
-# rattle.params.vacancies_per_config"
-# do_rattle", valid_type=Bool, defaul
-# do_equilibrium", valid_type=Bool, d
-# do_isolated", valid_type=Bool, defa
 
 structures = [load_node(25538), load_node(25536)] #wte2
 

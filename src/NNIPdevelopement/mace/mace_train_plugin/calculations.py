@@ -37,7 +37,7 @@ def dataset_list_to_txt(dataset_list):
 
 
 
-class MaceBaseCalculation(CalcJob):
+class MaceTrainCalculation(CalcJob):
     """
     AiiDA calculation plugin wrapping the diff executable.
 

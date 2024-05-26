@@ -4,7 +4,6 @@ from aiida.engine import WorkChain, append_
 from aiida import load_profile
 from aiida.orm import Code, Float, Str, StructureData, Int, Float, SinglefileData
 from aiida.plugins import CalculationFactory
-from aiida_quantumespresso.workflows.protocols.utils import ProtocolMixin
 import numpy as np
 import os
 import io
@@ -12,7 +11,7 @@ load_profile()
 
 LammpsCalculation = CalculationFactory('lammps_base')
 
-class LammpsWorkChain(ProtocolMixin, WorkChain):
+class LammpsWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
 
     @classmethod

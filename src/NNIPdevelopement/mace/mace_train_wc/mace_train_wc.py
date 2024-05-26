@@ -1,19 +1,13 @@
 # -*- coding: utf-8 -*-
 """Equation of State WorkChain."""
-from aiida.engine import WorkChain, append_, calcfunction, workfunction
+from aiida.engine import WorkChain, append_, calcfunction
 from aiida import load_profile
 from aiida.orm import Code, RemoteData, Str, FolderData, SinglefileData, List
-from aiida_quantumespresso.workflows.protocols.utils import ProtocolMixin
 from aiida.plugins import CalculationFactory
 import random
 import itertools
-import numpy as np
-from ase.io import write
-from ase.calculators.singlepoint import SinglePointCalculator
-from ase import Atoms
 import os
-import io
-from contextlib import redirect_stdout
+
 load_profile()
 
 MaceCalculation = CalculationFactory('mace_base')
@@ -51,7 +45,8 @@ def split_dataset(dataset):
     validation_set += all_set[training_size:training_size+validation_size]
     test_set += all_set[training_size+validation_size:]
     return {"train_set":List(training_set), "validation_set":List(validation_set), "test_set":List(test_set)}
-class MaceWorkChain(ProtocolMixin, WorkChain):
+
+class MaceTrainWorkChain(WorkChain):
     """WorkChain to launch MACE training."""
     @classmethod
     def define(cls, spec):
@@ -143,7 +138,7 @@ class MaceWorkChain(ProtocolMixin, WorkChain):
 
         retrived = self.ctx.mace_calculations[0].outputs.retrieved
 
-        for r in retrieved.list_object_names():
+        for r in retrived.list_object_names():
             self.report(r.name)
             with retrived.open(r.name, 'rb') as handle:
                 with open(f'{folder}/{r.name}', "w") as f:
