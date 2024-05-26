@@ -1,7 +1,0 @@
-setup.py
-RattleWorkChain/RattleWorkChain.py
-RattleWorkChain.egg-info/PKG-INFO
-RattleWorkChain.egg-info/SOURCES.txt
-RattleWorkChain.egg-info/dependency_links.txt
-RattleWorkChain.egg-info/entry_points.txt
-RattleWorkChain.egg-info/top_level.txt
