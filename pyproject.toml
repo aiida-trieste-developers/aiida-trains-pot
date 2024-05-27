@@ -44,8 +44,8 @@ Source = "https://github.com/mankoNm/NNIPDevelopment"
 "NNIPdevelopement.lammpsmd" = "NNIPdevelopement.lammps.lammps_plugin.calculations:LammpsBaseCalculation"
 
 [project.entry-points.'aiida.parsers']
-"NNIPdevelopement.macetrain" = "NNIPdevelopement.mace.mace_train_plugin.parsers:LammpsBaseParser"
-"NNIPdevelopement.lammpsmd" = "NNIPdevelopement.lammps.lammps_plugin.parsers:MaceBaseParser"
+"NNIPdevelopement.macetrain" = "NNIPdevelopement.mace.mace_train_plugin.parsers:MaceBaseParser"
+"NNIPdevelopement.lammpsmd" = "NNIPdevelopement.lammps.lammps_plugin.parsers:LammpsBaseParser"
 
 #[project.entry-points."aiida.cmdline.data"]
 #"diff" = "aiida_diff.cli:data_cli"
