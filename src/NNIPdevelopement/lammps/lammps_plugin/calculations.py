@@ -6,9 +6,13 @@ Register calculations via the "aiida.calculations" entry point in setup.json.
 from aiida.common import datastructures
 from aiida.engine import CalcJob
 from aiida.orm import SinglefileData, StructureData
+from aiida.plugins import DataFactory
 import io
 from contextlib import redirect_stdout
 from ase.io import write
+
+
+TrajectoryData = DataFactory('core.array.trajectory')
 
 
 class LammpsBaseCalculation(CalcJob):
@@ -25,7 +29,7 @@ class LammpsBaseCalculation(CalcJob):
 
         # set default values for AiiDA options
         spec.inputs["metadata"]["options"]["resources"].default = {"num_machines": 1, "num_mpiprocs_per_machine": 1,}
-        spec.inputs["metadata"]["options"]["parser_name"].default = "lammps_base"
+        spec.inputs["metadata"]["options"]["parser_name"].default = "NNIPdevelopement.lammpsmd"
 
         # new ports
         spec.input("input", valid_type=SinglefileData, help="Input file for LAMMPS.",)
@@ -40,6 +44,7 @@ class LammpsBaseCalculation(CalcJob):
         spec.output("lammps_out", valid_type=SinglefileData, help="Lammps output file",)
         spec.output("final_structure", valid_type=SinglefileData, help="Final structure file",)
         spec.output("lmp_restart", valid_type=SinglefileData, help="Lmp restart file",)
+        # spec.output("trajectory", valid_type=TrajectoryData, help="Trajectory coord atom file",)
         spec.output("coord_atom", valid_type=SinglefileData, help="Trajectory coord atom file",)
         spec.output("log_lammps", valid_type=SinglefileData, help="Log lammps file",)
         

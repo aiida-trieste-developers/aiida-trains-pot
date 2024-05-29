@@ -69,7 +69,7 @@ def InputStructureGenerator(**in_structure_dict):
     structure_list = []
     for _, structure in in_structure_dict.items():
         ase_structure = structure.get_ase()
-        structure_list.append({'cell': List(list(ase_structure.get_cell()[0])),
+        structure_list.append({'cell': List(list(ase_structure.get_cell())),
                     'symbols': List(list(ase_structure.get_chemical_symbols())),
                     'positions': List(list(ase_structure.get_positions())), 
                     'input_structure_uuid': Str(structure.uuid),
@@ -93,7 +93,7 @@ def IsolatedStructureGenerator(**in_structure_dict):
                 done_types.append(atm_type)
                 isolated_structure = Atoms(atm_type, positions=[[0.0, 0.0, 0.0]], cell=structure.cell)
                 
-                structure_list.append({'cell': List(list(isolated_structure.get_cell()[0])),
+                structure_list.append({'cell': List(list(isolated_structure.get_cell())),
                     'symbols': List(list(isolated_structure.get_chemical_symbols())),
                     'positions': List(list(isolated_structure.get_positions())), 
                     'gen_method': Str('ISOLATED_ATOM')
@@ -188,16 +188,16 @@ class DataGenerationWorkChain(WorkChain):
         super().define(spec)
         spec.input_namespace("structures", valid_type=StructureData, required=True)
 
+        spec.input("do_rattle", valid_type=Bool, default=lambda:cls.DEFAULT_do_rattle, required=False, help=f"Perform rattle calculations (random atomic displacements, cell stretch/compression, vacancies. Permutations and replacements are not yet implemented). Default: {cls.DEFAULT_do_rattle}")
+        spec.input("do_input", valid_type=Bool, default=lambda:cls.DEFAULT_do_input, required=False, help=f"Add input structures to the dataset. Default: {cls.DEFAULT_do_input}")
+        spec.input("do_isolated", valid_type=Bool, default=lambda:cls.DEFAULT_do_isolated, required=False, help=f"Add isolated atoms configurations to the dataset. Default: {cls.DEFAULT_do_isolated}")
+
 
         spec.input("rattle.params.rattle_fraction", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RATTLE_rattle_fraction, required=False, help=f"Atoms are displaced by a rattle_fraction of the minimum interatomic distance. Default: {cls.DEFAULT_RATTLE_rattle_fraction}")
         spec.input("rattle.params.max_sigma_strain", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RATTLE_max_sigma_strain, required=False, help=f"Maximum strain factor. Default: {cls.DEFAULT_RATTLE_max_sigma_strain}")
         spec.input("rattle.params.n_configs", valid_type=Int, default=lambda:cls.DEFAULT_RATTLE_n_configs, required=False, help=f"Number of configurations to generate. Default: {cls.DEFAULT_RATTLE_n_configs}")
         spec.input("rattle.params.frac_vacancies", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RATTLE_frac_vacancies, required=False, help=f"Fraction of configurations with vacancies. Default: {cls.DEFAULT_RATTLE_frac_vacancies}")
         spec.input("rattle.params.vacancies_per_config", valid_type=Int, default=lambda:cls.DEFAULT_RATTLE_vacancies_per_config, required=False, help=f"Number of vacancies per configuration. Default: {cls.DEFAULT_RATTLE_vacancies_per_config}")
-
-        spec.input("do_rattle", valid_type=Bool, default=lambda:cls.DEFAULT_do_rattle, required=False, help=f"Perform rattle calculations (random atomic displacements, cell stretch/compression, vacancies. Permutations and replacements are not yet implemented). Default: {cls.DEFAULT_do_rattle}")
-        spec.input("do_input", valid_type=Bool, default=lambda:cls.DEFAULT_do_input, required=False, help=f"Add input structures to the dataset. Default: {cls.DEFAULT_do_input}")
-        spec.input("do_isolated", valid_type=Bool, default=lambda:cls.DEFAULT_do_isolated, required=False, help=f"Add isolated atoms configurations to the dataset. Default: {cls.DEFAULT_do_isolated}")
 
         spec.output_namespace("structure_lists", valid_type=List, dynamic=True)
 

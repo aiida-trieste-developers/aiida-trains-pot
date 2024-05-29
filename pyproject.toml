@@ -37,6 +37,8 @@ Source = "https://github.com/mankoNm/NNIPDevelopment"
 "NNIPdevelopement.qe" = "NNIPdevelopement.QEWorkChain.QEWorkChain.QECalculationWorkChain:QECalculationWorkChain"
 "NNIPdevelopement.macetrain" = "NNIPdevelopement.mace.mace_train_wc.mace_train_wc:MaceTrainWorkChain"
 "NNIPdevelopement.lammpsmd" = "NNIPdevelopement.lammps.lammps_wc.lammps_wc:LammpsWorkChain"
+"NNIPdevelopement.nnipdevelopement" = "NNIPdevelopement.nnip_wc.nnip_wc:NNIPWorkChain"
+"NNIPdevelopement.lammpsextraction" = "NNIPdevelopement.lammps.lammps_frame_extraction.lammps_frame_extraction:LammpsFrameExtraction"
 
 
 [project.entry-points.'aiida.calculations']
@@ -50,5 +52,5 @@ Source = "https://github.com/mankoNm/NNIPDevelopment"
 #[project.entry-points."aiida.cmdline.data"]
 #"diff" = "aiida_diff.cli:data_cli"
 
-#[tool.flit.module]
-#name = "NNIPdevelopement"
+[tool.flit.module]
+name = "NNIPdevelopement"

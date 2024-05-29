@@ -7,10 +7,13 @@ from aiida.common import exceptions
 from aiida.engine import ExitCode
 from aiida.orm import SinglefileData
 from aiida.parsers.parser import Parser
-from aiida.plugins import CalculationFactory
+from aiida.plugins import CalculationFactory, DataFactory
+from ase.io.lammpsrun import read_lammps_dump_text
+from io import StringIO
 
-LammpsBaseCalculation = CalculationFactory("lammps_base")
-
+LammpsBaseCalculation = CalculationFactory("NNIPdevelopement.lammpsmd")
+StructureData = DataFactory('core.structure')
+TrajectoryData = DataFactory('core.array.trajectory')
 
 class LammpsBaseParser(Parser):
     """
@@ -56,6 +59,14 @@ class LammpsBaseParser(Parser):
             self.logger.info(f"Parsing '{output_filename}'")
             with self.retrieved.open(output_filename, "rb") as handle:
                 output_node = SinglefileData(file=handle)
+            # if 'coord.atom' in output_filename:
+            #     trajectory_list = read_lammps_dump_text(StringIO(output_node.get_content()), index=slice(0, int(1e50), 1))
+            #     datastructures_list = []
+            #     for atoms in trajectory_list:
+            #         datastructures_list.append(StructureData(ase=atoms))
+            #     trajectory = TrajectoryData(datastructures_list)
+            #     self.out("trajectory", trajectory)
+            # elif 'coord' in output_filename or 'lammps' in output_filename:
             if 'coord' in output_filename or 'lammps' in output_filename:
                 self.out(output_filename.replace('.','_'), output_node)
             if 'rdf' in output_filename:

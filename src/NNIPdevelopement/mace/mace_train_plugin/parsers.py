@@ -9,7 +9,7 @@ from aiida.orm import SinglefileData, FolderData
 from aiida.parsers.parser import Parser
 from aiida.plugins import CalculationFactory
 
-MaceBaseCalculation = CalculationFactory("mace_base")
+MaceTrainCalculation = CalculationFactory("NNIPdevelopement.macetrain")
 
 
 class MaceBaseParser(Parser):
@@ -27,8 +27,8 @@ class MaceBaseParser(Parser):
         :param type node: :class:`aiida.orm.nodes.process.process.ProcessNode`
         """
         super().__init__(node)
-        if not issubclass(node.process_class, MaceBaseCalculation):
-            raise exceptions.ParsingError("Can only parse MaceBaseCalculation")
+        if not issubclass(node.process_class, MaceTrainCalculation):
+            raise exceptions.ParsingError("Can only parse MaceTrainCalculation")
 
     def parse(self, **kwargs):
         """
@@ -66,5 +66,5 @@ class MaceBaseParser(Parser):
                 if 'model' in output_filename and 'pt' in output_filename:
                     self.out(output_filename.replace('.pt','').replace('.','_').replace('-','_'), output_node)
                 if 'mace' in output_filename:
-                    self.out(output_filename.replace('.out',''), output_node)         
+                    self.out(output_filename.replace('.out','_out'), output_node)         
         return ExitCode(0)

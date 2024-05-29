@@ -9,7 +9,7 @@ import os
 import io
 load_profile()
 
-LammpsCalculation = CalculationFactory('lammps_base')
+LammpsCalculation = CalculationFactory('NNIPdevelopement.lammpsmd')
 
 class LammpsWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
@@ -110,18 +110,18 @@ timestep {dt}
 fix mysim all npt temp {temp} {temp} $(100.0*dt) x {press} {press} $(1000.0*dt) y {press} {press} $(1000.0*dt)
 # fix press all 
 compute myRDF1 all rdf 1000 1 1
-compute myRDF2 all rdf 1000 1 2
-compute myRDF3 all rdf 1000 2 2
-compute myADF all adf 180 1 1 1 1 5 1 5 &
-                          1 1 2 1 5 1 5 &
-                          1 2 2 1 5 1 5 &
-                          2 2 2 1 5 1 5 &
-                          2 2 1 1 5 1 5 &
-                          2 1 1 1 5 1 5
+# compute myRDF2 all rdf 1000 1 2
+# compute myRDF3 all rdf 1000 2 2
+compute myADF all adf 180 1 1 1 1 5 1 5 #&
+                        #   1 1 2 1 5 1 5 &
+                        #   1 2 2 1 5 1 5 &
+                        #   2 2 2 1 5 1 5 &
+                        #   2 2 1 1 5 1 5 &
+                        #   2 1 1 1 5 1 5
 compute mymsd all msd com yes
 fix 1 all ave/time 100 1 100 c_myRDF1[*] file rdf11.rdf mode vector
-fix 2 all ave/time 100 1 100 c_myRDF2[*] file rdf12.rdf mode vector
-fix 3 all ave/time 100 1 100 c_myRDF3[*] file rdf22.rdf mode vector
+# fix 2 all ave/time 100 1 100 c_myRDF2[*] file rdf12.rdf mode vector
+# fix 3 all ave/time 100 1 100 c_myRDF3[*] file rdf22.rdf mode vector
 fix 4 all ave/time 1 1 100 c_mymsd[*] file msd.msd
 fix 5 all ave/time 100 1 100 c_myADF[*] file adf.adf mode vector
 #
@@ -176,7 +176,7 @@ write_restart lmp_restart.rest"""
 
     def finalize(self):
         """Finalize."""
-
+        
 
         self.out_many(self.exposed_outputs(self.ctx.lammps_calculations[0], LammpsCalculation, namespace="lmp_out"))
         # for ii, val in enumerate(self.ctx.lammps_calculations):
