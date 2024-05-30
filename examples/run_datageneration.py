@@ -4,7 +4,7 @@ from aiida.engine import submit
 from aiida.plugins import WorkflowFactory
 from aiida.tools.groups import GroupPath
 
-DatasetGeneratorWorkChain = WorkflowFactory('NNIPdevelopement.datageneration')
+DatasetGeneratorWorkChain = WorkflowFactory('NNIPdevelopment.datageneration')
 load_profile()
 
 structures = [load_node(25538), load_node(25536)] #wte2

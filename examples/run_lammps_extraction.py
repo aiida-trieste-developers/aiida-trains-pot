@@ -6,7 +6,7 @@ from aiida.tools.groups import GroupPath
 
 load_profile()
 
-LammpsExtraction = WorkflowFactory('NNIPdevelopement.lammpsextraction')
+LammpsExtraction = WorkflowFactory('NNIPdevelopment.lammpsextraction')
 
 
 

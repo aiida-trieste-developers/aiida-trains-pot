@@ -16,7 +16,7 @@ from contextlib import redirect_stdout
 
 load_profile()
 
-MaceCalculation = CalculationFactory('NNIPdevelopement.macetrain')
+MaceCalculation = CalculationFactory('NNIPdevelopment.macetrain')
 
 @calcfunction
 def SplitDataset(dataset):

@@ -9,7 +9,7 @@ import os
 import io
 load_profile()
 
-LammpsCalculation = CalculationFactory('NNIPdevelopement.lammpsmd')
+LammpsCalculation = CalculationFactory('NNIPdevelopment.lammpsmd')
 
 class LammpsWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""

@@ -60,7 +60,7 @@ class MaceTrainCalculation(CalcJob):
 
         # set default values for AiiDA options
         spec.inputs["metadata"]["options"]["resources"].default = {"num_machines": 1, "num_mpiprocs_per_machine": 1,}
-        spec.inputs["metadata"]["options"]["parser_name"].default = "NNIPdevelopement.macetrain"
+        spec.inputs["metadata"]["options"]["parser_name"].default = "NNIPdevelopment.macetrain"
         #ADD input parameters
 
         # new ports

@@ -10,7 +10,7 @@ load_profile()
 
 
 KpointsData = DataFactory("core.array.kpoints")
-NNIPWorkChain = WorkflowFactory('NNIPdevelopement.nnipdevelopement')
+NNIPWorkChain = WorkflowFactory('NNIPdevelopment.nnipdevelopment')
 
 
 machine_dft = {
@@ -105,13 +105,14 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structu
 
 
 
-builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
-builder.do_data_generation = Bool(False)
-builder.do_dft = Bool(False)
-builder.do_mace = Bool(False)
+#builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
+builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo2_scratch_bind'))
+builder.do_data_generation = Bool(True)
+builder.do_dft = Bool(True)
+builder.do_mace = Bool(True)
 builder.do_md = Bool(True)
-builder.labelled_list = load_node(47516)
-builder.mace_lammps_potential = load_node(47714)
+#builder.labelled_list = load_node(47516)
+#builder.mace_lammps_potential = load_node(47714)
 
 builder.datagen.do_rattle = Bool(True)
 builder.datagen.do_input = Bool(True)
@@ -154,7 +155,7 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
                                     }
                                   })
 
-builder.mace.code = load_code('mace_pub2@leo1_scratch')
+builder.mace.code = load_code('mace3@leo1_scratch_bind')
 builder.mace.mace.params.default_dtype = Str('float32')
 builder.mace.num_potentials = Int(1)
 builder.mace.mace.metadata.options.resources = {
@@ -171,7 +172,7 @@ builder.mace.mace.metadata.options.qos = machine_mace['qos']
 builder.mace.mace.metadata.options.custom_scheduler_commands=f"#SBATCH --gres=gpu:{machine_mace['gpu']}"
 
 
-builder.md.code = load_code('lmp4mace2@leo1_scratch')
+builder.md.code = load_code('lmp4mace@leo2_scratch_bind')
 builder.md.temperatures = List([50, 100])
 builder.md.pressures = List([0])
 builder.md.num_steps = Int(1000)

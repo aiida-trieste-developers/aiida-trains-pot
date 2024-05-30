@@ -11,7 +11,7 @@ from aiida.plugins import CalculationFactory, DataFactory
 from ase.io.lammpsrun import read_lammps_dump_text
 from io import StringIO
 
-LammpsBaseCalculation = CalculationFactory("NNIPdevelopement.lammpsmd")
+LammpsBaseCalculation = CalculationFactory("NNIPdevelopment.lammpsmd")
 StructureData = DataFactory('core.structure')
 TrajectoryData = DataFactory('core.array.trajectory')
 

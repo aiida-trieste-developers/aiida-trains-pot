@@ -9,7 +9,7 @@ from aiida.orm import SinglefileData, FolderData
 from aiida.parsers.parser import Parser
 from aiida.plugins import CalculationFactory
 
-MaceTrainCalculation = CalculationFactory("NNIPdevelopement.macetrain")
+MaceTrainCalculation = CalculationFactory("NNIPdevelopment.macetrain")
 
 
 class MaceBaseParser(Parser):

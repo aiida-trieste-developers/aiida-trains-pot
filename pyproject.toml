@@ -4,7 +4,7 @@ requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "NNIPdevelopement"
+name = "NNIPdevelopment"
 dynamic = ["version"]
 description = "AiiDA workchain to generate data for training and testing of neural networks."
 authors = [{name = "Nataliia Manko"}, {name = "Davide Bidoggia"}, {name = "Antimo Marrazzo"}, {name = "Maria Peressi"}]
@@ -33,24 +33,24 @@ Source = "https://github.com/mankoNm/NNIPDevelopment"
 
 
 [project.entry-points.'aiida.workflows']
-"NNIPdevelopement.datageneration" = "NNIPdevelopement.datageneration.datageneration:DataGenerationWorkChain"
-"NNIPdevelopement.qe" = "NNIPdevelopement.QEWorkChain.QEWorkChain.QECalculationWorkChain:QECalculationWorkChain"
-"NNIPdevelopement.macetrain" = "NNIPdevelopement.mace.mace_train_wc.mace_train_wc:MaceTrainWorkChain"
-"NNIPdevelopement.lammpsmd" = "NNIPdevelopement.lammps.lammps_wc.lammps_wc:LammpsWorkChain"
-"NNIPdevelopement.nnipdevelopement" = "NNIPdevelopement.nnip_wc.nnip_wc:NNIPWorkChain"
-"NNIPdevelopement.lammpsextraction" = "NNIPdevelopement.lammps.lammps_frame_extraction.lammps_frame_extraction:LammpsFrameExtraction"
+"NNIPdevelopment.datageneration" = "NNIPdevelopment.datageneration.datageneration:DataGenerationWorkChain"
+"NNIPdevelopment.qe" = "NNIPdevelopment.QEWorkChain.QEWorkChain.QECalculationWorkChain:QECalculationWorkChain"
+"NNIPdevelopment.macetrain" = "NNIPdevelopment.mace.mace_train_wc.mace_train_wc:MaceTrainWorkChain"
+"NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_wc.lammps_wc:LammpsWorkChain"
+"NNIPdevelopment.nnipdevelopment" = "NNIPdevelopment.nnip_wc.nnip_wc:NNIPWorkChain"
+"NNIPdevelopment.lammpsextraction" = "NNIPdevelopment.lammps.lammps_frame_extraction.lammps_frame_extraction:LammpsFrameExtraction"
 
 
 [project.entry-points.'aiida.calculations']
-"NNIPdevelopement.macetrain" = "NNIPdevelopement.mace.mace_train_plugin.calculations:MaceTrainCalculation"
-"NNIPdevelopement.lammpsmd" = "NNIPdevelopement.lammps.lammps_plugin.calculations:LammpsBaseCalculation"
+"NNIPdevelopment.macetrain" = "NNIPdevelopment.mace.mace_train_plugin.calculations:MaceTrainCalculation"
+"NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_plugin.calculations:LammpsBaseCalculation"
 
 [project.entry-points.'aiida.parsers']
-"NNIPdevelopement.macetrain" = "NNIPdevelopement.mace.mace_train_plugin.parsers:MaceBaseParser"
-"NNIPdevelopement.lammpsmd" = "NNIPdevelopement.lammps.lammps_plugin.parsers:LammpsBaseParser"
+"NNIPdevelopment.macetrain" = "NNIPdevelopment.mace.mace_train_plugin.parsers:MaceBaseParser"
+"NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_plugin.parsers:LammpsBaseParser"
 
 #[project.entry-points."aiida.cmdline.data"]
 #"diff" = "aiida_diff.cli:data_cli"
 
 [tool.flit.module]
-name = "NNIPdevelopement"
+name = "NNIPdevelopment"

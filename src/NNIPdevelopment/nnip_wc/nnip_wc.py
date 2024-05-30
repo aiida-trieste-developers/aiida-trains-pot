@@ -15,11 +15,11 @@ import io
 load_profile()
 
 # LammpsCalculation = CalculationFactory('lammps_base')
-DatasetGeneratorWorkChain   = WorkflowFactory('NNIPdevelopement.datageneration')
+DatasetGeneratorWorkChain   = WorkflowFactory('NNIPdevelopment.datageneration')
 PwBaseWorkChain             = WorkflowFactory('quantumespresso.pw.base')
-MaceWorkChain               = WorkflowFactory('NNIPdevelopement.macetrain')
-LammpsWorkChain             = WorkflowFactory('NNIPdevelopement.lammpsmd')
-FrameExtractionWorkChain    = WorkflowFactory('NNIPdevelopement.lammpsextraction')
+MaceWorkChain               = WorkflowFactory('NNIPdevelopment.macetrain')
+LammpsWorkChain             = WorkflowFactory('NNIPdevelopment.lammpsmd')
+FrameExtractionWorkChain    = WorkflowFactory('NNIPdevelopment.lammpsextraction')
 
 def dataset_list_to_ase_list(dataset_list):
     """Convert dataset list to an ASE list."""

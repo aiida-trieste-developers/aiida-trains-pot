@@ -29,7 +29,7 @@ class LammpsBaseCalculation(CalcJob):
 
         # set default values for AiiDA options
         spec.inputs["metadata"]["options"]["resources"].default = {"num_machines": 1, "num_mpiprocs_per_machine": 1,}
-        spec.inputs["metadata"]["options"]["parser_name"].default = "NNIPdevelopement.lammpsmd"
+        spec.inputs["metadata"]["options"]["parser_name"].default = "NNIPdevelopment.lammpsmd"
 
         # new ports
         spec.input("input", valid_type=SinglefileData, help="Input file for LAMMPS.",)
