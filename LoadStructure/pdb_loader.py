@@ -13,23 +13,15 @@ def load_structures_from_folder(folder_path):
     for filename in os.listdir(full_folder_path):
         # Check if the file is a PDB file
 
-        if filename.endswith('.cif'):
+        if filename.endswith('.cif') or filename.endswith('.xyz'):
             pdb_file = os.path.join(full_folder_path, filename)
             # Read the structure from the PDB file using ASE
             atoms = read(pdb_file)
             # Create a StructureData node
             structure = StructureData(ase=atoms)
             structure.store() 
-            structures.append(structure)
-            
-        if filename.endswith('.xyz'):
-            pdb_file = os.path.join(full_folder_path, filename)
-            # Read the structure from the PDB file using ASE
-            atoms = read(pdb_file)
-            # Create a StructureData node
-            structure = StructureData(ase=atoms)
-            structure.store() 
-            structures.append(structure)
+            structures.append(structure)    
+       
     
     structure_uuids = [structure.uuid for structure in structures]
     
