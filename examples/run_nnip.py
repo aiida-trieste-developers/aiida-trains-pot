@@ -113,6 +113,7 @@ builder.do_dft = Bool(False)
 builder.do_mace = Bool(True)
 builder.do_md = Bool(False)
 builder.labelled_list = load_node(44355)
+#builder.labelled_list = load_node(47516)
 #builder.mace_lammps_potential = load_node(47714)
 
 builder.datagen.do_rattle = Bool(True)
@@ -157,11 +158,10 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
                                   })
 
 builder.mace.code = load_code('mace9@leo1_scratch_bind')
-
+#builder.mace.code = load_code('mace_pub2@leo1_scratch')
 with open('mace_config.yml', 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
 builder.mace.mace_config = Dict(mace_config)
-#builder.mace.mace.params.default_dtype = Str('float32')
 builder.mace.num_potentials = Int(1)
 builder.mace.mace.metadata.options.resources = {
     'num_machines': machine_mace['nodes'],
@@ -178,6 +178,7 @@ builder.mace.mace.metadata.options.custom_scheduler_commands=f"#SBATCH --gres=gp
 
 
 builder.md.code = load_code('lmp4mace@leo2_scratch_bind')
+#builder.md.code = load_code('lmp4mace2@leo1_scratch')
 builder.md.temperatures = List([50, 100])
 builder.md.pressures = List([0])
 builder.md.num_steps = Int(1000)
