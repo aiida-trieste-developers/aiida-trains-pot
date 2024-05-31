@@ -5,13 +5,13 @@ Register calculations via the "aiida.calculations" entry point in setup.json.
 """
 from aiida.common import datastructures
 from aiida.engine import CalcJob
-from aiida.orm import SinglefileData, StructureData, List, FolderData, Str
+from aiida.orm import SinglefileData, StructureData, List, FolderData, Str, Dict
 import io
 from contextlib import redirect_stdout
 from ase.io import write
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase import Atoms
-import random
+import yaml
 
 
 
@@ -67,7 +67,8 @@ class MaceTrainCalculation(CalcJob):
         spec.input("training_set", valid_type=List, help="Training dataset list",)
         spec.input("validation_set", valid_type=List, help="Validation dataset list",)
         spec.input("test_set", valid_type=List, help="Test dataset list",)
-        spec.input("params.default_dtype", valid_type=Str, help="set default dtype", required=False,)
+        spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
+        #spec.input("params.default_dtype", valid_type=Str, help="set default dtype", required=False,)
 
         spec.output("aiida_model", valid_type=SinglefileData, help="Model file",)
         spec.output("aiida_swa_model", valid_type=SinglefileData, help="SWA Model file",)
@@ -101,33 +102,34 @@ class MaceTrainCalculation(CalcJob):
         """
 
         codeinfo = datastructures.CodeInfo()
-        codeinfo.cmdline_params =f"""--name=aiida
-        --seed={random.randint(0, 10000)}
-        --train_file=training.xyz
-        --valid_file=validation.xyz
-        --test_file=test.xyz
-        --default_dtype={self.inputs.params.default_dtype.value}
-        --model=MACE
-        --compute_stress=True
-        --energy_key=dft_energy
-        --forces_key=dft_forces
-        --stress_key=dft_stress
-        --stress_weight=100
-        --hidden_irreps=128x0e+128x1o
-        --r_max=10.4
-        --batch_size=1
-        --max_num_epochs=20
-        --swa
-        --start_swa=5
-        --ema
-        --ema_decay=0.99
-        --amsgrad
-        --patience=10
-        --device=cuda
-        --loss=universal
-        --error_table=PerAtomRMSEstressvirials
-        --keep_isolated_atoms=True
-        --save_cpu""".split()
+        codeinfo.cmdline_params =f"""--config=config.yml""".split()
+        # codeinfo.cmdline_params =f"""--name=aiida
+        # --seed={random.randint(0, 10000)}
+        # --train_file=training.xyz
+        # --valid_file=validation.xyz
+        # --test_file=test.xyz
+        # --default_dtype={self.inputs.params.default_dtype.value}
+        # --model=MACE
+        # --compute_stress=True
+        # --energy_key=dft_energy
+        # --forces_key=dft_forces
+        # --stress_key=dft_stress
+        # --stress_weight=100
+        # --hidden_irreps=128x0e+128x1o
+        # --r_max=10.4
+        # --batch_size=1
+        # --max_num_epochs=20
+        # --swa
+        # --start_swa=5
+        # --ema
+        # --ema_decay=0.99
+        # --amsgrad
+        # --patience=10
+        # --device=cuda
+        # --loss=universal
+        # --error_table=PerAtomRMSEstressvirials
+        # --keep_isolated_atoms=True
+        # --save_cpu""".split()
         # --E0s=average
             # file1_name=self.inputs.file1.filename, file2_name=self.inputs.file2.filename
             
@@ -145,6 +147,10 @@ class MaceTrainCalculation(CalcJob):
             handle.write(validation_txt)
         with folder.open('test.xyz', "w") as handle:
             handle.write(test_txt)
+
+        mace_config_dict = self.inputs.mace_config.get_dict()
+        with folder.open('config.yml', 'w') as yaml_file:
+            yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
 
         calcinfo = datastructures.CalcInfo()
         calcinfo.codes_info = [codeinfo]

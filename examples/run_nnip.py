@@ -4,7 +4,8 @@ from aiida.engine import submit
 from aiida.plugins import WorkflowFactory, DataFactory
 from aiida.tools.groups import GroupPath
 from ase.io import read
-
+import random
+import yaml
 from pathlib import Path
 load_profile()
 
@@ -107,11 +108,11 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structu
 
 #builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
 builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo2_scratch_bind'))
-builder.do_data_generation = Bool(True)
-builder.do_dft = Bool(True)
+builder.do_data_generation = Bool(False)
+builder.do_dft = Bool(False)
 builder.do_mace = Bool(True)
-builder.do_md = Bool(True)
-#builder.labelled_list = load_node(47516)
+builder.do_md = Bool(False)
+builder.labelled_list = load_node(44355)
 #builder.mace_lammps_potential = load_node(47714)
 
 builder.datagen.do_rattle = Bool(True)
@@ -155,8 +156,12 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
                                     }
                                   })
 
-builder.mace.code = load_code('mace3@leo1_scratch_bind')
-builder.mace.mace.params.default_dtype = Str('float32')
+builder.mace.code = load_code('mace9@leo1_scratch_bind')
+
+with open('mace_config.yml', 'r') as yaml_file:
+    mace_config = yaml.safe_load(yaml_file)
+builder.mace.mace_config = Dict(mace_config)
+#builder.mace.mace.params.default_dtype = Str('float32')
 builder.mace.num_potentials = Int(1)
 builder.mace.mace.metadata.options.resources = {
     'num_machines': machine_mace['nodes'],

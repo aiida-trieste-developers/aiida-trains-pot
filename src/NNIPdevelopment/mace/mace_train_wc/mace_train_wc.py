@@ -2,7 +2,7 @@
 """Equation of State WorkChain."""
 from aiida.engine import WorkChain, append_, calcfunction, workfunction
 from aiida import load_profile
-from aiida.orm import Code, Float, Str, StructureData, Int, Float, SinglefileData, List
+from aiida.orm import Code, Dict, Float, Str, StructureData, Int, Float, SinglefileData, List
 from aiida.plugins import CalculationFactory
 import random
 import itertools
@@ -68,11 +68,12 @@ class MaceTrainWorkChain(WorkChain):
         """Specify inputs and outputs."""
         super().define(spec)
 
-        spec.expose_inputs(MaceCalculation, namespace="mace", exclude=('training_set','validation_set','test_set'), namespace_options={'validator': None})
+        spec.expose_inputs(MaceCalculation, namespace="mace", exclude=('training_set','validation_set','test_set','mace_config'), namespace_options={'validator': None})
         spec.output_namespace("mace", dynamic=True)
 
         spec.input("code", valid_type=Code)
         spec.input("dataset_list", valid_type=List)
+        spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
         spec.input("num_potentials", valid_type=Int, default=lambda:Int(1), required=False)
         spec.outline(
             cls.run_mace,
@@ -90,7 +91,7 @@ class MaceTrainWorkChain(WorkChain):
 
 
     def run_mace(self):
-        """Run Lammps calculations."""
+        """Run MACE calculations."""
 
         split_datasets = SplitDataset(self.inputs.dataset_list)
         train_set = split_datasets["train_set"]
@@ -101,13 +102,20 @@ class MaceTrainWorkChain(WorkChain):
         self.report(f"Validation set size: {len(validation_set.get_list())}")
         self.report(f"Test set size: {len(test_set.get_list())}")
 
-
+ 
         for _ in range(self.inputs.num_potentials.value):
+
+            mace_config_node = self.inputs.mace_config        
+            mace_config = mace_config_node.get_dict()
+            mace_config['seed'] = random.randint(0, 10000)
+            new_mace_config_node = Dict(dict=mace_config).store()
+
             future = self.submit(MaceCalculation,
                                 code=self.inputs.code,
                                 training_set=train_set,
                                 validation_set=validation_set,
                                 test_set=test_set,
+                                mace_config=new_mace_config_node,
                                 **self.exposed_inputs(MaceCalculation, namespace="mace"))
 
 
