@@ -80,6 +80,8 @@ class MaceTrainCalculation(CalcJob):
         spec.output("results", valid_type=FolderData, help="Results file",)
         spec.output("logs", valid_type=FolderData, help="Logs file",)
         spec.output("checkpoints", valid_type=FolderData, help="Checkpoints file",)
+        spec.output("RMSE", valid_type=List, help="List of the checkpoints result table",)
+        spec.output("results", valid_type=List, help="List of the results of log file",)
         
 
         spec.exit_code(300, "ERROR_MISSING_OUTPUT_FILES", message="Calculation did not produce all expected output files.",)
@@ -102,37 +104,7 @@ class MaceTrainCalculation(CalcJob):
         """
 
         codeinfo = datastructures.CodeInfo()
-        codeinfo.cmdline_params =f"""--config=config.yml""".split()
-        # codeinfo.cmdline_params =f"""--name=aiida
-        # --seed={random.randint(0, 10000)}
-        # --train_file=training.xyz
-        # --valid_file=validation.xyz
-        # --test_file=test.xyz
-        # --default_dtype={self.inputs.params.default_dtype.value}
-        # --model=MACE
-        # --compute_stress=True
-        # --energy_key=dft_energy
-        # --forces_key=dft_forces
-        # --stress_key=dft_stress
-        # --stress_weight=100
-        # --hidden_irreps=128x0e+128x1o
-        # --r_max=10.4
-        # --batch_size=1
-        # --max_num_epochs=20
-        # --swa
-        # --start_swa=5
-        # --ema
-        # --ema_decay=0.99
-        # --amsgrad
-        # --patience=10
-        # --device=cuda
-        # --loss=universal
-        # --error_table=PerAtomRMSEstressvirials
-        # --keep_isolated_atoms=True
-        # --save_cpu""".split()
-        # --E0s=average
-            # file1_name=self.inputs.file1.filename, file2_name=self.inputs.file2.filename
-            
+        codeinfo.cmdline_params =f"""--config=config.yml""".split()                 
 
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = "mace.out"
