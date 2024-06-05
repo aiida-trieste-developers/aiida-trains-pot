@@ -1,11 +1,11 @@
-from aiida.orm import load_code, load_node, load_group, Str, Dict, List, Group, Int, Data, Bool, Float, StructureData
+from aiida.orm import load_code, load_node, load_group, Str, Dict, List, Group, Int, Data, Bool, Float, StructureData, FolderData
 from aiida import load_profile
 from aiida.engine import submit
 from aiida.plugins import WorkflowFactory, DataFactory
 from aiida.tools.groups import GroupPath
 from ase.io import read
-import random
 import yaml
+import os
 from pathlib import Path
 load_profile()
 
@@ -162,6 +162,16 @@ builder.mace.code = load_code('mace9@leo1_scratch_bind')
 with open('mace_config.yml', 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
 builder.mace.mace_config = Dict(mace_config)
+# Save the checkpoints folder as FolderData
+folder_path = 'checkpoints'  # Replace with the actual path to your checkpoints folder
+checkpoints_folder_data = FolderData()
+for root, _, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            relative_path = os.path.relpath(file_path, folder_path)
+            with open(file_path, 'rb') as handle:
+                checkpoints_folder_data.put_object_from_filelike(handle, relative_path)
+builder.mace.checkpoints = checkpoints_folder_data
 builder.mace.num_potentials = Int(1)
 builder.mace.mace.metadata.options.resources = {
     'num_machines': machine_mace['nodes'],

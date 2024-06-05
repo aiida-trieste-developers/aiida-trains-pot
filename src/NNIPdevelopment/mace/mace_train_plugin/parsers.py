@@ -159,7 +159,18 @@ class MaceBaseParser(Parser):
                         file_path = os.path.join(output_filename, file_in_folder)
                         with self.retrieved.open(file_path, "rb") as handle:                                           
                             parsed_results = parse_log_file(SinglefileData(file=handle))
-                            self.out("results", List(parsed_results))                
+                            self.out("results", List(parsed_results))    
+                if 'checkpoint' in output_filename:
+                    #with self.retrieved.open(output_filename, "rb") as handle:
+                    #    output_node = FolderData(folder=handle)
+                    #self.out(output_filename, output_node)  
+                    folder_data = FolderData()
+                    folder_contents = self.retrieved.list_object_names(output_filename)
+                    for file_in_folder in folder_contents:
+                        file_path = os.path.join(output_filename, file_in_folder)
+                        with self.retrieved.open(file_path, "rb") as handle:
+                            folder_data.put_object_from_filelike(handle, file_in_folder)
+                    self.out(output_filename, folder_data)       
             else:
                 with self.retrieved.open(output_filename, "rb") as handle:
                     output_node = SinglefileData(file=handle)                

@@ -2,7 +2,7 @@
 """Equation of State WorkChain."""
 from aiida.engine import WorkChain, append_, calcfunction, workfunction
 from aiida import load_profile
-from aiida.orm import Code, Dict, Float, Str, StructureData, Int, Float, SinglefileData, List
+from aiida.orm import Code, Dict, Float, Str, StructureData, Int, Float, SinglefileData, List, FolderData
 from aiida.plugins import CalculationFactory
 import random
 import itertools
@@ -74,6 +74,7 @@ class MaceTrainWorkChain(WorkChain):
         spec.input("code", valid_type=Code)
         spec.input("dataset_list", valid_type=List)
         spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
+        spec.input("checkpoints", valid_type=FolderData, help="Checkpoints file", required=False)
         spec.input("num_potentials", valid_type=Int, default=lambda:Int(1), required=False)
         spec.outline(
             cls.run_mace,
@@ -108,16 +109,29 @@ class MaceTrainWorkChain(WorkChain):
             mace_config_node = self.inputs.mace_config        
             mace_config = mace_config_node.get_dict()
             mace_config['seed'] = random.randint(0, 10000)
+            if 'checkpoints' in self.inputs:
+                mace_config['restart_latest'] = True
+                
             new_mace_config_node = Dict(dict=mace_config).store()
-
-            future = self.submit(MaceCalculation,
+            
+            if 'checkpoints' in self.inputs:
+                future = self.submit(MaceCalculation,
+                                code=self.inputs.code,
+                                training_set=train_set,
+                                validation_set=validation_set,
+                                test_set=test_set,
+                                mace_config=new_mace_config_node,
+                                checkpoints=self.inputs.checkpoints,
+                                **self.exposed_inputs(MaceCalculation, namespace="mace"))
+            else:
+                future = self.submit(MaceCalculation,
                                 code=self.inputs.code,
                                 training_set=train_set,
                                 validation_set=validation_set,
                                 test_set=test_set,
                                 mace_config=new_mace_config_node,
                                 **self.exposed_inputs(MaceCalculation, namespace="mace"))
-
+            
 
             self.report(f'Launched MACE calculation <{future.pk}>')
             self.to_context(mace_calculations=append_(future))

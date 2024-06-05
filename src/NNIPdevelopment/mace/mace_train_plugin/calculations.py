@@ -12,6 +12,7 @@ from ase.io import write
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase import Atoms
 import yaml
+import re
 
 
 
@@ -67,8 +68,8 @@ class MaceTrainCalculation(CalcJob):
         spec.input("training_set", valid_type=List, help="Training dataset list",)
         spec.input("validation_set", valid_type=List, help="Validation dataset list",)
         spec.input("test_set", valid_type=List, help="Test dataset list",)
-        spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
-        #spec.input("params.default_dtype", valid_type=Str, help="set default dtype", required=False,)
+        spec.input_namespace("mace_config", valid_type=Dict, help="Config parameters for MACE",)
+        spec.input("checkpoints", valid_type=FolderData, help="Checkpoints file", required=False)
 
         spec.output("aiida_model", valid_type=SinglefileData, help="Model file",)
         spec.output("aiida_swa_model", valid_type=SinglefileData, help="SWA Model file",)
@@ -123,6 +124,21 @@ class MaceTrainCalculation(CalcJob):
         mace_config_dict = self.inputs.mace_config.get_dict()
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
+
+        # Save the checkpoints folder
+        if 'checkpoints' in self.inputs:
+            checkpoints_folder = self.inputs.checkpoints
+            folder.get_subfolder('checkpoints', create=True)  # Create the checkpoints directory
+            for checkpoint_file in checkpoints_folder.list_object_names():
+                # Extract numbers from the filename using regex
+                numbers_match = re.search(r'\d+', checkpoint_file)
+                if numbers_match:
+                    original_numbers = numbers_match.group()
+                    # Replace the extracted numbers with mace_config_dict['seed'] in the filename
+                    new_checkpoint_file = checkpoint_file.replace(original_numbers, str(mace_config_dict['seed']))
+                    with checkpoints_folder.open(checkpoint_file, 'rb') as source:
+                        with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
+                            destination.write(source.read())
 
         calcinfo = datastructures.CalcInfo()
         calcinfo.codes_info = [codeinfo]
