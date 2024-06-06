@@ -102,7 +102,7 @@ class MaceTrainCalculation(CalcJob):
         """
 
         codeinfo = datastructures.CodeInfo()
-        codeinfo.cmdline_params =f"""--config=config.yml""".split()
+        codeinfo.cmdline_params =f"""--config config.yml""".split()
         # codeinfo.cmdline_params =f"""--name=aiida
         # --seed={random.randint(0, 10000)}
         # --train_file=training.xyz
