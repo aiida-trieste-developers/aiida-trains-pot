@@ -28,7 +28,6 @@ def extract_frames(input_structure, dt, correlation_time, saving_frequency, **tr
             symbols.append(symbol[ii])
         
     masses, symbols = zip(*sorted(zip(masses, symbols)))
-    # print(list(symbols))
     extracted_frames = []
     for _, trajectory in trajectories.items():
         trajectory_frames = read_lammps_dump_text(StringIO(trajectory.get_content()), index=slice(0, int(1e50), 1), specorder=list(symbols))
@@ -72,14 +71,19 @@ class LammpsFrameExtraction(WorkChain):
             # cls.save_files
         )
         
+    def test(self, **trajectories):
+        for _, trajectory in trajectories.items():
+            self.report(f"trajectory {type(trajectory)}")
 
     def run_extraction(self):
         """Run Lammps calculations."""
 
-        self.report('type', type(self.inputs.trajectories))
+        self.report(f'type {type(self.inputs.trajectories)}')
         for key, value in self.inputs.trajectories.items():
-            self.report("key", {key})
+            self.report(f"key {key}")
+            self.report(f"value type {type(value)}")
         
+        self.test(**self.inputs.trajectories)
         self.out("extracted_frames_list", extract_frames(self.inputs.input_structure, self.inputs.dt, self.inputs.correlation_time, self.inputs.saving_frequency)["extracted_frames_list"], **self.inputs.trajectories)
             
 

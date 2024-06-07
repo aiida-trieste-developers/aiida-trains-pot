@@ -47,8 +47,8 @@ def SplitDataset(dataset):
                 continue
         total_elements = len(group_list)
         training_size = int(0.8 * total_elements)
-        validation_size = int(0.1 * total_elements)
-        test_size = total_elements - training_size - validation_size
+        test_size = int(0.1 * total_elements)
+        validation_size = total_elements - training_size - test_size
         
         _ = random.shuffle(group_list)
 

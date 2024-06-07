@@ -105,7 +105,7 @@ class MaceTrainCalculation(CalcJob):
         """
 
         codeinfo = datastructures.CodeInfo()
-        codeinfo.cmdline_params =f"""--config=config.yml""".split()                 
+        codeinfo.cmdline_params =f"""--config config.yml""".split()                 
 
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = "mace.out"
