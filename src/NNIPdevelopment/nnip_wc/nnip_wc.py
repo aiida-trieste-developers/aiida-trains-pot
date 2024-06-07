@@ -323,11 +323,14 @@ class NNIPWorkChain(WorkChain):
                     }
         if self.do_data_generation:
             labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.datagen.outputs.structure_lists.global_structure_list, **dft_data)
+        elif self.iteration > 1:
+            labelled_list = WriteLabelledList(non_labelled_structures = self.cometee_evaluation_list, **dft_data)
         else:
             labelled_list = WriteLabelledList(non_labelled_structures = self.inputs.non_labelled_list, **dft_data)
         
         self.labelled_list += labelled_list.get_list()
-        self.out('dft.labelled_list', labelled_list)
+        self.out('dft.labelled_list', List(list=self.labelled_list))
+        self.ctx.dft_calculations = []
 
     def finalize_mace(self):
         self.potentials = {}

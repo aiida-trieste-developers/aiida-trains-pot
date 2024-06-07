@@ -17,13 +17,13 @@ NNIPWorkChain = WorkflowFactory('NNIPdevelopment.nnipdevelopment')
 machine_dft = {
 'time'                             : "00:25:00",
 'nodes'                            : 1,
-'mem'                              : "70GB",
+'mem'                              : "30GB",
 'taskpn'                           : 1,
 'taskps'                           : "1",
 'cpupt'                            : "8",
 'account'                          : "IscrB_DeepVTe2",
-'partition'                        : "boost_usr_prod",
-'gpu'                              : "1",
+'partition'                        : "main",
+'gpu'                              : "a30",
 'pool'                             : "1",
 'poolx'                            : "1",
 'pools'                            : "1",
@@ -41,8 +41,8 @@ machine_mace = {
 'taskps'                           : "1",
 'cpupt'                            : "8",
 'account'                          : "IscrB_DeepVTe2",
-'partition'                        : "boost_usr_prod",
-'gpu'                              : "1",
+'partition'                        : "main",
+'gpu'                              : "a30",
 'qos'                              : "boost_qos_dbg"
 }
 
@@ -54,8 +54,8 @@ machine_lammps= {
 'taskps'                           : "1",
 'cpupt'                            : "8",
 'account'                          : "IscrB_DeepVTe2",
-'partition'                        : "boost_usr_prod",
-'gpu'                              : "1",
+'partition'                        : "main",
+'gpu'                              : "a30",
 'qos'                              : "boost_qos_dbg"
 }
 
@@ -68,7 +68,7 @@ machine_evaluation = {
 'cpupt'                            : "1",
 'account'                          : "",
 'partition'                        : "main",
-'gpu'                              : "1",
+'gpu'                              : "a30",
 'pool'                             : "1"
 }
 
@@ -113,10 +113,10 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structu
 
 
 #builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
-builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
-builder.do_data_generation = Bool(True)
-builder.do_dft = Bool(True)
-builder.do_mace = Bool(True)
+builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.3-pw_gpu@bora'))
+builder.do_data_generation = Bool(False)
+builder.do_dft = Bool(False)
+builder.do_mace = Bool(False)
 builder.do_md = Bool(True)
 # builder.labelled_list = load_node(44355)
 builder.labelled_list = load_node(47516)
@@ -163,7 +163,7 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
                                     }
                                   })
 
-builder.mace.code = load_code('mace_pub@leo1_scratch')
+builder.mace.code = load_code('mace@bora')
 #builder.mace.code = load_code('mace_pub2@leo1_scratch')
 with open('/home/bidoggia/onedrive/aiida/git/NNIPDevelopment/examples/mace_config.yml', 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
@@ -183,7 +183,7 @@ builder.mace.mace.metadata.options.qos = machine_mace['qos']
 builder.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_mace['gpu']}"
 
 
-builder.md.code = load_code('lmp4mace@leo1_scratch')
+builder.md.code = load_code('lmp4mace@bora')
 builder.md.temperatures = List([50, 100])
 builder.md.pressures = List([0])
 builder.md.num_steps = Int(1000)
