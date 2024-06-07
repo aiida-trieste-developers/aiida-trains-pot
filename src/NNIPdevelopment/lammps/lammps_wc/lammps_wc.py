@@ -35,7 +35,7 @@ class LammpsWorkChain(WorkChain):
         spec.outline(
             cls.run_lammps,
             cls.finalize,
-            cls.save_files
+            # cls.save_files
         )
 
         # spec.output("coord_lmmpstrj", valid_type=SinglefileData, help="trajectory coord lammpstrj file")
