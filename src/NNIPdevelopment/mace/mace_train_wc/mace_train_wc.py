@@ -24,9 +24,16 @@ def SplitDataset(dataset):
     # data = self.inputs.dataset_list.get_list()
     data = dataset.get_list()
 
+    exclude_list = ["energy", "cell", "stress", "forces", "symbols", "positions"]
     # Define a function to extract the grouping key
+    def check_esclude_list(string):
+        for el in exclude_list:
+             if el in string:
+                 return False
+        return True
+    
     def get_grouping_key(d):
-        return tuple((k, v) for k, v in d.items() if k not in ["energy", "cell", "stress", "forces", "symbols", "positions", "dft_energy", "dft_forces", "dft_stress"])
+        return tuple((k, v) for k, v in d.items() if check_esclude_list(k))
 
     # Sort the data based on the grouping key
     sorted_data = sorted(data, key=get_grouping_key)
@@ -45,6 +52,16 @@ def SplitDataset(dataset):
         if group_list[0]['gen_method'] == "INPUT_STRUCTURE" or group_list[0]['gen_method'] == "ISOLATED_ATOM":
                 training_set += group_list
                 continue
+        elif 'set' in group_list[0].keys():
+            if group_list[0]['set'] == 'TRAINING':
+                training_set += group_list
+                continue
+            elif group_list[0]['set'] == 'VALIDATION':
+                validation_set += group_list
+                continue
+            elif group_list[0]['set'] == 'TEST':
+                test_set += group_list
+                continue
         total_elements = len(group_list)
         training_size = int(0.8 * total_elements)
         test_size = int(0.1 * total_elements)
@@ -52,12 +69,20 @@ def SplitDataset(dataset):
         
         _ = random.shuffle(group_list)
 
+
         # Split the data into sets
         training_set += group_list[:training_size]
         validation_set += group_list[training_size:training_size+validation_size]
         test_set += group_list[training_size+validation_size:]
 
-    return {"train_set":List(training_set), "validation_set":List(validation_set), "test_set":List(test_set)}
+    for ii in range(len(training_set)):
+        training_set[ii]['set'] = 'TRAINING'
+    for ii in range(len(validation_set)):
+        validation_set[ii]['set'] = 'VALIDATION'
+    for ii in range(len(test_set)):
+        test_set[ii]['set'] = 'TEST'
+
+    return {"train_set":List(training_set), "validation_set":List(validation_set), "test_set":List(test_set), "global_splitted":List(training_set+validation_set+test_set)}
 
 
 class MaceTrainWorkChain(WorkChain):
@@ -68,14 +93,16 @@ class MaceTrainWorkChain(WorkChain):
         """Specify inputs and outputs."""
         super().define(spec)
 
-        spec.expose_inputs(MaceCalculation, namespace="mace", exclude=('training_set','validation_set','test_set','mace_config'), namespace_options={'validator': None})
+        spec.expose_inputs(MaceCalculation, namespace="mace", exclude=('training_set','validation_set','test_set', 'checkpoints'), namespace_options={'validator': None})
         spec.output_namespace("mace", dynamic=True)
 
-        spec.input("code", valid_type=Code)
+        # spec.input("code", valid_type=Code)
         spec.input("dataset_list", valid_type=List)
-        spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
-        spec.input("checkpoints", valid_type=FolderData, help="Checkpoints file", required=False)
+        # spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
         spec.input("num_potentials", valid_type=Int, default=lambda:Int(1), required=False)
+        spec.input_namespace("checkpoints", valid_type=FolderData, required=False, help="Checkpoints file",)
+
+        spec.output("global_list_splitted", valid_type=List, help="List of configurations splitted into sets")
         spec.outline(
             cls.run_mace,
             cls.finalize
@@ -98,40 +125,26 @@ class MaceTrainWorkChain(WorkChain):
         train_set = split_datasets["train_set"]
         validation_set = split_datasets["validation_set"]
         test_set = split_datasets["test_set"]
+
+        self.global_splitted=split_datasets["global_splitted"]
         
         self.report(f"Training set size: {len(train_set.get_list())}")
         self.report(f"Validation set size: {len(validation_set.get_list())}")
         self.report(f"Test set size: {len(test_set.get_list())}")
 
+        if 'checkpoints' in self.inputs:
+            chkpts = list(dict(self.inputs.checkpoints).values())
  
-        for _ in range(self.inputs.num_potentials.value):
+        for ii in range(self.inputs.num_potentials.value):
+            inputs = self.exposed_inputs(MaceCalculation, namespace="mace")
+            inputs["training_set"] = train_set
+            inputs["validation_set"] = validation_set
+            inputs["test_set"] = test_set
 
-            mace_config_node = self.inputs.mace_config        
-            mace_config = mace_config_node.get_dict()
-            mace_config['seed'] = random.randint(0, 10000)
-            if 'checkpoints' in self.inputs:
-                mace_config['restart_latest'] = True
-                
-            new_mace_config_node = Dict(dict=mace_config).store()
-            
-            if 'checkpoints' in self.inputs:
-                future = self.submit(MaceCalculation,
-                                code=self.inputs.code,
-                                training_set=train_set,
-                                validation_set=validation_set,
-                                test_set=test_set,
-                                mace_config=new_mace_config_node,
-                                checkpoints=self.inputs.checkpoints,
-                                **self.exposed_inputs(MaceCalculation, namespace="mace"))
-            else:
-                future = self.submit(MaceCalculation,
-                                code=self.inputs.code,
-                                training_set=train_set,
-                                validation_set=validation_set,
-                                test_set=test_set,
-                                mace_config=new_mace_config_node,
-                                **self.exposed_inputs(MaceCalculation, namespace="mace"))
-            
+            if 'checkpoints' in self.inputs and ii < len(chkpts):
+                inputs["checkpoints"] = chkpts[ii]
+            future = self.submit(MaceCalculation, **inputs)
+
 
             self.report(f'Launched MACE calculation <{future.pk}>')
             self.to_context(mace_calculations=append_(future))
@@ -149,4 +162,5 @@ class MaceTrainWorkChain(WorkChain):
                 potentials[f'mace_{ii}'][out] = calc.outputs[out]
 
             self.out('mace', potentials)
+        self.out("global_list_splitted", self.global_splitted)
 

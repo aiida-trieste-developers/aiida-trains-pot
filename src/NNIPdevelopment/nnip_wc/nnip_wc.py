@@ -28,7 +28,7 @@ def dataset_list_to_ase_list(dataset_list):
 
     ase_list = []
 
-    for config in dataset_list.get_list():
+    for config in dataset_list:
         ase_list.append(Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell']))
         if 'dft_stress' in config.keys():
             s = config['stress']
@@ -91,6 +91,15 @@ def LammpsFrameExtraction(correlation_time, saving_frequency, **trajectories):
         print(i)
     return {'lammps_extracted_list': List(list=extracted_frames)}
 
+@calcfunction
+def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
+    """Select configurations to label."""
+    selected_list = []
+    for config in evaluated_list.get_list():
+        if config['energy_deviation'] > thr_energy or config['forces_deviation'] > thr_forces or config['stress_deviation'] > thr_stress:
+            selected_list.append(config)
+
+    return List(list=selected_list)
 
 class NNIPWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
@@ -103,6 +112,7 @@ class NNIPWorkChain(WorkChain):
         spec.input('do_dft', valid_type=Bool, default=lambda: Bool(True), help='Do DFT calculations', required=False)
         spec.input('do_mace', valid_type=Bool, default=lambda: Bool(True), help='Do MACE calculations', required=False)
         spec.input('do_md', valid_type=Bool, default=lambda: Bool(True), help='Do MD calculations', required=False)
+        spec.input('max_loops', valid_type=Int, default=lambda: Int(10), help='Maximum number of NNIP workflow loops', required=False)
 
         spec.input('non_labelled_list', valid_type=List, help='List of non labelled structures', required=False)
         spec.input('labelled_list', valid_type=List, help='List of labelled structures', required=False)
@@ -114,6 +124,10 @@ class NNIPWorkChain(WorkChain):
         spec.input('potential', valid_type=SinglefileData, help='MACE potential for MD', required=False)
 
         spec.input('frame_extraction.correlation_time', valid_type=Float, help='Correlation time for frame extraction', required=False)
+
+        spec.input('thr_energy', valid_type=Float, help='Threshold for energy', required=True)
+        spec.input('thr_forces', valid_type=Float, help='Threshold for forces', required=True)
+        spec.input('thr_stress', valid_type=Float, help='Threshold for stress', required=True)
 
         spec.expose_inputs(DatasetGeneratorWorkChain, namespace="datagen", exclude=('structures'))
         spec.expose_inputs(PwBaseWorkChain, namespace="dft", exclude=('pw.structure',), namespace_options={'validator': None})
@@ -177,7 +191,7 @@ class NNIPWorkChain(WorkChain):
             self.do_dft = True
             self.do_mace = True
             self.do_md = True
-        return self.iteration < 10
+        return self.iteration < self.inputs.max_loops
 
     def initialization(self):
         """Initialize variables."""
@@ -210,9 +224,9 @@ class NNIPWorkChain(WorkChain):
             ase_list = dataset_list_to_ase_list(self.cometee_evaluation_list)
         else:
             if self.do_data_generation:
-                ase_list = dataset_list_to_ase_list(self.ctx.datagen.outputs.structure_lists.global_structure_list)            
+                ase_list = dataset_list_to_ase_list(self.ctx.datagen.outputs.structure_lists.global_structure_list.get_list())            
             else:
-                ase_list = dataset_list_to_ase_list(self.inputs.non_labelled_list)
+                ase_list = dataset_list_to_ase_list(self.inputs.non_labelled_list.get_list())
 
 
         for _, structure in enumerate(ase_list):
@@ -251,6 +265,9 @@ class NNIPWorkChain(WorkChain):
             inputs['dataset_list'] = List(self.labelled_list)
         else:
             inputs['dataset_list'] = self.inputs.labelled_list
+        if self.iteration > 1:
+            inputs['checkpoints'] = {f"chkpt_{ii+1}": self.checkpoints[-ii] for ii in range(min(len(self.checkpoints), self.inputs.mace.num_potentials.value))}
+            inputs.mace['restart'] = Bool(True)
         future = self.submit(MaceWorkChain, **inputs)
         self.to_context(mace_wc = future)
         pass
@@ -258,7 +275,7 @@ class NNIPWorkChain(WorkChain):
     def run_md(self):
         """Run MD calculations."""
         if self.do_mace:
-            potential = self.ctx.mace_wc.outputs.mace.mace_0.aiida_model_lammps
+            potential = self.potentials_lammps[-1]
         else:
             potential = self.inputs.mace_lammps_potential
 
@@ -296,7 +313,7 @@ class NNIPWorkChain(WorkChain):
 
     def run_cometee_evaluation(self):
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="cometee_evaluation")
-        inputs['mace_potentials'] = self.potentials
+        inputs['mace_potentials'] = {f"pot_{ii}": self.potentials[ii] for ii in range(len(self.potentials))}
         inputs['datasetlist'] = self.lammps_extracted_list
 
         future = self.submit(EvaluationCalculation, **inputs)
@@ -333,15 +350,21 @@ class NNIPWorkChain(WorkChain):
         self.ctx.dft_calculations = []
 
     def finalize_mace(self):
-        self.potentials = {}
+        self.potentials = []
+        self.potentials_lammps = []
+        self.checkpoints = []
         for key, val in self.ctx.mace_wc.outputs.mace.items():
             for k, v in val.items():
                 if k == 'aiida_swa_compiled_model':
-                    self.potentials[key] = v
-        
+                    self.potentials.append(v)
+                elif k == 'checkpoints':
+                    self.checkpoints.append(v)
+                elif k == 'aiida_swa_model_lammps':
+                    self.potentials_lammps.append(v)
             
 
         self.out('mace', self.ctx.mace_wc.outputs.mace)
+        self.labelled_list = self.ctx.mace_wc.outputs.global_list_splitted.get_list()
         # self.out_many(self.exposed_outputs(self.ctx.mace_wc, MaceWorkChain, namespace="mace"))
 
     def finalize_md(self):
@@ -369,9 +392,12 @@ class NNIPWorkChain(WorkChain):
     
     def finalize_cometee_evaluation(self):
         calc = self.ctx.cometee_evalutation
-        self.cometee_evaluation_list = calc.outputs.evaluated_list
+
+        self.cometee_evaluation_list = SelectToLabel(calc.outputs.evaluated_list, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress).get_list()
+        self.report(f'Structures selected for labelling: {len(self.cometee_evaluation_list)}/{len(calc.outputs.evaluated_list.get_list())}')
         self.out('cometee_evaluation_list', calc.outputs.evaluated_list)
         # self.out_many(self.exposed_outputs(self.ctx.cometee_evalutation, EvaluationCalculation, namespace="cometee_evaluation"))
     # def finalize_md_frame_extraction(self):
         # self.out('frame_extraction', self.ctx.frame_extraction_wc[0].outputs)
-        
+
+

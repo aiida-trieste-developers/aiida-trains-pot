@@ -100,7 +100,8 @@ class EvaluationCalculation(CalcJob):
         dataset_txt = dataset_list_to_txt(dataset_list)
         with folder.open("dataset.xyz", "w") as handle:
             handle.write(dataset_txt)
-        codeinfo.cmdline_params = '/data/fast/35353/python_scripts/test_configs_aiida.py . -s'.split()
+        # codeinfo.cmdline_params = '/data/fast/35353/python_scripts/test_configs_aiida.py . -s'.split()
+        # codeinfo.cmdline_params = '/data/fast/35353/python_scripts/test_configs_aiida.py . -s'.split()
 
         
         calcinfo.codes_info = [codeinfo]
