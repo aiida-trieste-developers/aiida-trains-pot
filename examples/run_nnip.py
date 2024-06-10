@@ -59,31 +59,31 @@ machine_lammps= {
 'qos'                              : "boost_qos_dbg"
 }
 
-# machine_evaluation = {
-# 'time'                             : "00:30:00",
-# 'nodes'                            : 1,
-# 'mem'                              : "7GB",
-# 'taskpn'                           : 1,
-# 'taskps'                           : "1",
-# 'cpupt'                            : "1",
-# 'account'                          : "",
-# 'partition'                        : "main",
-# 'gpu'                              : "1",
-# 'pool'                             : "1"
-# }
-
 machine_evaluation = {
-'time'                             : "00:05:00",
+'time'                             : "00:30:00",
 'nodes'                            : 1,
-'mem'                              : "30GB",
+'mem'                              : "7GB",
 'taskpn'                           : 1,
 'taskps'                           : "1",
-'cpupt'                            : "8",
-'account'                          : "IscrB_DeepVTe2",
-'partition'                        : "boost_usr_prod",
-'gpu'                              : "1",
-'qos'                              : "boost_qos_dbg"
+'cpupt'                            : "1",
+'account'                          : "",
+'partition'                        : "main",
+'gpu'                              : "a30",
+'pool'                             : "1"
 }
+
+# machine_evaluation = {
+# 'time'                             : "00:05:00",
+# 'nodes'                            : 1,
+# 'mem'                              : "30GB",
+# 'taskpn'                           : 1,
+# 'taskps'                           : "1",
+# 'cpupt'                            : "8",
+# 'account'                          : "IscrB_DeepVTe2",
+# 'partition'                        : "boost_usr_prod",
+# 'gpu'                              : "1",
+# 'qos'                              : "boost_qos_dbg"
+# }
 
 
 description = "mote"
@@ -128,14 +128,14 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structu
 
 #builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
 builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
-builder.do_data_generation = Bool(True)
-builder.do_dft = Bool(True)
+builder.do_data_generation = Bool(False)
+builder.do_dft = Bool(False)
 builder.do_mace = Bool(True)
 builder.do_md = Bool(True)
 builder.max_loops = Int(3)
 # builder.labelled_list = load_node(44355)
-builder.labelled_list = load_node(47516)
-builder.mace_lammps_potential = load_node(47714)
+builder.labelled_list = load_node(74946)
+# builder.mace_lammps_potential = load_node(47714)
 
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)
@@ -213,9 +213,9 @@ builder.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=
 
 
 builder.md.code = load_code('lmp4mace2@leo1_scratch')
-builder.md.temperatures = List([50, 100])
+builder.md.temperatures = List([30, 50])
 builder.md.pressures = List([0])
-builder.md.num_steps = Int(1000)
+builder.md.num_steps = Int(500)
 builder.md.dt = Float(0.00242)
 builder.md.parent_folder = Str(Path(__file__).resolve().parent)
 builder.md.lmp.metadata.options.resources = {
@@ -233,7 +233,8 @@ builder.md.lmp.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu
 
 builder.frame_extraction.correlation_time = Float(0.242)
 
-builder.cometee_evaluation.code = load_code('cometee-evaluation@leo1_scratch')
+# builder.cometee_evaluation.code = load_code('cometee-evaluation@leo1_scratch')
+builder.cometee_evaluation.code = load_code('cometee-evaluation@bora')
 builder.cometee_evaluation.metadata.options.resources = {
     'num_machines': machine_evaluation['nodes'],
     'num_mpiprocs_per_machine': machine_evaluation['taskpn'],
@@ -244,8 +245,8 @@ builder.cometee_evaluation.metadata.options.max_memory_kb = mem_evaluation
 builder.cometee_evaluation.metadata.options.import_sys_environment = False
 builder.cometee_evaluation.metadata.options.queue_name = machine_evaluation['partition']
 builder.cometee_evaluation.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_evaluation['gpu']}"
-builder.cometee_evaluation.metadata.options.qos = machine_evaluation['qos']
-builder.cometee_evaluation.metadata.options.account = machine_evaluation['account']
+# builder.cometee_evaluation.metadata.options.qos = machine_evaluation['qos']
+# builder.cometee_evaluation.metadata.options.account = machine_evaluation['account']
 
 
 

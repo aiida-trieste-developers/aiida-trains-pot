@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Equation of State WorkChain."""
-from aiida.engine import WorkChain, append_, calcfunction, workfunction, if_, while_
+from aiida.engine import WorkChain, append_, calcfunction, workfunction, if_, while_, ExitCode
 from aiida import load_profile
 from aiida.orm import Code, Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict
 from aiida.plugins import CalculationFactory, WorkflowFactory
@@ -49,7 +49,7 @@ def WriteLabelledList(non_labelled_structures, **labelled_data):
     return List(list=labelled_list)
 
 @calcfunction
-def LammpsFrameExtraction(correlation_time, saving_frequency, **trajectories):
+def LammpsFrameExtraction(correlation_time, saving_frequency, thermalization_time=0, **trajectories):
     """Extract frames from trajectory."""
 
 
@@ -75,31 +75,36 @@ def LammpsFrameExtraction(correlation_time, saving_frequency, **trajectories):
                             
                         masses, symbols = zip(*sorted(zip(masses, symbols)))
         trajectory_frames = read_lammps_dump_text(StringIO(trajectory.get_content()), index=slice(0, int(1e50), 1), specorder=list(symbols))
-        
-        i = 0
+    
+        i = int(thermalization_time/params['dt']/saving_frequency)
         while i < len(trajectory_frames):
             extracted_frames.append({'cell': List(list(trajectory_frames[i].get_cell())),
                     'symbols': List(list(trajectory_frames[i].get_chemical_symbols())),
                     'positions': List(list(trajectory_frames[i].get_positions())),
-                    'md_forces': List(list(trajectory_frames[i].get_forces())),
+                    # 'md_forces': List(list(trajectory_frames[i].get_forces())),
                     'gen_method': Str('LAMMPS')
                     })
             for par, val in params.items():
                 extracted_frames[-1][par] = val
+
             i = i + int(correlation_time/params['dt']/saving_frequency)
-    for i in extracted_frames:
-        print(i)
-    return {'lammps_extracted_list': List(list=extracted_frames)}
+    return {'lammps_extracted_list': extracted_frames}
 
 @calcfunction
 def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
     """Select configurations to label."""
     selected_list = []
+    energy_deviation = []
+    forces_deviation = []
+    stress_deviation = []
     for config in evaluated_list.get_list():
+        energy_deviation.append(config['energy_deviation'])
+        forces_deviation.append(config['forces_deviation'])
+        stress_deviation.append(config['stress_deviation'])
         if config['energy_deviation'] > thr_energy or config['forces_deviation'] > thr_forces or config['stress_deviation'] > thr_stress:
             selected_list.append(config)
 
-    return List(list=selected_list)
+    return {'selected_list':List(list=selected_list), 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
 class NNIPWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
@@ -150,17 +155,17 @@ class NNIPWorkChain(WorkChain):
         
         spec.outline(
             cls.initialization,
-            if_(cls.do_data_generation)(
+            if_(cls.ver_do_data_generation)(
                 cls.data_generation,
                 cls.finalize_data_generation),
             while_(cls.check_iteration)(
-                if_(cls.do_dft)(
+                if_(cls.ver_do_dft)(
                     cls.run_dft,
                     cls.finalize_dft),
-                if_(cls.do_mace)(
+                if_(cls.ver_do_mace)(
                     cls.run_mace,
                     cls.finalize_mace),
-                if_(cls.do_md)(
+                if_(cls.ver_do_md)(
                     cls.run_md,
                     cls.finalize_md,
                     cls.run_md_frame_extraction,
@@ -181,16 +186,17 @@ class NNIPWorkChain(WorkChain):
 
         return builder
     
-    def do_data_generation(self): return bool(self.inputs.do_data_generation)
-    def do_dft(self): return bool(self.inputs.do_dft)
-    def do_mace(self): return bool(self.inputs.do_mace)
-    def do_md(self): return bool(self.inputs.do_md)
+    def ver_do_data_generation(self): return bool(self.do_data_generation)
+    def ver_do_dft(self): return bool(self.do_dft)
+    def ver_do_mace(self): return bool(self.do_mace)
+    def ver_do_md(self): return bool(self.do_md)
     def check_iteration(self):
         if self.iteration > 0:
             self.do_data_generation = False
             self.do_dft = True
             self.do_mace = True
             self.do_md = True
+        self.iteration += 1
         return self.iteration < self.inputs.max_loops
 
     def initialization(self):
@@ -219,7 +225,7 @@ class NNIPWorkChain(WorkChain):
         """Run DFT calculations."""
 
         self.config += 1
-        self.iteration += 1
+        
         if self.iteration > 1:
             ase_list = dataset_list_to_ase_list(self.cometee_evaluation_list)
         else:
@@ -299,6 +305,7 @@ class NNIPWorkChain(WorkChain):
 
         lammps_extracted_list = LammpsFrameExtraction(self.inputs.frame_extraction.correlation_time,
                                 Int(100),
+                                thermalization_time = self.inputs.md.thermalization_time, 
                                 **self.trajectories)['lammps_extracted_list']
         self.lammps_extracted_list = lammps_extracted_list
         self.lammps_extracted_list = lammps_extracted_list
@@ -371,7 +378,12 @@ class NNIPWorkChain(WorkChain):
         
         md_out = {}
         self.trajectories = {}
+        calc_no_exception = False
         for ii, calc in enumerate(self.ctx.md_wc):
+            self.report(f'md_{ii} exit status: {calc.exit_status}')
+            if calc.exit_status != 309:
+                calc_no_exception = True
+                self.report(f'md_{ii} exit0')
             # self.report(f'ii : {ii}')
             # self.report(f'calc.outputs : {calc.outputs}')
                 # self.report(f'k : {k}')
@@ -384,17 +396,22 @@ class NNIPWorkChain(WorkChain):
                     md_out[f'md_{ii}']={el:calc.outputs['lmp_out'][el] for el in calc.outputs['lmp_out']}
             # for out in calc.outputs:
             #     md_out[f'md_{ii}'][out] = calc.outputs[out]
-
+        self.ctx.md_wc = []
         self.out('md', md_out)
-
+        if not calc_no_exception:
+            return ExitCode(309, 'No MD calculation ended correctly')
 
         # self.out('md', self.ctx.md_wc.lmp_out)
     
     def finalize_cometee_evaluation(self):
         calc = self.ctx.cometee_evalutation
 
-        self.cometee_evaluation_list = SelectToLabel(calc.outputs.evaluated_list, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress).get_list()
+        selected = SelectToLabel(calc.outputs.evaluated_list, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
+        self.cometee_evaluation_list = selected['selected_list'].get_list()
         self.report(f'Structures selected for labelling: {len(self.cometee_evaluation_list)}/{len(calc.outputs.evaluated_list.get_list())}')
+        self.report(f'Min energy deviation: {round(selected["min_energy_deviation"].value,2)} eV, Max energy deviation: {round(selected["max_energy_deviation"].value,2)} eV')
+        self.report(f'Min forces deviation: {round(selected["min_forces_deviation"].value,2)} eV/Å, Max forces deviation: {round(selected["max_forces_deviation"].value,2)} eV/Å')
+        self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')
         self.out('cometee_evaluation_list', calc.outputs.evaluated_list)
         # self.out_many(self.exposed_outputs(self.ctx.cometee_evalutation, EvaluationCalculation, namespace="cometee_evaluation"))
     # def finalize_md_frame_extraction(self):

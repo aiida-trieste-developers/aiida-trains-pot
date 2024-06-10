@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Equation of State WorkChain."""
-from aiida.engine import WorkChain, append_
+from aiida.engine import WorkChain, append_ , while_, ExitCode
 from aiida import load_profile
 from aiida.orm import Code, Float, Str, StructureData, Int, Float, SinglefileData
 from aiida.plugins import CalculationFactory
@@ -23,6 +23,8 @@ class LammpsWorkChain(WorkChain):
         spec.expose_outputs(LammpsCalculation, namespace="lmp_out")
         # spec.expose_inputs(LammpsCalculation, namespace="lmp")
 
+        # spec.exit_code(309,"ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR", message="No safe exit code detected after 5 iterations")
+
         spec.input("code", valid_type=Code)
         spec.input("temperature", valid_type=Float)
         spec.input("dt", valid_type=Float)
@@ -33,7 +35,11 @@ class LammpsWorkChain(WorkChain):
         spec.input("parent_folder", valid_type=Str)
 
         spec.outline(
+            cls.initialize,
             cls.run_lammps,
+            while_(cls.not_converged)(
+                cls.run_lammps,
+            ),
             cls.finalize,
             # cls.save_files
         )
@@ -153,11 +159,14 @@ write_restart lmp_restart.rest"""
         # builder.lmp = lmp
 
         return builder
-        
+
+    def initialize(self):
+        """Initialize."""
+        self.iteration = 0        
 
     def run_lammps(self):
         """Run Lammps calculations."""
-        
+        self.iteration += 1
         input_file = self.input_lammps()
 
         future = self.submit(LammpsCalculation,
@@ -170,15 +179,24 @@ write_restart lmp_restart.rest"""
         self.report(f'launched lammps calculation <{future.pk}>')
         self.to_context(lammps_calculations=append_(future))
 
-
-    
+    def not_converged(self):
+        """Check if calculuation ended without errors."""
+        # if self.ctx.lammps_calculations[-1].
+        if self.ctx.lammps_calculations[-1].exit_status != 0 and self.iteration < 5:
+            return True
+        else:
+            return False    
 
 
     def finalize(self):
         """Finalize."""
-        
-
-        self.out_many(self.exposed_outputs(self.ctx.lammps_calculations[0], LammpsCalculation, namespace="lmp_out"))
+        # self.report(f'iteration {self.iteration}, exit status {self.ctx.lammps_calculations[-1].exit_status}')
+        if self.ctx.lammps_calculations[-1].exit_status == 0:
+            self.out_many(self.exposed_outputs(self.ctx.lammps_calculations[-1], LammpsCalculation, namespace="lmp_out"))
+        else:
+            return ExitCode(309, 'Lammps calculation did not end correctly after 5 iterations')
+            # self.out_many(self.exposed_outputs(self.ctx.lammps_calculations[-1], LammpsCalculation, namespace="lmp_out"))
+            # self.exit_codes.ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR
         # for ii, val in enumerate(self.ctx.lammps_calculations):
         #     self.out(f'rdf', val.outputs.rdf)
         #     self.out(f'coord_lmmpstrj', val.outputs.coord_lmmpstrj)
