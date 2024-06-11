@@ -1,11 +1,11 @@
-from aiida.orm import load_code, load_node, load_group, Str, Dict, List, Group, Int, Data, Bool, Float, StructureData, FolderData
+from aiida.orm import load_code, load_node, load_group, Str, Dict, List, Group, Int, Data, Bool, Float, StructureData
 from aiida import load_profile
 from aiida.engine import submit
 from aiida.plugins import WorkflowFactory, DataFactory
 from aiida.tools.groups import GroupPath
 from ase.io import read
+import random
 import yaml
-import os
 from pathlib import Path
 load_profile()
 
@@ -15,15 +15,15 @@ NNIPWorkChain = WorkflowFactory('NNIPdevelopment.nnipdevelopment')
 
 
 machine_dft = {
-'time'                             : "00:05:00",
+'time'                             : "00:25:00",
 'nodes'                            : 1,
-'mem'                              : "70GB",
+'mem'                              : "30GB",
 'taskpn'                           : 1,
 'taskps'                           : "1",
 'cpupt'                            : "8",
 'account'                          : "IscrB_DeepVTe2",
-'partition'                        : "boost_usr_prod",
-'gpu'                              : "1",
+'partition'                        : "main",
+'gpu'                              : "a30",
 'pool'                             : "1",
 'poolx'                            : "1",
 'pools'                            : "1",
@@ -34,28 +34,28 @@ machine_dft = {
 
 
 machine_mace = {
-'time'                             : "00:05:00",
+'time'                             : "00:30:00",
 'nodes'                            : 1,
 'mem'                              : "30GB",
 'taskpn'                           : 1,
 'taskps'                           : "1",
 'cpupt'                            : "8",
 'account'                          : "IscrB_DeepVTe2",
-'partition'                        : "boost_usr_prod",
-'gpu'                              : "1",
+'partition'                        : "main",
+'gpu'                              : "a30",
 'qos'                              : "boost_qos_dbg"
 }
 
 machine_lammps= {
-'time'                             : "00:05:00",
+'time'                             : "00:30:00",
 'nodes'                            : 1,
 'mem'                              : "30GB",
 'taskpn'                           : 1,
 'taskps'                           : "1",
 'cpupt'                            : "8",
 'account'                          : "IscrB_DeepVTe2",
-'partition'                        : "boost_usr_prod",
-'gpu'                              : "1",
+'partition'                        : "main",
+'gpu'                              : "a30",
 'qos'                              : "boost_qos_dbg"
 }
 
@@ -71,20 +71,6 @@ machine_evaluation = {
 'gpu'                              : "a30",
 'pool'                             : "1"
 }
-
-# machine_evaluation = {
-# 'time'                             : "00:05:00",
-# 'nodes'                            : 1,
-# 'mem'                              : "30GB",
-# 'taskpn'                           : 1,
-# 'taskps'                           : "1",
-# 'cpupt'                            : "8",
-# 'account'                          : "IscrB_DeepVTe2",
-# 'partition'                        : "boost_usr_prod",
-# 'gpu'                              : "1",
-# 'qos'                              : "boost_qos_dbg"
-# }
-
 
 description = "mote"
 def get_memory(mem):
@@ -127,19 +113,14 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structu
 
 
 #builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
-builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
+builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.3-pw_gpu@bora'))
 builder.do_data_generation = Bool(False)
 builder.do_dft = Bool(False)
-builder.do_mace = Bool(True)
+builder.do_mace = Bool(False)
 builder.do_md = Bool(True)
-builder.max_loops = Int(3)
 # builder.labelled_list = load_node(44355)
-builder.labelled_list = load_node(74946)
-# builder.mace_lammps_potential = load_node(47714)
-
-builder.thr_energy = Float(1e-3)
-builder.thr_forces = Float(1e-1)
-builder.thr_stress = Float(1e-1)
+builder.labelled_list = load_node(47516)
+builder.mace_lammps_potential = load_node(47714)
 
 builder.datagen.do_rattle = Bool(True)
 builder.datagen.do_input = Bool(True)
@@ -182,21 +163,11 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
                                     }
                                   })
 
-builder.mace.mace.code = load_code('mace_pub@leo1_scratch')
-#builder.mace.code = load_code('mace13@leo1_scratch_bind')
+builder.mace.code = load_code('mace@bora')
+#builder.mace.code = load_code('mace_pub2@leo1_scratch')
 with open('/home/bidoggia/onedrive/aiida/git/NNIPDevelopment/examples/mace_config.yml', 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
-builder.mace.mace.mace_config = Dict(mace_config)
-# Save the checkpoints folder as FolderData
-# folder_path = 'checkpoints'  # Replace with the actual path to your checkpoints folder
-# checkpoints_folder_data = FolderData()
-# for root, _, files in os.walk(folder_path):
-#         for file in files:
-#             file_path = os.path.join(root, file)
-#             relative_path = os.path.relpath(file_path, folder_path)
-#             with open(file_path, 'rb') as handle:
-#                 checkpoints_folder_data.put_object_from_filelike(handle, relative_path)
-# builder.mace.checkpoints = checkpoints_folder_data
+builder.mace.mace_config = Dict(mace_config)
 builder.mace.num_potentials = Int(4)
 builder.mace.mace.metadata.options.resources = {
     'num_machines': machine_mace['nodes'],
@@ -212,10 +183,10 @@ builder.mace.mace.metadata.options.qos = machine_mace['qos']
 builder.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_mace['gpu']}"
 
 
-builder.md.code = load_code('lmp4mace2@leo1_scratch')
-builder.md.temperatures = List([30, 50])
+builder.md.code = load_code('lmp4mace@bora')
+builder.md.temperatures = List([50, 100])
 builder.md.pressures = List([0])
-builder.md.num_steps = Int(500)
+builder.md.num_steps = Int(1000)
 builder.md.dt = Float(0.00242)
 builder.md.parent_folder = Str(Path(__file__).resolve().parent)
 builder.md.lmp.metadata.options.resources = {
@@ -233,7 +204,6 @@ builder.md.lmp.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu
 
 builder.frame_extraction.correlation_time = Float(0.242)
 
-# builder.cometee_evaluation.code = load_code('cometee-evaluation@leo1_scratch')
 builder.cometee_evaluation.code = load_code('cometee-evaluation@bora')
 builder.cometee_evaluation.metadata.options.resources = {
     'num_machines': machine_evaluation['nodes'],
@@ -245,9 +215,6 @@ builder.cometee_evaluation.metadata.options.max_memory_kb = mem_evaluation
 builder.cometee_evaluation.metadata.options.import_sys_environment = False
 builder.cometee_evaluation.metadata.options.queue_name = machine_evaluation['partition']
 builder.cometee_evaluation.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_evaluation['gpu']}"
-# builder.cometee_evaluation.metadata.options.qos = machine_evaluation['qos']
-# builder.cometee_evaluation.metadata.options.account = machine_evaluation['account']
-
 
 
 

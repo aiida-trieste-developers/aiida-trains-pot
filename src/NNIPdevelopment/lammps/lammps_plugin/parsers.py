@@ -56,7 +56,8 @@ class LammpsBaseParser(Parser):
         # add output file
         for file in files_retrieved:
             output_filename = file
-            self.logger.info(f"Parsing '{output_filename}'")
+            # self.logger.info(f"Parsing '{output_filename}'")
+
             with self.retrieved.open(output_filename, "rb") as handle:
                 output_node = SinglefileData(file=handle)
             # if 'coord.atom' in output_filename:
@@ -80,6 +81,15 @@ class LammpsBaseParser(Parser):
             if 'lmp_restart' in output_filename:
                 self.out("lmp_restart", output_node)
             if 'lmp.data' in output_filename:
-                self.out("final_structure", output_node)            
+                self.out("final_structure", output_node)
+
+            if 'lammps.out' in output_filename:
+                with output_node.open() as file:
+                    lines = file.readlines()
+                for ii in range(1,15):
+                    if 'ERROR' in lines[-ii]:
+                        self.logger.error(f"Error detected in lammps.out: {lines[-ii]}")
+                        return self.exit_codes.ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR.format(error=lines[-ii])
+
         self.out('rdf', output_rdf)
         return ExitCode(0)

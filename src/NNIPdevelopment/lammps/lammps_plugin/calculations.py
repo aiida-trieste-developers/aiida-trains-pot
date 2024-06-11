@@ -50,6 +50,7 @@ class LammpsBaseCalculation(CalcJob):
         
 
         spec.exit_code(300, "ERROR_MISSING_OUTPUT_FILES", message="Calculation did not produce all expected output files.",)
+        spec.exit_code(309,"ERROR_PARSER_DETECTED_LAMMPS_RUN_ERROR",message="The parser detected the lammps error :{error}",)
 
     @classmethod
     def get_builder_from_protocol(

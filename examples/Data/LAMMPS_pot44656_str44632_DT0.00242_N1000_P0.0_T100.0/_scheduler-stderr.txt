@@ -1,7 +1,0 @@
-Unloading profile/base
-  ERROR: Module evaluation aborted
-Loading openmpi/4.1.4--nvhpc--23.1-cuda-11.8
-  Loading requirement: zlib/1.2.13--gcc--11.3.0
-Loading netlib-scalapack/2.2.0--openmpi--4.1.4--nvhpc--23.1
-  Loading requirement: openblas/0.3.21--nvhpc--23.1
-/leonardo_scratch/fast/IscrB_DeepVTe2/lammps-mace/lammps/build/lmp: error while loading shared libraries: liblammps.so.0: cannot open shared object file: No such file or directory

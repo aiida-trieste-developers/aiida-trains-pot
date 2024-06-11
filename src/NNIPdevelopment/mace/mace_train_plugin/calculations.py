@@ -5,12 +5,13 @@ Register calculations via the "aiida.calculations" entry point in setup.json.
 """
 from aiida.common import datastructures
 from aiida.engine import CalcJob
-from aiida.orm import SinglefileData, List, FolderData, Dict
+from aiida.orm import SinglefileData, StructureData, List, FolderData, Str, Dict, Bool
 import io
 from contextlib import redirect_stdout
 from ase.io import write
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase import Atoms
+import random
 import yaml
 import re
 import random
@@ -71,6 +72,7 @@ class MaceTrainCalculation(CalcJob):
         spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
         spec.input("checkpoints", valid_type=FolderData, help="Checkpoints file", required=False)
         spec.input("preprocess_script", valid_type=SinglefileData, help="Preprocess script for parallel calculation", required=False)
+        spec.input("restart", valid_type=Bool, help="Restart from a previous calculation", required=False, default=lambda:Bool(False))
 
         spec.output("aiida_model", valid_type=SinglefileData, help="Model file",)
         spec.output("aiida_swa_model", valid_type=SinglefileData, help="SWA Model file",)
@@ -106,7 +108,7 @@ class MaceTrainCalculation(CalcJob):
         """
 
         codeinfo = datastructures.CodeInfo()
-        codeinfo.cmdline_params =f"""--config=config.yml""".split()                 
+        codeinfo.cmdline_params =f"""--config config.yml""".split()                 
 
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = "mace.out"
@@ -147,20 +149,33 @@ class MaceTrainCalculation(CalcJob):
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
 
         # Save the checkpoints folder
-        if 'checkpoints' in self.inputs:
+        if 'checkpoints' in self.inputs and self.inputs.restart.value==True:
+            mace_config['restart_latest'] = 'true'
             checkpoints_folder = self.inputs.checkpoints
             folder.get_subfolder('checkpoints', create=True)  # Create the checkpoints directory
             for checkpoint_file in checkpoints_folder.list_object_names():
-                # Extract numbers from the filename using regex
-                numbers_match = re.search(r'\d+', checkpoint_file)
-                if numbers_match:
-                    original_numbers = numbers_match.group()
-                    # Replace the extracted numbers with mace_config_dict['seed'] in the filename
-                    new_checkpoint_file = checkpoint_file.replace(original_numbers, str(mace_config_dict['seed']))
+
+                if '_epoch' in checkpoint_file and '_swa':
                     with checkpoints_folder.open(checkpoint_file, 'rb') as source:
+                        new_checkpoint_file = f"aiida_run-{str(mace_config['seed'])}_epoch-0_swa.pt"
                         with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
                             destination.write(source.read())
-
+                elif '_epoch' in checkpoint_file:
+                    with checkpoints_folder.open(checkpoint_file, 'rb') as source:
+                        new_checkpoint_file = f"aiida_run-{str(mace_config['seed'])}_epoch-0.pt"
+                        with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
+                            destination.write(source.read())
+                # Extract numbers from the filename using regex
+                # numbers_match = re.search(r'\d+', checkpoint_file)
+                # if numbers_match:
+                #     original_numbers = numbers_match.group()
+                #     # Replace the extracted numbers with mace_config_dict['seed'] in the filename
+                #     new_checkpoint_file = checkpoint_file.replace(original_numbers, str(mace_config['seed']))
+                #     with checkpoints_folder.open(checkpoint_file, 'rb') as source:
+                #         with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
+                #             destination.write(source.read())
+        with folder.open('config.yml', 'w') as yaml_file:
+            yaml.dump(mace_config, yaml_file, default_flow_style=False)
         calcinfo = datastructures.CalcInfo()
         calcinfo.codes_info = [codeinfo]
         calcinfo.retrieve_list = ['*model*', 'checkpoints', 'mace.out', 'results', 'logs', '_scheduler-std*']
