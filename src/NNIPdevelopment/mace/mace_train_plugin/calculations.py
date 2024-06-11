@@ -5,7 +5,7 @@ Register calculations via the "aiida.calculations" entry point in setup.json.
 """
 from aiida.common import datastructures
 from aiida.engine import CalcJob
-from aiida.orm import SinglefileData, StructureData, List, FolderData, Str, Dict
+from aiida.orm import SinglefileData, List, FolderData, Dict
 import io
 from contextlib import redirect_stdout
 from ase.io import write
@@ -13,7 +13,7 @@ from ase.calculators.singlepoint import SinglePointCalculator
 from ase import Atoms
 import yaml
 import re
-
+import random
 
 
 
@@ -68,8 +68,9 @@ class MaceTrainCalculation(CalcJob):
         spec.input("training_set", valid_type=List, help="Training dataset list",)
         spec.input("validation_set", valid_type=List, help="Validation dataset list",)
         spec.input("test_set", valid_type=List, help="Test dataset list",)
-        spec.input_namespace("mace_config", valid_type=Dict, help="Config parameters for MACE",)
+        spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
         spec.input("checkpoints", valid_type=FolderData, help="Checkpoints file", required=False)
+        spec.input("preprocess_script", valid_type=SinglefileData, help="Preprocess script for parallel calculation", required=False)
 
         spec.output("aiida_model", valid_type=SinglefileData, help="Model file",)
         spec.output("aiida_swa_model", valid_type=SinglefileData, help="SWA Model file",)
@@ -121,7 +122,27 @@ class MaceTrainCalculation(CalcJob):
         with folder.open('test.xyz', "w") as handle:
             handle.write(test_txt)
 
+        # Retrieve inputs
+        script = self.inputs.preprocess_script
+        
+        # Copy the script to the temporary folder
+        script_path = folder.get_abs_path(script.filename)
+        with script.open(mode='rb') as script_file:
+            with open(script_path, 'wb') as temp_script_file:
+                temp_script_file.write(script_file.read())
+        
         mace_config_dict = self.inputs.mace_config.get_dict()
+        mace_config_dict['seed'] = random.randint(0, 10000) 
+        mace_config_dict['train_file'] = "processed_data/train/"   
+        mace_config_dict['valid_file'] = "processed_data/val/"
+        mace_config_dict['test_file'] = "processed_data/test/"    
+        mace_config_dict['statistics_file'] = "processed_data/statistics.json"  
+        mace_config_dict['energy_key'] = "dft_energy" 
+        mace_config_dict['forces_key'] = "dft_forces" 
+        mace_config_dict['stress_key'] = "dft_stress"   
+        if 'checkpoints' in self.inputs:
+            mace_config_dict['restart_latest'] = True
+
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
 

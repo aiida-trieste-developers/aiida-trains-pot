@@ -2,17 +2,12 @@
 """Equation of State WorkChain."""
 from aiida.engine import WorkChain, append_, calcfunction, workfunction
 from aiida import load_profile
-from aiida.orm import Code, Dict, Float, Str, StructureData, Int, Float, SinglefileData, List, FolderData
+from aiida.orm import Code, Dict, Int, List, FolderData, SinglefileData
 from aiida.plugins import CalculationFactory
 import random
 import itertools
-import numpy as np
 from ase.io import write
-from ase.calculators.singlepoint import SinglePointCalculator
-from ase import Atoms
 import os
-import io
-from contextlib import redirect_stdout
 
 load_profile()
 
@@ -102,17 +97,13 @@ class MaceTrainWorkChain(WorkChain):
         self.report(f"Training set size: {len(train_set.get_list())}")
         self.report(f"Validation set size: {len(validation_set.get_list())}")
         self.report(f"Test set size: {len(test_set.get_list())}")
+        
+        # Make sure the path to preprocess.py is absolute
+        preprocess_script_path = os.path.abspath('src/NNIPdevelopment/mace/mace_train_wc/preprocess_config.py')
 
+        preprocess_script_file = SinglefileData(file=preprocess_script_path)
  
-        for _ in range(self.inputs.num_potentials.value):
-
-            mace_config_node = self.inputs.mace_config        
-            mace_config = mace_config_node.get_dict()
-            mace_config['seed'] = random.randint(0, 10000)
-            if 'checkpoints' in self.inputs:
-                mace_config['restart_latest'] = True
-                
-            new_mace_config_node = Dict(dict=mace_config).store()
+        for _ in range(self.inputs.num_potentials.value):      
             
             if 'checkpoints' in self.inputs:
                 future = self.submit(MaceCalculation,
@@ -120,8 +111,9 @@ class MaceTrainWorkChain(WorkChain):
                                 training_set=train_set,
                                 validation_set=validation_set,
                                 test_set=test_set,
-                                mace_config=new_mace_config_node,
+                                mace_config=self.inputs.mace_config,
                                 checkpoints=self.inputs.checkpoints,
+                                preprocess_script = preprocess_script_file,
                                 **self.exposed_inputs(MaceCalculation, namespace="mace"))
             else:
                 future = self.submit(MaceCalculation,
@@ -129,16 +121,11 @@ class MaceTrainWorkChain(WorkChain):
                                 training_set=train_set,
                                 validation_set=validation_set,
                                 test_set=test_set,
-                                mace_config=new_mace_config_node,
-                                **self.exposed_inputs(MaceCalculation, namespace="mace"))
-            
-
+                                mace_config=self.inputs.mace_config,
+                                preprocess_script = preprocess_script_file,
+                                **self.exposed_inputs(MaceCalculation, namespace="mace"))            
             self.report(f'Launched MACE calculation <{future.pk}>')
             self.to_context(mace_calculations=append_(future))
-
-
-    
-
 
     def finalize(self):
         """Finalize."""

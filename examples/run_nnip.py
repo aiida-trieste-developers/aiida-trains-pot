@@ -157,7 +157,7 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
                                     }
                                   })
 
-builder.mace.code = load_code('mace9@leo1_scratch_bind')
+builder.mace.code = load_code('mace13@leo1_scratch_bind')
 #builder.mace.code = load_code('mace_pub2@leo1_scratch')
 with open('mace_config.yml', 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
@@ -171,7 +171,7 @@ for root, _, files in os.walk(folder_path):
             relative_path = os.path.relpath(file_path, folder_path)
             with open(file_path, 'rb') as handle:
                 checkpoints_folder_data.put_object_from_filelike(handle, relative_path)
-builder.mace.checkpoints = checkpoints_folder_data
+# builder.mace.checkpoints = checkpoints_folder_data
 builder.mace.num_potentials = Int(1)
 builder.mace.mace.metadata.options.resources = {
     'num_machines': machine_mace['nodes'],
