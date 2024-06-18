@@ -88,7 +88,7 @@ def LammpsFrameExtraction(correlation_time, saving_frequency, thermalization_tim
                 extracted_frames[-1][par] = val
 
             i = i + int(correlation_time/params['dt']/saving_frequency)
-    return {'lammps_extracted_list': extracted_frames}
+    return {'lammps_extracted_list': List(list=extracted_frames)}
 
 @calcfunction
 def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
@@ -119,16 +119,19 @@ class NNIPWorkChain(WorkChain):
         spec.input('do_md', valid_type=Bool, default=lambda: Bool(True), help='Do MD calculations', required=False)
         spec.input('max_loops', valid_type=Int, default=lambda: Int(10), help='Maximum number of NNIP workflow loops', required=False)
 
+        spec.input('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
         spec.input('non_labelled_list', valid_type=List, help='List of non labelled structures', required=False)
         spec.input('labelled_list', valid_type=List, help='List of labelled structures', required=False)
         spec.input('mace_workchain_pk', valid_type=Str, help='MACE workchain pk', required=False)
-        spec.input('mace_lammps_potential', valid_type=SinglefileData, help='MACE potential for MD', required=False)
+        spec.input_namespace('mace_lammps_potentials', valid_type=SinglefileData, help='MACE potential for MD', required=False)
+        spec.input_namespace('mace_ase_potentials', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False)
 
         spec.input('md.temperatures', valid_type=List, help='List of temperatures for MD', required=False)
         spec.input('md.pressures', valid_type=List, help='List of pressures for MD', required=False)
         spec.input('potential', valid_type=SinglefileData, help='MACE potential for MD', required=False)
 
         spec.input('frame_extraction.correlation_time', valid_type=Float, help='Correlation time for frame extraction', required=False)
+        spec.input('frame_extraction.thermalization_time', valid_type=Float, default=lambda : Float(0.0), help='Thermalization time for MD', required=False)
 
         spec.input('thr_energy', valid_type=Float, help='Threshold for energy', required=True)
         spec.input('thr_forces', valid_type=Float, help='Threshold for forces', required=True)
@@ -197,18 +200,33 @@ class NNIPWorkChain(WorkChain):
             self.do_mace = True
             self.do_md = True
         self.iteration += 1
-        return self.iteration < self.inputs.max_loops
+        return self.iteration < self.inputs.max_loops+1
 
     def initialization(self):
         """Initialize variables."""
         self.config = 0
         self.iteration = 0
-        self.labelled_list = []
+        self.labelled_list = self.inputs.labelled_list.get_list()
         self.do_data_generation = self.inputs.do_data_generation
         self.do_dft = self.inputs.do_dft
         self.do_mace = self.inputs.do_mace
         self.do_md = self.inputs.do_md
+        self.checkpoints = []
+        if not self.do_dft:
+            self.labelled_list = self.inputs.labelled_list.get_list()
 
+        if not self.do_mace:
+            self.potentials_lammps = []
+            self.potentials = []
+            for _, pot in self.inputs.mace_lammps_potentials.items():
+                self.potentials_lammps.append(pot)
+            for _, pot in self.inputs.mace_ase_potentials.items():
+                self.potentials.append(pot)
+        if 'lammps_input_structures' in self.inputs:
+            self.lammps_input_structures = self.inputs.lammps_input_structures
+        else:
+            self.lammps_input_structures = self.inputs.structures
+            
 
 
     def data_generation(self):
@@ -280,12 +298,9 @@ class NNIPWorkChain(WorkChain):
 
     def run_md(self):
         """Run MD calculations."""
-        if self.do_mace:
-            potential = self.potentials_lammps[-1]
-        else:
-            potential = self.inputs.mace_lammps_potential
+        potential = self.potentials_lammps[-1]
 
-        for _, structure in self.inputs.structures.items():
+        for _, structure in self.lammps_input_structures.items():
             for temp in self.inputs.md.temperatures:
                 for press in self.inputs.md.pressures:
                     inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
@@ -305,9 +320,8 @@ class NNIPWorkChain(WorkChain):
 
         lammps_extracted_list = LammpsFrameExtraction(self.inputs.frame_extraction.correlation_time,
                                 Int(100),
-                                thermalization_time = self.inputs.md.thermalization_time, 
+                                thermalization_time = self.inputs.frame_extraction.thermalization_time, 
                                 **self.trajectories)['lammps_extracted_list']
-        self.lammps_extracted_list = lammps_extracted_list
         self.lammps_extracted_list = lammps_extracted_list
         self.out('md.lammps_extracted_list', lammps_extracted_list)
         # inputs = self.exposed_inputs(FrameExtractionWorkChain, namespace="frame_extraction")
