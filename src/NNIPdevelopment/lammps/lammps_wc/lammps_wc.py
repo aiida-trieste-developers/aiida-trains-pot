@@ -92,7 +92,7 @@ units metal
 atom_style atomic
 atom_modify map yes #### QUESTE 2 RIGHE SOLO PER MACE ####
 newton on           #### QUESTE 2 RIGHE SOLO PER MACE ####
-boundary p p m
+boundary p p f
 
 timer timeout 23:50:00 every 100
 neigh_modify 	every 1 delay 5 check yes

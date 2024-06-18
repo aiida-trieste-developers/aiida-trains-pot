@@ -11,6 +11,7 @@ from ase.io import write
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase import Atoms
 import os
+import time
 import io
 from contextlib import redirect_stdout
 
@@ -49,7 +50,14 @@ def SplitDataset(dataset):
     for _, group in grouped_data:
     # Calculate the number of elements for each set
         group_list = list(group)
-        if group_list[0]['gen_method'] == "INPUT_STRUCTURE" or group_list[0]['gen_method'] == "ISOLATED_ATOM":
+        # print(group_list[0]['gen_method'])
+        # if 'n_vacancies' in group_list[0].keys() and 'sigma_strain' in group_list[0].keys() and 'rattle_radius' in group_list[0].keys() and 'gen_method' in group_list[0].keys() and 'positions' in group_list[0].keys():
+            
+        #     if group_list[0]['n_vacancies'] == 0 and group_list[0]['sigma_strain'] == 1.0 and group_list[0]['rattle_radius'] == 0.0 and group_list[0]['gen_method'] != "EQUILIBRIUM" and len(group_list[0]['positions']) > 1:
+        #         # print(group_list[0]['gen_method'], group_list[0]['energy'], len(group_list[0]['positions']))
+        #         continue
+
+        if group_list[0]['gen_method'] == "INPUT_STRUCTURE" or group_list[0]['gen_method'] == "ISOLATED_ATOM" or len(group_list[0]['positions']) == 1 or group_list[0]['gen_method'] == "EQUILIBRIUM":
                 training_set += group_list
                 continue
         elif 'set' in group_list[0].keys():
@@ -67,6 +75,7 @@ def SplitDataset(dataset):
         test_size = int(0.1 * total_elements)
         validation_size = total_elements - training_size - test_size
         
+        random.seed(int(time.time()))
         _ = random.shuffle(group_list)
 
 
@@ -81,6 +90,7 @@ def SplitDataset(dataset):
         validation_set[ii]['set'] = 'VALIDATION'
     for ii in range(len(test_set)):
         test_set[ii]['set'] = 'TEST'
+
 
     return {"train_set":List(training_set), "validation_set":List(validation_set), "test_set":List(test_set), "global_splitted":List(training_set+validation_set+test_set)}
 

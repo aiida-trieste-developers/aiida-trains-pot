@@ -232,6 +232,7 @@ builder.md.lmp.metadata.options.qos = machine_lammps['qos']
 builder.md.lmp.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_lammps['gpu']}"
 
 builder.frame_extraction.correlation_time = Float(0.242)
+builder.frame_extraction.thermalization_time = Float(2.42)
 
 # builder.cometee_evaluation.code = load_code('cometee-evaluation@leo1_scratch')
 builder.cometee_evaluation.code = load_code('cometee-evaluation@bora')
