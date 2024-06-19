@@ -59,31 +59,31 @@ machine_lammps= {
 'qos'                              : "boost_qos_dbg"
 }
 
-machine_evaluation = {
-'time'                             : "00:30:00",
-'nodes'                            : 1,
-'mem'                              : "7GB",
-'taskpn'                           : 1,
-'taskps'                           : "1",
-'cpupt'                            : "1",
-'account'                          : "",
-'partition'                        : "main",
-'gpu'                              : "a30",
-'pool'                             : "1"
-}
+#machine_evaluation = {
+#'time'                             : "00:30:00",
+#'nodes'                            : 1,
+#'mem'                              : "7GB",
+#'taskpn'                           : 1,
+#'taskps'                           : "1",
+#'cpupt'                            : "1",
+#'account'                          : "",
+#'partition'                        : "main",
+#'gpu'                              : "a30",
+#'pool'                             : "1"
+#}
 
-# machine_evaluation = {
-# 'time'                             : "00:05:00",
-# 'nodes'                            : 1,
-# 'mem'                              : "30GB",
-# 'taskpn'                           : 1,
-# 'taskps'                           : "1",
-# 'cpupt'                            : "8",
-# 'account'                          : "IscrB_DeepVTe2",
-# 'partition'                        : "boost_usr_prod",
-# 'gpu'                              : "1",
-# 'qos'                              : "boost_qos_dbg"
-# }
+machine_evaluation = {
+ 'time'                             : "00:05:00",
+ 'nodes'                            : 1,
+ 'mem'                              : "30GB",
+ 'taskpn'                           : 1,
+ 'taskps'                           : "1",
+ 'cpupt'                            : "8",
+ 'account'                          : "IscrB_DeepVTe2",
+ 'partition'                        : "boost_usr_prod",
+ 'gpu'                              : "1",
+ 'qos'                              : "boost_qos_dbg"
+ }
 
 
 description = "mote"
@@ -115,7 +115,8 @@ time_evaluation = get_time(machine_evaluation['time'])
 
 
 # structures = [load_node(25538), load_node(25536)] #wte2
-structures = [StructureData(ase=read('/home/bidoggia/onedrive/aiida/git/NNIPDevelopment/examples/gr8x8.xyz'))]
+#structures = [StructureData(ase=read('/home/bidoggia/onedrive/aiida/git/NNIPDevelopment/examples/gr8x8.xyz'))]
+structures = [StructureData(ase=read('/home/nataliia/Documents/aiida_scripts/examples/gr8x8.xyz'))]
 
 kpoints = KpointsData()
 kpoints.set_kpoints_mesh([1, 1, 1])
@@ -127,14 +128,14 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structu
 
 
 #builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
-builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo1_scratch_bind'))
+builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo2_scratch_bind'))
 builder.do_data_generation = Bool(False)
 builder.do_dft = Bool(False)
 builder.do_mace = Bool(True)
 builder.do_md = Bool(True)
 builder.max_loops = Int(3)
-# builder.labelled_list = load_node(44355)
-builder.labelled_list = load_node(74946)
+builder.labelled_list = load_node(44355)
+#builder.labelled_list = load_node(74946)
 # builder.mace_lammps_potential = load_node(47714)
 
 builder.thr_energy = Float(1e-3)
@@ -182,9 +183,10 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
                                     }
                                   })
 
-builder.mace.mace.code = load_code('mace_pub@leo1_scratch')
-#builder.mace.code = load_code('mace13@leo1_scratch_bind')
-with open('/home/bidoggia/onedrive/aiida/git/NNIPDevelopment/examples/mace_config.yml', 'r') as yaml_file:
+#builder.mace.mace.code = load_code('mace_pub@leo1_scratch')
+builder.mace.mace.code = load_code('mace13@leo1_scratch_bind')
+#with open('/home/bidoggia/onedrive/aiida/git/NNIPDevelopment/examples/mace_config.yml', 'r') as yaml_file:
+with open('examples/mace_config.yml', 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
 builder.mace.mace.mace_config = Dict(mace_config)
 # Save the checkpoints folder as FolderData
@@ -212,7 +214,8 @@ builder.mace.mace.metadata.options.qos = machine_mace['qos']
 builder.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_mace['gpu']}"
 
 
-builder.md.code = load_code('lmp4mace2@leo1_scratch')
+#builder.md.code = load_code('lmp4mace2@leo1_scratch')
+builder.md.code = load_code('lmp4mace@leo2_scratch_bind')
 builder.md.temperatures = List([30, 50])
 builder.md.pressures = List([0])
 builder.md.num_steps = Int(500)
@@ -235,7 +238,8 @@ builder.frame_extraction.correlation_time = Float(0.242)
 builder.frame_extraction.thermalization_time = Float(2.42)
 
 # builder.cometee_evaluation.code = load_code('cometee-evaluation@leo1_scratch')
-builder.cometee_evaluation.code = load_code('cometee-evaluation@bora')
+#builder.cometee_evaluation.code = load_code('cometee-evaluation@bora')
+builder.cometee_evaluation.code = load_code('cometee-evaluation2@leo1_scratch_bind')
 builder.cometee_evaluation.metadata.options.resources = {
     'num_machines': machine_evaluation['nodes'],
     'num_mpiprocs_per_machine': machine_evaluation['taskpn'],

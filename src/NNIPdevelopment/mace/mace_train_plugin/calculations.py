@@ -150,19 +150,19 @@ class MaceTrainCalculation(CalcJob):
 
         # Save the checkpoints folder
         if 'checkpoints' in self.inputs and self.inputs.restart.value==True:
-            mace_config['restart_latest'] = 'true'
+            mace_config_dict['restart_latest'] = 'true'
             checkpoints_folder = self.inputs.checkpoints
             folder.get_subfolder('checkpoints', create=True)  # Create the checkpoints directory
             for checkpoint_file in checkpoints_folder.list_object_names():
 
                 if '_epoch' in checkpoint_file and '_swa':
                     with checkpoints_folder.open(checkpoint_file, 'rb') as source:
-                        new_checkpoint_file = f"aiida_run-{str(mace_config['seed'])}_epoch-0_swa.pt"
+                        new_checkpoint_file = f"aiida_run-{str(mace_config_dict['seed'])}_epoch-0_swa.pt"
                         with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
                             destination.write(source.read())
                 elif '_epoch' in checkpoint_file:
                     with checkpoints_folder.open(checkpoint_file, 'rb') as source:
-                        new_checkpoint_file = f"aiida_run-{str(mace_config['seed'])}_epoch-0.pt"
+                        new_checkpoint_file = f"aiida_run-{str(mace_config_dict['seed'])}_epoch-0.pt"
                         with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
                             destination.write(source.read())
                 # Extract numbers from the filename using regex
@@ -175,7 +175,7 @@ class MaceTrainCalculation(CalcJob):
                 #         with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
                 #             destination.write(source.read())
         with folder.open('config.yml', 'w') as yaml_file:
-            yaml.dump(mace_config, yaml_file, default_flow_style=False)
+            yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
         calcinfo = datastructures.CalcInfo()
         calcinfo.codes_info = [codeinfo]
         calcinfo.retrieve_list = ['*model*', 'checkpoints', 'mace.out', 'results', 'logs', '_scheduler-std*']

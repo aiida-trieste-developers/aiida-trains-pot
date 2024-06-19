@@ -8,12 +8,9 @@ import random
 import itertools
 from ase.io import write
 import os
-<<<<<<< HEAD
-=======
 import time
 import io
 from contextlib import redirect_stdout
->>>>>>> origin/loop2
 
 load_profile()
 
@@ -108,7 +105,7 @@ class MaceTrainWorkChain(WorkChain):
 
         # spec.input("code", valid_type=Code)
         spec.input("dataset_list", valid_type=List)
-        # spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
+        #spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE")
         spec.input("num_potentials", valid_type=Int, default=lambda:Int(1), required=False)
         spec.input_namespace("checkpoints", valid_type=FolderData, required=False, help="Checkpoints file",)
 
@@ -154,8 +151,8 @@ class MaceTrainWorkChain(WorkChain):
             inputs["training_set"] = train_set
             inputs["validation_set"] = validation_set
             inputs["test_set"] = test_set
-            inputs["mace_config"] = self.inputs.mace_config
-            inputs["preprocess_script"] = preprocess_script_file,
+            #inputs["mace_config"] = self.inputs.mace_config
+            inputs["preprocess_script"] = preprocess_script_file
 
             if 'checkpoints' in self.inputs and ii < len(chkpts):
                 inputs["checkpoints"] = chkpts[ii]
