@@ -3,7 +3,7 @@ label: 'lmp4mace'
 description: 'LAMMPS for MACE'
 default_calc_job_plugin: 'lammps_base'
 filepath_executable: '/leonardo_scratch/fast/IscrB_DeepVTe2/lammps-mace/lammps/build/lmp'
-computer: 'leo2_scratch_bind'
+computer: 'leo1_scratch_bind'
 prepend_text: |
   module purge
   module load intel-oneapi-mkl

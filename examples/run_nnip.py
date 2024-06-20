@@ -215,7 +215,7 @@ builder.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=
 
 
 #builder.md.code = load_code('lmp4mace2@leo1_scratch')
-builder.md.code = load_code('lmp4mace4Natalia4@leo2_scratch_bind')
+builder.md.code = load_code('lmp4mace@leo1_scratch_bind')
 builder.md.temperatures = List([30, 50])
 builder.md.pressures = List([0])
 builder.md.num_steps = Int(500)
