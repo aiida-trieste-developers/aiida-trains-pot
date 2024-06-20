@@ -145,6 +145,12 @@ class MaceTrainCalculation(CalcJob):
         if 'checkpoints' in self.inputs:
             mace_config_dict['restart_latest'] = True
 
+        for training_structure in self.inputs.training_set:
+            training_dict = dict(training_structure)
+            if len(training_dict['symbols']) != 1:
+                mace_config_dict['E0s'] = "average"
+                break
+
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
 
