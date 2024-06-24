@@ -91,7 +91,7 @@ def IsolatedStructureGenerator(**in_structure_dict):
         for atm_type in list(structure.get_symbols_set()):
             if atm_type not in done_types:
                 done_types.append(atm_type)
-                isolated_structure = Atoms(atm_type, positions=[[0.0, 0.0, 0.0]], cell=structure.cell)
+                isolated_structure = Atoms(atm_type, positions=[[0.0, 0.0, 0.0]], cell=[[10.0, 0.0, 0.0], [0.0, 10.0, 0.0], [0.0, 0.0, 10.0]])
                 
                 structure_list.append({'cell': List(list(isolated_structure.get_cell())),
                     'symbols': List(list(isolated_structure.get_chemical_symbols())),

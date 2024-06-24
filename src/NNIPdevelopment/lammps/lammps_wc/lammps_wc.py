@@ -2,8 +2,9 @@
 """Equation of State WorkChain."""
 from aiida.engine import WorkChain, append_ , while_, ExitCode
 from aiida import load_profile
-from aiida.orm import Code, Float, Str, StructureData, Int, Float, SinglefileData
+from aiida.orm import Code, Float, Str, StructureData, Int, Float, SinglefileData, Bool
 from aiida.plugins import CalculationFactory
+from ase.data import atomic_numbers, atomic_masses
 import numpy as np
 import os
 import io
@@ -33,6 +34,8 @@ class LammpsWorkChain(WorkChain):
         spec.input("structure", valid_type=StructureData)
         spec.input("potential", valid_type=SinglefileData)
         spec.input("parent_folder", valid_type=Str)
+        spec.input("boundary", valid_type=Str, default=lambda: Str('p p f'))
+        spec.input("vdw_d2", valid_type=Bool, default=lambda: Bool(False))
 
         spec.outline(
             cls.initialize,
@@ -63,27 +66,98 @@ class LammpsWorkChain(WorkChain):
         num_steps = self.inputs.num_steps.value
         structure = self.inputs.structure
         press = self.inputs.pressure.value
+        try:
+            boundary = self.inputs.boundary.value
+        except:
+            boundary = 'p p f'
 
-        structure_ase = structure.get_ase()
-        masses = []
-        symbols = []
+        try:
+            vdw_d2 = self.inputs.vdw_d2.value
+        except:
+            vdw_d2 = False
+
+        ryd2ev = 13.605693009
+        bohr2ang = 0.52917721067
+
+        dftd2_c6 =[
+            4.857,    2.775,    55.853,   55.853,   108.584,
+            60.710,   42.670,   24.284,   26.018,   21.855,
+            198.087,  198.087,  374.319,  320.200,  271.980,
+            193.230,  175.885,  159.927,  374.666,  374.666,
+            374.666,  374.666,  374.666,  374.666,  374.666,
+            374.666,  374.666,  374.666,  374.666,  374.666,
+            589.405,  593.221,  567.896,  438.498,  432.600,
+            416.642,  855.833,  855.833,  855.833,  855.833,
+            855.833,  855.833,  855.833,  855.833,  855.833,
+            855.833,  855.833,  855.833,  1294.678, 1342.899,
+            1333.532, 1101.101, 1092.775, 1040.391, 10937.246,
+            7874.678, 6114.381, 4880.348, 4880.348, 4880.348,
+            4880.348, 4880.348, 4880.348, 4880.348, 4880.348,
+            4880.348, 4880.348, 4880.348, 4880.348, 4880.348,
+            4880.348, 3646.454, 2818.308, 2818.308, 2818.308,
+            2818.308, 2818.308, 2818.308, 2818.308, 1990.022,
+            1986.206, 2191.161, 2204.274, 1917.830, 1983.327,
+            1964.906
+            ]
+
+
+        dftd2_r0 = [
+            1.892, 1.912, 1.559, 2.661, 2.806,
+            2.744, 2.640, 2.536, 2.432, 2.349,
+            2.162, 2.578, 3.097, 3.243, 3.222,
+            3.180, 3.097, 3.014, 2.806, 2.785,
+            2.952, 2.952, 2.952, 2.952, 2.952,
+            2.952, 2.952, 2.952, 2.952, 2.952,
+            3.118, 3.264, 3.326, 3.347, 3.305,
+            3.264, 3.076, 3.035, 3.097, 3.097,
+            3.097, 3.097, 3.097, 3.097, 3.097,
+            3.097, 3.097, 3.097, 3.160, 3.409,
+            3.555, 3.575, 3.575, 3.555, 3.405,
+            3.330, 3.251, 3.313, 3.313, 3.313,
+            3.313, 3.313, 3.313, 3.313, 3.313,
+            3.313, 3.313, 3.313, 3.313, 3.313,
+            3.313, 3.378, 3.349, 3.349, 3.349,
+            3.349, 3.349, 3.349, 3.349, 3.322,
+            3.752, 3.673, 3.586, 3.789, 3.762,
+            3.636
+            ]
+
+
+        def vdw_au2metal(c6, r0):
+            c6 = c6*ryd2ev*bohr2ang**6
+            r0 = r0*bohr2ang
+            return c6, r0
+
+        def couple_vdw_params(atomic_numbers):
+            c6_1, r0_1 = vdw_au2metal(dftd2_c6[atomic_numbers[0]-1], dftd2_r0[atomic_numbers[0]-1])
+            c6_2, r0_2 = vdw_au2metal(dftd2_c6[atomic_numbers[1]-1], dftd2_r0[atomic_numbers[1]-1])
+            c6_12 = (c6_1*c6_2)**0.5
+            r0_12 = (r0_1+r0_2)
+            return c6_12, r0_12
+
+
         atm_species = ''
         mass_lines = ''
-        num_species = 0
+        vdw_lines = ''
+        if vdw_d2:
+            vdw_lines = 'pair_style momb 20.0 0.75 20.0\n'
 
-        symbol = structure_ase.get_chemical_symbols()
-        for ii, mass in enumerate(structure_ase.get_masses()):
-            if mass not in masses:
-                num_species += 1
-                masses.append(mass)
-                symbols.append(symbol[ii])
-                
 
-#        sort by mass both masses and symbols
+        symbols = list(structure.get_symbols_set())
+        atm_nums = [atomic_numbers[symb] for symb in symbols]
+        masses = [atomic_masses[num] for num in atm_nums]
+
+        #        sort by mass both masses and symbols
         masses, symbols = zip(*sorted(zip(masses, symbols)))
         for ii in range(len(masses)):
             atm_species += f'{symbols[ii]} '
-            mass_lines += f'mass {ii+1} {masses[ii]} #{symbols[ii]}\n'
+            mass_lines += f'mass {ii+1} {masses[ii]:>8.4f} #{symbols[ii]}\n'
+            if vdw_d2:
+                symbol_1 = symbols[ii]
+                for symbol_2 in symbols[ii:]:
+                    atm_numbers = [atomic_numbers[symbol_1], atomic_numbers[symbol_2]]
+                    c6_12, r0_12 = couple_vdw_params(atm_numbers)
+                    vdw_lines += f"pair_coeff {ii:<2} {symbols.index(symbol_2):<2} 0.0 1.0 1.0 {c6_12:>9.3f} {r0_12:>7.3f}   # {symbol_1:<2} {symbol_2:<2}\n"
 
 
 
@@ -92,7 +166,7 @@ units metal
 atom_style atomic
 atom_modify map yes #### QUESTE 2 RIGHE SOLO PER MACE ####
 newton on           #### QUESTE 2 RIGHE SOLO PER MACE ####
-boundary p p f
+boundary {boundary}
 
 timer timeout 23:50:00 every 100
 neigh_modify 	every 1 delay 5 check yes
@@ -104,6 +178,7 @@ read_data  structure.dat
 ###### Interatomic potential ############
 pair_style mace no_domain_decomposition
 pair_coeff * * potential.dat {atm_species}
+{vdw_lines}
 variable settemp equal {temp}
 velocity  all create {temp} {np.random.randint(1,1000)}
 
