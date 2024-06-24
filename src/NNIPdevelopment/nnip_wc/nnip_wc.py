@@ -119,7 +119,7 @@ class NNIPWorkChain(WorkChain):
         spec.input('do_md', valid_type=Bool, default=lambda: Bool(True), help='Do MD calculations', required=False)
         spec.input('max_loops', valid_type=Int, default=lambda: Int(10), help='Maximum number of NNIP workflow loops', required=False)
 
-        spec.input('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
+        spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
         spec.input('non_labelled_list', valid_type=List, help='List of non labelled structures', required=False)
         spec.input('labelled_list', valid_type=List, help='List of labelled structures', required=False)
         spec.input('mace_workchain_pk', valid_type=Str, help='MACE workchain pk', required=False)
@@ -206,7 +206,10 @@ class NNIPWorkChain(WorkChain):
         """Initialize variables."""
         self.config = 0
         self.iteration = 0
-        self.labelled_list = self.inputs.labelled_list.get_list()
+        if 'labelled_list' in self.inputs:
+            self.labelled_list = self.inputs.labelled_list.get_list()
+        else:
+            self.labelled_list = []
         self.do_data_generation = self.inputs.do_data_generation
         self.do_dft = self.inputs.do_dft
         self.do_mace = self.inputs.do_mace
