@@ -189,46 +189,46 @@ class NNIPWorkChain(WorkChain):
 
         return builder
     
-    def ver_do_data_generation(self): return bool(self.do_data_generation)
-    def ver_do_dft(self): return bool(self.do_dft)
-    def ver_do_mace(self): return bool(self.do_mace)
-    def ver_do_md(self): return bool(self.do_md)
+    def ver_do_data_generation(self): return bool(self.ctx.do_data_generation)
+    def ver_do_dft(self): return bool(self.ctx.do_dft)
+    def ver_do_mace(self): return bool(self.ctx.do_mace)
+    def ver_do_md(self): return bool(self.ctx.do_md)
     def check_iteration(self):
-        if self.iteration > 0:
-            self.do_data_generation = False
-            self.do_dft = True
-            self.do_mace = True
-            self.do_md = True
-        self.iteration += 1
-        return self.iteration < self.inputs.max_loops+1
+        if self.ctx.iteration > 0:
+            self.ctx.do_data_generation = False
+            self.ctx.do_dft = True
+            self.ctx.do_mace = True
+            self.ctx.do_md = True
+        self.ctx.iteration += 1
+        return self.ctx.iteration < self.inputs.max_loops+1
 
     def initialization(self):
         """Initialize variables."""
-        self.config = 0
-        self.iteration = 0
+        self.ctx.config = 0
+        self.ctx.iteration = 0
         if 'labelled_list' in self.inputs:
-            self.labelled_list = self.inputs.labelled_list.get_list()
+            self.ctx.labelled_list = self.inputs.labelled_list.get_list()
         else:
-            self.labelled_list = []
-        self.do_data_generation = self.inputs.do_data_generation
-        self.do_dft = self.inputs.do_dft
-        self.do_mace = self.inputs.do_mace
-        self.do_md = self.inputs.do_md
-        self.checkpoints = []
-        if not self.do_dft:
-            self.labelled_list = self.inputs.labelled_list.get_list()
+            self.ctx.labelled_list = []
+        self.ctx.do_data_generation = self.inputs.do_data_generation
+        self.ctx.do_dft = self.inputs.do_dft
+        self.ctx.do_mace = self.inputs.do_mace
+        self.ctx.do_md = self.inputs.do_md
+        self.ctx.checkpoints = []
+        if not self.ctx.do_dft:
+            self.ctx.labelled_list = self.inputs.labelled_list.get_list()
 
-        if not self.do_mace:
-            self.potentials_lammps = []
-            self.potentials = []
+        if not self.ctx.do_mace:
+            self.ctx.potentials_lammps = []
+            self.ctx.potentials = []
             for _, pot in self.inputs.mace_lammps_potentials.items():
-                self.potentials_lammps.append(pot)
+                self.ctx.potentials_lammps.append(pot)
             for _, pot in self.inputs.mace_ase_potentials.items():
-                self.potentials.append(pot)
+                self.ctx.potentials.append(pot)
         if 'lammps_input_structures' in self.inputs:
-            self.lammps_input_structures = self.inputs.lammps_input_structures
+            self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
         else:
-            self.lammps_input_structures = self.inputs.structures
+            self.ctx.lammps_input_structures = self.inputs.structures
             
 
 
@@ -245,25 +245,25 @@ class NNIPWorkChain(WorkChain):
     def run_dft(self):
         """Run DFT calculations."""
 
-        self.config += 1
+        self.ctx.config += 1
         
-        if self.iteration > 1:
-            ase_list = dataset_list_to_ase_list(self.cometee_evaluation_list)
+        if self.ctx.iteration > 1:
+            ase_list = dataset_list_to_ase_list(self.ctx.cometee_evaluation_list)
         else:
-            if self.do_data_generation:
+            if self.ctx.do_data_generation:
                 ase_list = dataset_list_to_ase_list(self.ctx.datagen.outputs.structure_lists.global_structure_list.get_list())            
             else:
                 ase_list = dataset_list_to_ase_list(self.inputs.non_labelled_list.get_list())
 
 
         for _, structure in enumerate(ase_list):
-            self.config += 1
+            self.ctx.config += 1
             str_data = StructureData(ase=structure)
             default_inputs = {'CONTROL': {'calculation': 'scf', 'tstress': True, 'tprnfor': True}}
 
             inputs = AttributeDict(self.exposed_inputs(PwBaseWorkChain, namespace='dft'))
             inputs.pw.structure = str_data
-            inputs.metadata.call_link_label = f'dft_config_{self.config}'
+            inputs.metadata.call_link_label = f'dft_config_{self.ctx.config}'
             
             atm_types = list(str_data.get_symbols_set())
             pseudos = inputs.pw.pseudos
@@ -281,19 +281,19 @@ class NNIPWorkChain(WorkChain):
 
             future = self.submit(PwBaseWorkChain, **inputs)
 
-            self.report(f'launched PwBaseWorkChain for configuration {self.config} <{future.pk}>')
+            self.report(f'launched PwBaseWorkChain for configuration {self.ctx.config} <{future.pk}>')
             self.to_context(dft_calculations=append_(future))
 
     def run_mace(self):
         """Run MACE calculations."""
         inputs = self.exposed_inputs(MaceWorkChain, namespace="mace")
 
-        if self.do_dft:
-            inputs['dataset_list'] = List(self.labelled_list)
+        if self.ctx.do_dft:
+            inputs['dataset_list'] = List(self.ctx.labelled_list)
         else:
             inputs['dataset_list'] = self.inputs.labelled_list
-        if self.iteration > 1:
-            inputs['checkpoints'] = {f"chkpt_{ii+1}": self.checkpoints[-ii] for ii in range(min(len(self.checkpoints), self.inputs.mace.num_potentials.value))}
+        if self.ctx.iteration > 1:
+            inputs['checkpoints'] = {f"chkpt_{ii+1}": self.ctx.checkpoints[-ii] for ii in range(min(len(self.ctx.checkpoints), self.inputs.mace.num_potentials.value))}
             inputs.mace['restart'] = Bool(True)
         future = self.submit(MaceWorkChain, **inputs)
         self.to_context(mace_wc = future)
@@ -301,9 +301,9 @@ class NNIPWorkChain(WorkChain):
 
     def run_md(self):
         """Run MD calculations."""
-        potential = self.potentials_lammps[-1]
+        potential = self.ctx.potentials_lammps[-1]
 
-        for _, structure in self.lammps_input_structures.items():
+        for _, structure in self.ctx.lammps_input_structures.items():
             for temp in self.inputs.md.temperatures:
                 for press in self.inputs.md.pressures:
                     inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
@@ -319,16 +319,16 @@ class NNIPWorkChain(WorkChain):
     
     def run_md_frame_extraction(self):
         """Run MD frame extraction."""
-        # for _, trajectory in self.trajectories.items():
+        # for _, trajectory in self.ctx.trajectories.items():
 
         lammps_extracted_list = LammpsFrameExtraction(self.inputs.frame_extraction.correlation_time,
                                 Int(100),
                                 thermalization_time = self.inputs.frame_extraction.thermalization_time, 
-                                **self.trajectories)['lammps_extracted_list']
-        self.lammps_extracted_list = lammps_extracted_list
+                                **self.ctx.trajectories)['lammps_extracted_list']
+        self.ctx.lammps_extracted_list = lammps_extracted_list
         self.out('md.lammps_extracted_list', lammps_extracted_list)
         # inputs = self.exposed_inputs(FrameExtractionWorkChain, namespace="frame_extraction")
-        # inputs.trajectories = self.trajectories
+        # inputs.trajectories = self.ctx.trajectories
         # inputs.input_structure = self.inputs.structures['s0']
         # inputs.dt = self.inputs.md.dt
         # inputs.saving_frequency = Int(100)
@@ -337,8 +337,8 @@ class NNIPWorkChain(WorkChain):
 
     def run_cometee_evaluation(self):
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="cometee_evaluation")
-        inputs['mace_potentials'] = {f"pot_{ii}": self.potentials[ii] for ii in range(len(self.potentials))}
-        inputs['datasetlist'] = self.lammps_extracted_list
+        inputs['mace_potentials'] = {f"pot_{ii}": self.ctx.potentials[ii] for ii in range(len(self.ctx.potentials))}
+        inputs['datasetlist'] = self.ctx.lammps_extracted_list
 
         future = self.submit(EvaluationCalculation, **inputs)
         self.to_context(cometee_evalutation = future)
@@ -362,39 +362,39 @@ class NNIPWorkChain(WorkChain):
                     'output_parameters': calc.outputs.output_parameters,
                     'output_trajectory': calc.outputs.output_trajectory
                     }
-        if self.do_data_generation:
+        if self.ctx.do_data_generation:
             labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.datagen.outputs.structure_lists.global_structure_list, **dft_data)
-        elif self.iteration > 1:
-            labelled_list = WriteLabelledList(non_labelled_structures = self.cometee_evaluation_list, **dft_data)
+        elif self.ctx.iteration > 1:
+            labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.cometee_evaluation_list, **dft_data)
         else:
             labelled_list = WriteLabelledList(non_labelled_structures = self.inputs.non_labelled_list, **dft_data)
         
-        self.labelled_list += labelled_list.get_list()
+        self.ctx.labelled_list += labelled_list.get_list()
         self.out('dft.labelled_list', labelled_list)
         self.ctx.dft_calculations = []
 
     def finalize_mace(self):
-        self.potentials = []
-        self.potentials_lammps = []
-        self.checkpoints = []
+        self.ctx.potentials = []
+        self.ctx.potentials_lammps = []
+        self.ctx.checkpoints = []
         for key, val in self.ctx.mace_wc.outputs.mace.items():
             for k, v in val.items():
                 if k == 'aiida_swa_compiled_model':
-                    self.potentials.append(v)
+                    self.ctx.potentials.append(v)
                 elif k == 'checkpoints':
-                    self.checkpoints.append(v)
+                    self.ctx.checkpoints.append(v)
                 elif k == 'aiida_swa_model_lammps':
-                    self.potentials_lammps.append(v)
+                    self.ctx.potentials_lammps.append(v)
             
 
         self.out('mace', self.ctx.mace_wc.outputs.mace)
-        self.labelled_list = self.ctx.mace_wc.outputs.global_list_splitted.get_list()
+        self.ctx.labelled_list = self.ctx.mace_wc.outputs.global_list_splitted.get_list()
         # self.out_many(self.exposed_outputs(self.ctx.mace_wc, MaceWorkChain, namespace="mace"))
 
     def finalize_md(self):
         
         md_out = {}
-        self.trajectories = {}
+        self.ctx.trajectories = {}
         calc_no_exception = False
         for ii, calc in enumerate(self.ctx.md_wc):
             self.report(f'md_{ii} exit status: {calc.exit_status}')
@@ -409,7 +409,7 @@ class NNIPWorkChain(WorkChain):
                     # self.report(f'el : {el}')
                     # self.report(f'calc.outputs[k][el] : {calc.outputs[k][el]}')
                     if el == 'coord_atom':
-                        self.trajectories[f'md_{ii}'] = calc.outputs['lmp_out'][el]
+                        self.ctx.trajectories[f'md_{ii}'] = calc.outputs['lmp_out'][el]
                     md_out[f'md_{ii}']={el:calc.outputs['lmp_out'][el] for el in calc.outputs['lmp_out']}
             # for out in calc.outputs:
             #     md_out[f'md_{ii}'][out] = calc.outputs[out]
@@ -424,8 +424,8 @@ class NNIPWorkChain(WorkChain):
         calc = self.ctx.cometee_evalutation
 
         selected = SelectToLabel(calc.outputs.evaluated_list, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
-        self.cometee_evaluation_list = selected['selected_list'].get_list()
-        self.report(f'Structures selected for labelling: {len(self.cometee_evaluation_list)}/{len(calc.outputs.evaluated_list.get_list())}')
+        self.ctx.cometee_evaluation_list = selected['selected_list'].get_list()
+        self.report(f'Structures selected for labelling: {len(self.ctx.cometee_evaluation_list)}/{len(calc.outputs.evaluated_list.get_list())}')
         self.report(f'Min energy deviation: {round(selected["min_energy_deviation"].value,2)} eV, Max energy deviation: {round(selected["max_energy_deviation"].value,2)} eV')
         self.report(f'Min forces deviation: {round(selected["min_forces_deviation"].value,2)} eV/Å, Max forces deviation: {round(selected["max_forces_deviation"].value,2)} eV/Å')
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')
