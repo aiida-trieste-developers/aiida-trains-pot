@@ -140,7 +140,8 @@ class MaceTrainWorkChain(WorkChain):
         self.report(f"Test set size: {len(test_set.get_list())}")
         
         # Make sure the path to preprocess.py is absolute
-        preprocess_script_path = os.path.abspath('src/NNIPdevelopment/mace/mace_train_wc/preprocess_config.py')
+        #preprocess_script_path = os.path.abspath('../../aiida_scripts/src/NNIPdevelopment/mace/mace_train_wc/preprocess_config.py')
+        preprocess_script_path = os.path.abspath('/home/nataliia/Documents/aiida_scripts/src/NNIPdevelopment/mace/mace_train_wc/preprocess_config.py')
         preprocess_script_file = SinglefileData(file=preprocess_script_path) 
     
         if 'checkpoints' in self.inputs:
@@ -151,7 +152,6 @@ class MaceTrainWorkChain(WorkChain):
             inputs["training_set"] = train_set
             inputs["validation_set"] = validation_set
             inputs["test_set"] = test_set
-            #inputs["mace_config"] = self.inputs.mace_config
             inputs["preprocess_script"] = preprocess_script_file
 
             if 'checkpoints' in self.inputs and ii < len(chkpts):
