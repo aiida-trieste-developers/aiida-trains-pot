@@ -1,8 +1,8 @@
 ---
-label: 'lmp4mace'
+label: 'lmp4mace_new'
 description: 'LAMMPS for MACE'
 default_calc_job_plugin: 'lammps_base'
-filepath_executable: '/leonardo_scratch/fast/IscrB_DeepVTe2/lammps-mace/lammps/build/lmp'
+filepath_executable: '/leonardo/pub/userexternal/dbidoggi/software/lammps-mace/lammps/build/lmp'
 computer: 'leo1_scratch_bind'
 prepend_text: |
   module purge
@@ -14,8 +14,7 @@ prepend_text: |
   module load fftw/3.3.10--openmpi--4.1.4--nvhpc--23.1
   module load netlib-scalapack/2.2.0--openmpi--4.1.4--nvhpc--23.1
   module load adios/1.13.1--openmpi--4.1.4--nvhpc--23.1
-
-
+  
   export OMP_NUM_THREADS=8
   export CUDA_VISIBLE_DEVICES=0
 

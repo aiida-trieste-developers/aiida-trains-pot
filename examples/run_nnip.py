@@ -136,7 +136,8 @@ builder.do_md = Bool(True)
 builder.max_loops = Int(3)
 builder.labelled_list = load_node(44355)
 #builder.labelled_list = load_node(74946)
-# builder.mace_lammps_potential = load_node(47714)
+#builder.mace_lammps_potentials = {"pot_1":load_node(49046),"pot_2":load_node(49056), "pot_1":load_node(49066),"pot_2":load_node(49076)}
+#builder.mace_ase_potentials = {"pot_1":load_node(49047),"pot_2":load_node(49057), "pot_1":load_node(49067),"pot_2":load_node(49077)}
 
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)
@@ -215,7 +216,8 @@ builder.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=
 
 
 #builder.md.code = load_code('lmp4mace2@leo1_scratch')
-builder.md.code = load_code('lmp4mace@leo1_scratch_bind')
+#builder.md.code = load_code('lmp4mace3@leo1_scratch_bind')
+builder.md.code = load_code('lmp4mace_new@leo1_scratch_bind')
 builder.md.temperatures = List([30, 50])
 builder.md.pressures = List([0])
 builder.md.num_steps = Int(500)
