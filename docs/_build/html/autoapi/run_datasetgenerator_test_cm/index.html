@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>run_datasetgenerator_test_cm &mdash; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="run_datasetgenerator_test_gr" href="../run_datasetgenerator_test_gr/index.html" />
+    <link rel="prev" title="lammps_frame_extraction" href="../lammps_frame_extraction/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Data-Driven Interatomic Potential WorkChain
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../cli/index.html">cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data/index.html">data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conf/index.html">conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tests/index.html">tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parsers/index.html">parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../helpers/index.html">helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nnip_wc/index.html">nnip_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conftest/index.html">conftest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_nnip/index.html">run_nnip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lammps_wc/index.html">lammps_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pdb_loader/index.html">pdb_loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../example_01/index.html">example_01</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../input_files/index.html">input_files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../calculations/index.html">calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mace_train_wc/index.html">mace_train_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_nnip_bora/index.html">run_nnip_bora</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_evaluation/index.html">run_evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../NNIPdevelopment/index.html">NNIPdevelopment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../launch_mace_chain/index.html">launch_mace_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mace_train_plugin/index.html">mace_train_plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preprocess_config/index.html">preprocess_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datageneration/index.html">run_datageneration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mace_output_parser/index.html">mace_output_parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_lammps_extraction/index.html">run_lammps_extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../QECalculationWorkChain/index.html">QECalculationWorkChain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lammps_frame_extraction/index.html">lammps_frame_extraction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">run_datasetgenerator_test_cm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.KpointsData"><code class="docutils literal notranslate"><span class="pre">KpointsData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.QECalculationWorkChain"><code class="docutils literal notranslate"><span class="pre">QECalculationWorkChain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.machine"><code class="docutils literal notranslate"><span class="pre">machine</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.description"><code class="docutils literal notranslate"><span class="pre">description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.mem"><code class="docutils literal notranslate"><span class="pre">mem</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.time"><code class="docutils literal notranslate"><span class="pre">time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.time_sec"><code class="docutils literal notranslate"><span class="pre">time_sec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.kpoints"><code class="docutils literal notranslate"><span class="pre">kpoints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.folder_path"><code class="docutils literal notranslate"><span class="pre">folder_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.structure_uuids"><code class="docutils literal notranslate"><span class="pre">structure_uuids</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.code"><code class="docutils literal notranslate"><span class="pre">code</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.pseudo_family_label"><code class="docutils literal notranslate"><span class="pre">pseudo_family_label</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.pseudo_family"><code class="docutils literal notranslate"><span class="pre">pseudo_family</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.rattle_params"><code class="docutils literal notranslate"><span class="pre">rattle_params</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.result"><code class="docutils literal notranslate"><span class="pre">result</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.mod_structures"><code class="docutils literal notranslate"><span class="pre">mod_structures</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.structure_uuid"><code class="docutils literal notranslate"><span class="pre">structure_uuid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_datasetgenerator_test_cm.builder"><code class="docutils literal notranslate"><span class="pre">builder</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datasetgenerator_test_gr/index.html">run_datasetgenerator_test_gr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../launch_rattle_qe_lammps_chain/index.html">launch_rattle_qe_lammps_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../launch_rattle_qe_mace_lammps_chain/index.html">launch_rattle_qe_mace_lammps_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datasetgenerator_test_leonardo/index.html">run_datasetgenerator_test_leonardo</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Data-Driven Interatomic Potential WorkChain</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">run_datasetgenerator_test_cm</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/autoapi/run_datasetgenerator_test_cm/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-run_datasetgenerator_test_cm">
+<span id="run-datasetgenerator-test-cm"></span><h1>run_datasetgenerator_test_cm<a class="headerlink" href="#module-run_datasetgenerator_test_cm" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.KpointsData" title="run_datasetgenerator_test_cm.KpointsData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KpointsData</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.QECalculationWorkChain" title="run_datasetgenerator_test_cm.QECalculationWorkChain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QECalculationWorkChain</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.machine" title="run_datasetgenerator_test_cm.machine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">machine</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.description" title="run_datasetgenerator_test_cm.description"><code class="xref py py-obj docutils literal notranslate"><span class="pre">description</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.mem" title="run_datasetgenerator_test_cm.mem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mem</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.time" title="run_datasetgenerator_test_cm.time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.time_sec" title="run_datasetgenerator_test_cm.time_sec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_sec</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.kpoints" title="run_datasetgenerator_test_cm.kpoints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kpoints</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.folder_path" title="run_datasetgenerator_test_cm.folder_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">folder_path</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.structure_uuids" title="run_datasetgenerator_test_cm.structure_uuids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">structure_uuids</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.code" title="run_datasetgenerator_test_cm.code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">code</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.pseudo_family_label" title="run_datasetgenerator_test_cm.pseudo_family_label"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pseudo_family_label</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.pseudo_family" title="run_datasetgenerator_test_cm.pseudo_family"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pseudo_family</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.rattle_params" title="run_datasetgenerator_test_cm.rattle_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rattle_params</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.result" title="run_datasetgenerator_test_cm.result"><code class="xref py py-obj docutils literal notranslate"><span class="pre">result</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.mod_structures" title="run_datasetgenerator_test_cm.mod_structures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mod_structures</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.structure_uuid" title="run_datasetgenerator_test_cm.structure_uuid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">structure_uuid</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_datasetgenerator_test_cm.builder" title="run_datasetgenerator_test_cm.builder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">builder</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.KpointsData">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">KpointsData</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#KpointsData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.KpointsData" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.QECalculationWorkChain">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">QECalculationWorkChain</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#QECalculationWorkChain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.QECalculationWorkChain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.machine">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">machine</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.machine" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.description">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'test_gr'</span></em><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.description" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.mem">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">mem</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#mem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.mem" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.time">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">time</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.time_sec">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">time_sec</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#time_sec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.time_sec" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.kpoints">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">kpoints</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#kpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.kpoints" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.folder_path">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">folder_path</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Data/FLAKES_10R_2'</span></em><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#folder_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.folder_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.structure_uuids">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">structure_uuids</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#structure_uuids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.structure_uuids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.code">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">code</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.code" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.pseudo_family_label">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">pseudo_family_label</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#pseudo_family_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.pseudo_family_label" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.pseudo_family">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">pseudo_family</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#pseudo_family"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.pseudo_family" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.rattle_params">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">rattle_params</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#rattle_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.rattle_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.result">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">result</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.result" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.mod_structures">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">mod_structures</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#mod_structures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.mod_structures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.structure_uuid">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">structure_uuid</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#structure_uuid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.structure_uuid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_datasetgenerator_test_cm.builder">
+<span class="sig-prename descclassname"><span class="pre">run_datasetgenerator_test_cm.</span></span><span class="sig-name descname"><span class="pre">builder</span></span><a class="reference internal" href="../../_modules/run_datasetgenerator_test_cm.html#builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_datasetgenerator_test_cm.builder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../lammps_frame_extraction/index.html" class="btn btn-neutral float-left" title="lammps_frame_extraction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../run_datasetgenerator_test_gr/index.html" class="btn btn-neutral float-right" title="run_datasetgenerator_test_gr" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

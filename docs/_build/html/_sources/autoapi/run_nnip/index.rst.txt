@@ -1,0 +1,94 @@
+run_nnip
+========
+
+.. py:module:: run_nnip
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   run_nnip.KpointsData
+   run_nnip.NNIPWorkChain
+   run_nnip.machine_dft
+   run_nnip.machine_mace
+   run_nnip.machine_lammps
+   run_nnip.machine_evaluation
+   run_nnip.description
+   run_nnip.mem_dft
+   run_nnip.time_dft
+   run_nnip.mem_mace
+   run_nnip.time_mace
+   run_nnip.mem_lammps
+   run_nnip.time_lammps
+   run_nnip.mem_evaluation
+   run_nnip.time_evaluation
+   run_nnip.structures
+   run_nnip.kpoints
+   run_nnip.pseudo_family
+   run_nnip.builder
+   run_nnip.mace_config
+   run_nnip.code
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   run_nnip.get_memory
+   run_nnip.get_time
+
+
+Module Contents
+---------------
+
+.. py:data:: KpointsData
+
+.. py:data:: NNIPWorkChain
+
+.. py:data:: machine_dft
+
+.. py:data:: machine_mace
+
+.. py:data:: machine_lammps
+
+.. py:data:: machine_evaluation
+
+.. py:data:: description
+   :value: 'mote'
+
+
+.. py:function:: get_memory(mem)
+
+.. py:function:: get_time(time)
+
+.. py:data:: mem_dft
+
+.. py:data:: time_dft
+
+.. py:data:: mem_mace
+
+.. py:data:: time_mace
+
+.. py:data:: mem_lammps
+
+.. py:data:: time_lammps
+
+.. py:data:: mem_evaluation
+
+.. py:data:: time_evaluation
+
+.. py:data:: structures
+
+.. py:data:: kpoints
+
+.. py:data:: pseudo_family
+
+.. py:data:: builder
+
+.. py:data:: mace_config
+
+.. py:data:: code
+

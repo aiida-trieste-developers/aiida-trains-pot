@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mace_train_plugin.tests.test_calculations &mdash; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="mace_train_plugin.tests.test_cli" href="../test_cli/index.html" />
+    <link rel="prev" title="mace_train_plugin.tests.input_files" href="../input_files/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Data-Driven Interatomic Potential WorkChain
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../cli/index.html">cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../data/index.html">data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../conf/index.html">conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tests/index.html">tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../parsers/index.html">parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../helpers/index.html">helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../nnip_wc/index.html">nnip_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../conftest/index.html">conftest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../run_nnip/index.html">run_nnip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lammps_wc/index.html">lammps_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pdb_loader/index.html">pdb_loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../example_01/index.html">example_01</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../input_files/index.html">input_files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../calculations/index.html">calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mace_train_wc/index.html">mace_train_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../run_nnip_bora/index.html">run_nnip_bora</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../run_evaluation/index.html">run_evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../NNIPdevelopment/index.html">NNIPdevelopment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../launch_mace_chain/index.html">launch_mace_chain</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">mace_train_plugin</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../data/index.html">mace_train_plugin.data</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">mace_train_plugin.tests</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../preprocess_config/index.html">preprocess_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../run_datageneration/index.html">run_datageneration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../mace_output_parser/index.html">mace_output_parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../run_lammps_extraction/index.html">run_lammps_extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../QECalculationWorkChain/index.html">QECalculationWorkChain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lammps_frame_extraction/index.html">lammps_frame_extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../run_datasetgenerator_test_cm/index.html">run_datasetgenerator_test_cm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../run_datasetgenerator_test_gr/index.html">run_datasetgenerator_test_gr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../launch_rattle_qe_lammps_chain/index.html">launch_rattle_qe_lammps_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../launch_rattle_qe_mace_lammps_chain/index.html">launch_rattle_qe_mace_lammps_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../run_datasetgenerator_test_leonardo/index.html">run_datasetgenerator_test_leonardo</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Data-Driven Interatomic Potential WorkChain</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">mace_train_plugin</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">mace_train_plugin.tests</a></li>
+      <li class="breadcrumb-item active">mace_train_plugin.tests.test_calculations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/mace_train_plugin/tests/test_calculations/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-mace_train_plugin.tests.test_calculations">
+<span id="mace-train-plugin-tests-test-calculations"></span><h1>mace_train_plugin.tests.test_calculations<a class="headerlink" href="#module-mace_train_plugin.tests.test_calculations" title="Link to this heading"></a></h1>
+<p>Tests for calculations.</p>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mace_train_plugin.tests.test_calculations.test_process" title="mace_train_plugin.tests.test_calculations.test_process"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_process</span></code></a>(diff_code)</p></td>
+<td><p>Test running a calculation</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="mace_train_plugin.tests.test_calculations.test_process">
+<span class="sig-prename descclassname"><span class="pre">mace_train_plugin.tests.test_calculations.</span></span><span class="sig-name descname"><span class="pre">test_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diff_code</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/mace_train_plugin/tests/test_calculations.html#test_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mace_train_plugin.tests.test_calculations.test_process" title="Link to this definition"></a></dt>
+<dd><p>Test running a calculation
+note this does not test that the expected outputs are created of output parsing</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../input_files/index.html" class="btn btn-neutral float-left" title="mace_train_plugin.tests.input_files" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../test_cli/index.html" class="btn btn-neutral float-right" title="mace_train_plugin.tests.test_cli" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+run_evaluation
+==============
+
+.. py:module:: run_evaluation
+
+.. autoapi-nested-parse::
+
+   Launch a calculation using the 'diff-tutorial' plugin
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   run_evaluation.evaluation
+   run_evaluation.machine
+   run_evaluation.mem
+   run_evaluation.time
+   run_evaluation.time_sec
+   run_evaluation.code
+   run_evaluation.builder
+
+
+Module Contents
+---------------
+
+.. py:data:: evaluation
+
+.. py:data:: machine
+
+.. py:data:: mem
+
+.. py:data:: time
+
+.. py:data:: time_sec
+
+.. py:data:: code
+
+.. py:data:: builder
+

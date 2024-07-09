@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QECalculationWorkChain &mdash; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Data-Driven Interatomic Potential WorkChain
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Data-Driven Interatomic Potential WorkChain</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">QECalculationWorkChain</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for QECalculationWorkChain</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Equation of State WorkChain.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">aiida.engine</span> <span class="kn">import</span> <span class="n">WorkChain</span><span class="p">,</span> <span class="n">ToContext</span><span class="p">,</span> <span class="n">calcfunction</span><span class="p">,</span> <span class="n">append_</span><span class="p">,</span> <span class="n">launch</span><span class="p">,</span> <span class="n">while_</span>
+<span class="kn">from</span> <span class="nn">aiida</span> <span class="kn">import</span> <span class="n">load_profile</span>
+<span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="n">Code</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">StructureData</span><span class="p">,</span> <span class="n">load_group</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">SinglefileData</span><span class="p">,</span> <span class="n">TrajectoryData</span><span class="p">,</span> <span class="n">BandsData</span><span class="p">,</span> <span class="n">RemoteData</span><span class="p">,</span> <span class="n">FolderData</span><span class="p">,</span> <span class="n">Data</span>
+<span class="kn">from</span> <span class="nn">aiida.orm.groups</span> <span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span> <span class="nn">aiida.tools.groups</span> <span class="kn">import</span> <span class="n">GroupPath</span>
+<span class="kn">from</span> <span class="nn">aiida.common</span> <span class="kn">import</span> <span class="n">AttributeDict</span><span class="p">,</span> <span class="n">exceptions</span>
+<span class="kn">from</span> <span class="nn">aiida.plugins</span> <span class="kn">import</span> <span class="n">CalculationFactory</span><span class="p">,</span> <span class="n">WorkflowFactory</span><span class="p">,</span> <span class="n">DataFactory</span>
+<span class="kn">from</span> <span class="nn">aiida_quantumespresso.utils.mapping</span> <span class="kn">import</span> <span class="n">prepare_process_inputs</span>
+<span class="kn">from</span> <span class="nn">aiida_quantumespresso.workflows.protocols.utils</span> <span class="kn">import</span> <span class="n">ProtocolMixin</span><span class="p">,</span> <span class="n">recursive_merge</span>
+<span class="n">load_profile</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+<span class="kn">from</span> <span class="nn">ase.calculators.singlepoint</span> <span class="kn">import</span> <span class="n">SinglePointCalculator</span>
+
+
+<div class="viewcode-block" id="PwBaseWorkChain">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.PwBaseWorkChain">[docs]</a>
+<span class="n">PwBaseWorkChain</span> <span class="o">=</span> <span class="n">WorkflowFactory</span><span class="p">(</span><span class="s1">&#39;quantumespresso.pw.base&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StructureData">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.StructureData">[docs]</a>
+<span class="n">StructureData</span> <span class="o">=</span> <span class="n">DataFactory</span><span class="p">(</span><span class="s1">&#39;core.structure&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TrajectoryData">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.TrajectoryData">[docs]</a>
+<span class="n">TrajectoryData</span> <span class="o">=</span> <span class="n">DataFactory</span><span class="p">(</span><span class="s1">&#39;core.array.trajectory&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SinglefileData">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.SinglefileData">[docs]</a>
+<span class="n">SinglefileData</span> <span class="o">=</span> <span class="n">DataFactory</span><span class="p">(</span><span class="s1">&#39;core.singlefile&#39;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@calcfunction</span>
+<div class="viewcode-block" id="WriteDataset">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.WriteDataset">[docs]</a>
+<span class="k">def</span> <span class="nf">WriteDataset</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculation function to write a dataset to a file</span>
+
+<span class="sd">    :param structures: A list of AiiDA `StructureData` nodes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">write</span>
+    <span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="n">SinglefileData</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+
+    <span class="n">dataset_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+        <span class="n">en</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;out_params&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dict</span><span class="o">.</span><span class="n">energy</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="s1">&#39;out_trajectory&#39;</span><span class="p">]</span>
+        <span class="n">dataset_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="n">en</span><span class="p">),</span>
+                             <span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="n">List</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">get_cells</span><span class="p">()[</span><span class="mi">0</span><span class="p">])),</span>
+                             <span class="s1">&#39;symbols&#39;</span><span class="p">:</span> <span class="n">List</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">symbols</span><span class="p">)),</span>
+                             <span class="s1">&#39;positions&#39;</span><span class="p">:</span> <span class="n">List</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s1">&#39;positions&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])),</span> 
+                             <span class="s1">&#39;forces&#39;</span><span class="p">:</span> <span class="n">List</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s1">&#39;forces&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])),</span>
+                             <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="n">List</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s1">&#39;stress&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])),</span>
+                             <span class="s1">&#39;input_structure_pk&#39;</span><span class="p">:</span> <span class="n">Int</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s1">&#39;in_structure&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pk</span><span class="p">),</span> 
+                             <span class="p">})</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;dataset_list&#39;</span><span class="p">:</span><span class="n">List</span><span class="p">(</span><span class="n">dataset_list</span><span class="p">)}</span></div>
+
+
+<div class="viewcode-block" id="QECalculationWorkChain">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.QECalculationWorkChain">[docs]</a>
+<span class="k">class</span> <span class="nc">QECalculationWorkChain</span><span class="p">(</span><span class="n">ProtocolMixin</span><span class="p">,</span> <span class="n">WorkChain</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;WorkChain to generate a training dataset for a given structure using Quantum ESPRESSO.&quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="QECalculationWorkChain.define">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.QECalculationWorkChain.define">[docs]</a>
+    <span class="k">def</span> <span class="nf">define</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Specify inputs and outputs.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">expose_inputs</span><span class="p">(</span><span class="n">PwBaseWorkChain</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="s2">&quot;scf&quot;</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;pw.structure&#39;</span><span class="p">,),</span> <span class="n">namespace_options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;validator&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">input_namespace</span><span class="p">(</span><span class="s2">&quot;structures&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">StructureData</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;dataset_list&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">List</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">outline</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">run_rattle_qe</span><span class="p">,</span>
+            <span class="c1"># while_(cls.err_300)(cls.error_check),</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">error_check</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">finalize</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">output_namespace</span><span class="p">(</span><span class="s1">&#39;output_parameters_scf&#39;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">Dict</span><span class="p">,</span> <span class="n">dynamic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The output parameters of each ``PwBaseWorkChain`` performed``.&#39;</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">output_namespace</span><span class="p">(</span><span class="s1">&#39;output_trajectory_scf&#39;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">TrajectoryData</span><span class="p">,</span> <span class="n">dynamic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The output trajectory of each ``PwBaseWorkChain`` performed.&#39;</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">output_namespace</span><span class="p">(</span><span class="s1">&#39;output_band_scf&#39;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">BandsData</span><span class="p">,</span> <span class="n">dynamic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The output bands of each ``PwBaseWorkChain`` performed.&#39;</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">output_namespace</span><span class="p">(</span><span class="s1">&#39;remote_folder_scf&#39;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">RemoteData</span><span class="p">,</span> <span class="n">dynamic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The remote folder of each ``PwBaseWorkChain`` performed.&#39;</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">output_namespace</span><span class="p">(</span><span class="s1">&#39;retrieved_list_scf&#39;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">FolderData</span><span class="p">,</span> <span class="n">dynamic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The retrieved folder of each ``PwBaseWorkChain`` performed.&#39;</span><span class="p">)</span></div>
+
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="QECalculationWorkChain.get_builder_from_protocol">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.QECalculationWorkChain.get_builder_from_protocol">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_builder_from_protocol</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">structure_list</span><span class="p">,</span> <span class="n">pseudos</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">core_hole_treatments</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">elements_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">atoms_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">structure_preparation_settings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">correction_energies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a builder prepopulated with inputs selected according to the chosen protocol.</span>
+
+<span class="sd">        :param code: the ``Code`` instance configured for the ``quantumespresso.pw`` plugin.</span>
+<span class="sd">        :param structure: the ``StructureData`` instance to use.</span>
+<span class="sd">        :param pseudos: the core-hole pseudopotential pairs (ground-state and</span>
+<span class="sd">                        excited-state) for the elements to be calculated. These must</span>
+<span class="sd">                        use the mapping of {&quot;element&quot; : {&quot;core_hole&quot; : &lt;upf&gt;, &quot;gipaw&quot; : &lt;upf&gt;}}</span>
+<span class="sd">        :param protocol: the protocol to use. If not specified, the default will be used.</span>
+<span class="sd">        :param overrides: optional dictionary of inputs to override the defaults of the</span>
+<span class="sd">                          XpsWorkChain itself.</span>
+<span class="sd">        :param kwargs: additional keyword arguments that will be passed to the</span>
+<span class="sd">            ``get_builder_from_protocol`` of all the sub processes that are called by this</span>
+<span class="sd">            workchain.</span>
+<span class="sd">        :return: a process builder instance with all inputs defined ready for launch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pw_args</span> <span class="o">=</span> <span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">structure_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">protocol</span><span class="p">)</span>
+        <span class="n">scf</span> <span class="o">=</span> <span class="n">PwBaseWorkChain</span><span class="o">.</span><span class="n">get_builder_from_protocol</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">pw_args</span><span class="p">,</span> <span class="n">overrides</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        
+        <span class="n">builder</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_builder</span><span class="p">()</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">scf</span> <span class="o">=</span> <span class="n">scf</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">structures</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s1">&#39;s</span><span class="si">{</span><span class="n">ii</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span><span class="n">s</span> <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">structure_list</span><span class="p">)}</span> <span class="c1">#structures[0]#List([structures[0]])</span>
+
+        <span class="k">return</span> <span class="n">builder</span></div>
+
+
+
+<div class="viewcode-block" id="QECalculationWorkChain._run_rattle_and_submit">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.QECalculationWorkChain._run_rattle_and_submit">[docs]</a>
+    <span class="k">def</span> <span class="nf">_run_rattle_and_submit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">structure</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">+=</span> <span class="mi">1</span>
+      
+        <span class="n">default_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;CONTROL&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;calculation&#39;</span><span class="p">:</span> <span class="s1">&#39;scf&#39;</span><span class="p">,</span> <span class="s1">&#39;tstress&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;tprnfor&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">AttributeDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposed_inputs</span><span class="p">(</span><span class="n">PwBaseWorkChain</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="s1">&#39;scf&#39;</span><span class="p">))</span>
+        <span class="n">inputs</span><span class="o">.</span><span class="n">pw</span><span class="o">.</span><span class="n">structure</span> <span class="o">=</span> <span class="n">structure</span>
+        <span class="n">inputs</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">call_link_label</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;scf_config_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">inputs</span><span class="o">.</span><span class="n">pw</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">recursive_merge</span><span class="p">(</span><span class="n">default_inputs</span><span class="p">,</span> <span class="n">inputs</span><span class="o">.</span><span class="n">pw</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()))</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">prepare_process_inputs</span><span class="p">(</span><span class="n">PwBaseWorkChain</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+
+        <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">PwBaseWorkChain</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;launched PwBaseWorkChain for configuration </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="si">}</span><span class="s1"> &lt;</span><span class="si">{</span><span class="n">future</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_context</span><span class="p">(</span><span class="n">pw_calculations</span><span class="o">=</span><span class="n">append_</span><span class="p">(</span><span class="n">future</span><span class="p">))</span></div>
+
+   
+
+<div class="viewcode-block" id="QECalculationWorkChain.run_rattle_qe">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.QECalculationWorkChain.run_rattle_qe">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_rattle_qe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run calculations for dataset generation.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">structure</span> <span class="ow">in</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structures</span><span class="o">.</span><span class="n">values</span><span class="p">()]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_run_rattle_and_submit</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="QECalculationWorkChain.results">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.QECalculationWorkChain.results">[docs]</a>
+    <span class="k">def</span> <span class="nf">results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process results.&quot;&quot;&quot;</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">pw_calculations</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>            
+            <span class="n">inputs</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;conf</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;out_params&quot;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_outgoing</span><span class="p">()</span><span class="o">.</span><span class="n">get_node_by_label</span><span class="p">(</span><span class="s2">&quot;output_parameters&quot;</span><span class="p">),</span> <span class="s2">&quot;out_trajectory&quot;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">links</span><span class="o">.</span><span class="n">get_outgoing</span><span class="p">()</span><span class="o">.</span><span class="n">get_node_by_label</span><span class="p">(</span><span class="s2">&quot;output_trajectory&quot;</span><span class="p">),</span> <span class="s2">&quot;in_structure&quot;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">pw</span><span class="o">.</span><span class="n">structure</span><span class="p">}</span>
+        
+        <span class="n">out</span><span class="o">=</span> <span class="n">WriteDataset</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">dataset_list</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s1">&#39;dataset_list&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s2">&quot;dataset_list&quot;</span><span class="p">,</span> <span class="n">dataset_list</span><span class="p">)</span>        </div>
+
+
+
+<div class="viewcode-block" id="QECalculationWorkChain.finalize">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.QECalculationWorkChain.finalize">[docs]</a>
+    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Finalize.&quot;&quot;&quot;</span>
+
+        <span class="n">output_params_scf</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">output_trajectory_scf</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">output_band_scf</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">output_remote_folder_scf</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">output_retrieved_list_scf</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">pw_calculations</span><span class="p">):</span>
+            <span class="n">output_params_scf</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;config_</span><span class="si">{</span><span class="n">ii</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">output_parameters</span>
+            <span class="n">output_trajectory_scf</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;config_</span><span class="si">{</span><span class="n">ii</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">output_trajectory</span>
+            <span class="n">output_band_scf</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;config_</span><span class="si">{</span><span class="n">ii</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">output_band</span>
+            <span class="n">output_remote_folder_scf</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;config_</span><span class="si">{</span><span class="n">ii</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">remote_folder</span>
+            <span class="n">output_retrieved_list_scf</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;config_</span><span class="si">{</span><span class="n">ii</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">retrieved</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s1">&#39;output_parameters_scf&#39;</span><span class="p">,</span> <span class="n">output_params_scf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s1">&#39;output_trajectory_scf&#39;</span><span class="p">,</span> <span class="n">output_trajectory_scf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s1">&#39;output_band_scf&#39;</span><span class="p">,</span> <span class="n">output_band_scf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s1">&#39;remote_folder_scf&#39;</span><span class="p">,</span> <span class="n">output_remote_folder_scf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s1">&#39;retrieved_list_scf&#39;</span><span class="p">,</span> <span class="n">output_retrieved_list_scf</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="QECalculationWorkChain.error_check">
+<a class="viewcode-back" href="../autoapi/QECalculationWorkChain/index.html#QECalculationWorkChain.QECalculationWorkChain.error_check">[docs]</a>
+    <span class="k">def</span> <span class="nf">error_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check for errors.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">calc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">pw_calculations</span><span class="p">):</span> 
+            <span class="k">if</span> <span class="n">calc</span><span class="o">.</span><span class="n">exit_status</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">calc</span><span class="o">.</span><span class="n">exit_status</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">300</span><span class="p">]:</span>
+                    <span class="n">restart_builder</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">get_builder_restart</span><span class="p">()</span>
+                    <span class="c1"># restart_builder.scf.pw.metadata.options.resources[&#39;num_machines&#39;]=4</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">node</span> <span class="o">=</span> <span class="n">launch</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">restart_builder</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;restarting calculation </span><span class="si">{</span><span class="n">calc</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s1"> &lt;</span><span class="si">{</span><span class="n">calc</span><span class="o">.</span><span class="n">uuid</span><span class="si">}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">pw_calculations</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">pw_calculations</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span></div>
+</div>
+
+
+    <span class="c1"># def err_300(self):</span>
+    <span class="c1">#     &quot;&quot;&quot;Check for errors.&quot;&quot;&quot;</span>
+    <span class="c1">#     for ii, calc in enumerate(self.ctx.pw_calculations): </span>
+    <span class="c1">#         if calc.exit_status in [300]:</span>
+    <span class="c1">#             return True</span>
+    <span class="c1">#     return False</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

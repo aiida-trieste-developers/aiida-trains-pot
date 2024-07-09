@@ -1,0 +1,45 @@
+launch_mace_chain
+=================
+
+.. py:module:: launch_mace_chain
+
+.. autoapi-nested-parse::
+
+   Launch a calculation using the 'diff-tutorial' plugin
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   launch_mace_chain.code
+   launch_mace_chain.machine
+   launch_mace_chain.mem
+   launch_mace_chain.time
+   launch_mace_chain.time_sec
+   launch_mace_chain.dataset
+   launch_mace_chain.builder
+   launch_mace_chain.calc
+
+
+Module Contents
+---------------
+
+.. py:data:: code
+
+.. py:data:: machine
+
+.. py:data:: mem
+
+.. py:data:: time
+
+.. py:data:: time_sec
+
+.. py:data:: dataset
+
+.. py:data:: builder
+
+.. py:data:: calc
+

@@ -1,0 +1,67 @@
+calculations
+============
+
+.. py:module:: calculations
+
+.. autoapi-nested-parse::
+
+   Calculations provided by aiida_diff.
+
+   Register calculations via the "aiida.calculations" entry point in setup.json.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   calculations.TrajectoryData
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   calculations.LammpsBaseCalculation
+
+
+Module Contents
+---------------
+
+.. py:data:: TrajectoryData
+
+.. py:class:: LammpsBaseCalculation(*args, **kwargs)
+
+   Bases: :py:obj:`aiida.engine.CalcJob`
+
+
+   AiiDA calculation plugin wrapping the diff executable.
+
+   Simple AiiDA plugin wrapper for 'diffing' two files.
+
+
+   .. py:method:: define(spec)
+      :classmethod:
+
+
+      Define inputs and outputs of the calculation.
+
+
+
+   .. py:method:: get_builder_from_protocol(**kwargs)
+      :classmethod:
+
+
+
+   .. py:method:: prepare_for_submission(folder)
+
+      Create input files.
+
+      :param folder: an `aiida.common.folders.Folder` where the plugin should temporarily place all files
+          needed by the calculation.
+      :return: `aiida.common.datastructures.CalcInfo` instance
+
+
+

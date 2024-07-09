@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>run_lammps_extraction &mdash; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Data-Driven Interatomic Potential WorkChain
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Data-Driven Interatomic Potential WorkChain</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">run_lammps_extraction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for run_lammps_extraction</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="n">load_code</span><span class="p">,</span> <span class="n">load_node</span><span class="p">,</span> <span class="n">load_group</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Group</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Data</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Float</span>
+<span class="kn">from</span> <span class="nn">aiida</span> <span class="kn">import</span> <span class="n">load_profile</span>
+<span class="kn">from</span> <span class="nn">aiida.engine</span> <span class="kn">import</span> <span class="n">submit</span>
+<span class="kn">from</span> <span class="nn">aiida.plugins</span> <span class="kn">import</span> <span class="n">WorkflowFactory</span>
+<span class="kn">from</span> <span class="nn">aiida.tools.groups</span> <span class="kn">import</span> <span class="n">GroupPath</span>
+
+<span class="n">load_profile</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LammpsExtraction">
+<a class="viewcode-back" href="../autoapi/run_lammps_extraction/index.html#run_lammps_extraction.LammpsExtraction">[docs]</a>
+<span class="n">LammpsExtraction</span> <span class="o">=</span> <span class="n">WorkflowFactory</span><span class="p">(</span><span class="s1">&#39;NNIPdevelopment.lammpsextraction&#39;</span><span class="p">)</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="builder">
+<a class="viewcode-back" href="../autoapi/run_lammps_extraction/index.html#run_lammps_extraction.builder">[docs]</a>
+<span class="n">builder</span> <span class="o">=</span> <span class="n">LammpsExtraction</span><span class="o">.</span><span class="n">get_builder</span><span class="p">()</span></div>
+
+
+<span class="n">builder</span><span class="o">.</span><span class="n">trajectory</span> <span class="o">=</span> <span class="n">load_node</span><span class="p">(</span><span class="mi">38534</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">input_structure</span> <span class="o">=</span> <span class="n">load_node</span><span class="p">(</span><span class="mi">36335</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">0.00242</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">correlation_time</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">2.42</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">saving_frequency</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="n">submit</span><span class="p">(</span><span class="n">builder</span><span class="p">)</span> <span class="c1">#.id</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

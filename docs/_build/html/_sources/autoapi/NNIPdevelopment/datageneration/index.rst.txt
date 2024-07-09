@@ -1,0 +1,37 @@
+NNIPdevelopment.datageneration
+==============================
+
+.. py:module:: NNIPdevelopment.datageneration
+
+.. autoapi-nested-parse::
+
+   DataGenerationWorkChain
+
+   AiiDA workchain to generate data for training and testing of neural networks.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/NNIPdevelopment/datageneration/datageneration/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   NNIPdevelopment.datageneration.__version__
+
+
+Package Contents
+----------------
+
+.. py:data:: __version__
+   :value: '1.0.0'
+
+

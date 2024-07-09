@@ -1,0 +1,45 @@
+mace_train_plugin.conftest
+==========================
+
+.. py:module:: mace_train_plugin.conftest
+
+.. autoapi-nested-parse::
+
+   pytest fixtures for simplified testing.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   mace_train_plugin.conftest.pytest_plugins
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   mace_train_plugin.conftest.clear_database_auto
+   mace_train_plugin.conftest.diff_code
+
+
+Module Contents
+---------------
+
+.. py:data:: pytest_plugins
+   :value: ['aiida.manage.tests.pytest_fixtures']
+
+
+.. py:function:: clear_database_auto(clear_database)
+
+   Automatically clear database in between tests.
+
+
+.. py:function:: diff_code(aiida_local_code_factory)
+
+   Get a diff code.
+
+

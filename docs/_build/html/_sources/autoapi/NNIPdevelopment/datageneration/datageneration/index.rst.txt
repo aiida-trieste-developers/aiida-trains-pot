@@ -1,0 +1,158 @@
+NNIPdevelopment.datageneration.datageneration
+=============================================
+
+.. py:module:: NNIPdevelopment.datageneration.datageneration
+
+.. autoapi-nested-parse::
+
+   DataGenerationWorkChain to generate a training dataset
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   NNIPdevelopment.datageneration.datageneration.StructureData
+   NNIPdevelopment.datageneration.datageneration.SinglefileData
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   NNIPdevelopment.datageneration.datageneration.DataGenerationWorkChain
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   NNIPdevelopment.datageneration.datageneration.RattleStructureGenerator
+   NNIPdevelopment.datageneration.datageneration.InputStructureGenerator
+   NNIPdevelopment.datageneration.datageneration.IsolatedStructureGenerator
+   NNIPdevelopment.datageneration.datageneration.WriteDataset
+   NNIPdevelopment.datageneration.datageneration.get_min_interatomic_distances
+   NNIPdevelopment.datageneration.datageneration.uniform_random_atomic_displacement
+
+
+Module Contents
+---------------
+
+.. py:data:: StructureData
+
+.. py:data:: SinglefileData
+
+.. py:function:: RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_vacancies, vacancies_per_config, **in_structure_dict)
+
+   Generate structures.
+
+   :param in_structure_list: A list of AiiDA `StructureData` nodes
+   :param n_configs: Int with the number of configurations to generate
+   :param rattle_fraction: Float with the rattle fraction
+   :param max_sigma_strain: Float with the maximum strain factor
+   :param frac_vacancies: Float with the fraction of vacancies
+   :param vacancies_per_config: Int with the number of vacancies per configuration
+
+
+.. py:function:: InputStructureGenerator(**in_structure_dict)
+
+   Add input structures to the dataset.
+
+   :param in_structure_list: List of AiiDA `StructureData` nodes
+
+
+.. py:function:: IsolatedStructureGenerator(**in_structure_dict)
+
+   Generate isolated atoms.
+
+   :param in_structure_list: List of AiiDA `StructureData` nodes
+
+
+.. py:function:: WriteDataset(**dataset_lists_dict)
+
+   Combine datasets to single dataset_list.
+
+   :param structures: A list of AiiDA `StructureData` nodes
+
+
+.. py:function:: get_min_interatomic_distances(positions, cell)
+
+   For each atom, calculate the minimum distance to any other atom in the structure.
+
+   :param positions: A numpy array of atomic positions
+   :param cell: A numpy array of the cell vectors
+
+
+.. py:function:: uniform_random_atomic_displacement(positions, min_distances, max_displacement_fraction)
+
+   Displace atoms randomly in a uniform manner.
+
+   :param positions: A numpy array of atomic positions
+   :param min_distances: A numpy array of minimum interatomic distances
+   :param max_displacement_fraction: A float that determines the maximum displacement as a fraction of the minimum interatomic distance
+
+
+.. py:class:: DataGenerationWorkChain(inputs: dict | None = None, logger: logging.Logger | None = None, runner: aiida.engine.runners.Runner | None = None, enable_persistence: bool = True)
+
+   Bases: :py:obj:`aiida.engine.WorkChain`
+
+
+   WorkChain to generate a training dataset.
+
+
+   .. py:attribute:: DEFAULT_RATTLE_rattle_fraction
+
+
+   .. py:attribute:: DEFAULT_RATTLE_max_sigma_strain
+
+
+   .. py:attribute:: DEFAULT_RATTLE_n_configs
+
+
+   .. py:attribute:: DEFAULT_RATTLE_frac_vacancies
+
+
+   .. py:attribute:: DEFAULT_RATTLE_vacancies_per_config
+
+
+   .. py:attribute:: DEFAULT_do_rattle
+
+
+   .. py:attribute:: DEFAULT_do_input
+
+
+   .. py:attribute:: DEFAULT_do_isolated
+
+
+   .. py:method:: define(spec)
+      :classmethod:
+
+
+      Specify inputs and outputs.
+
+
+
+   .. py:method:: get_builder_with_structures(structures)
+      :classmethod:
+
+
+      Return a builder
+
+
+
+   .. py:method:: check_inputs()
+
+      Check inputs.
+
+
+
+   .. py:method:: run_dataset_generation()
+
+      Generate datasets.
+
+
+

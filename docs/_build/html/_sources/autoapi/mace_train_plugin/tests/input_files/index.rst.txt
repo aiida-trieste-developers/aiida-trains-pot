@@ -1,0 +1,6 @@
+mace_train_plugin.tests.input_files
+===================================
+
+.. py:module:: mace_train_plugin.tests.input_files
+
+

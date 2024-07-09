@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>data &mdash; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Data-Driven Interatomic Potential WorkChain
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Data-Driven Interatomic Potential WorkChain</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">data</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for data</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Data types provided by plugin</span>
+
+<span class="sd">Register data types via the &quot;aiida.data&quot; entry point in setup.json.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># You can directly use or subclass aiida.orm.data.Data</span>
+<span class="c1"># or any other data type listed under &#39;verdi data&#39;</span>
+<span class="kn">from</span> <span class="nn">voluptuous</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Schema</span>
+
+<span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="n">Dict</span>
+
+<span class="c1"># A subset of diff&#39;s command line options</span>
+<div class="viewcode-block" id="cmdline_options">
+<a class="viewcode-back" href="../autoapi/data/index.html#data.cmdline_options">[docs]</a>
+<span class="n">cmdline_options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">Optional</span><span class="p">(</span><span class="s2">&quot;ignore-case&quot;</span><span class="p">):</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">(</span><span class="s2">&quot;ignore-file-name-case&quot;</span><span class="p">):</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">(</span><span class="s2">&quot;ignore-tab-expansion&quot;</span><span class="p">):</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">(</span><span class="s2">&quot;ignore-space-change&quot;</span><span class="p">):</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">(</span><span class="s2">&quot;ignore-all-space&quot;</span><span class="p">):</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="DiffParameters">
+<a class="viewcode-back" href="../autoapi/data/index.html#data.DiffParameters">[docs]</a>
+<span class="k">class</span> <span class="nc">DiffParameters</span><span class="p">(</span><span class="n">Dict</span><span class="p">):</span>  <span class="c1"># pylint: disable=too-many-ancestors</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Command line options for diff.</span>
+
+<span class="sd">    This class represents a python dictionary used to</span>
+<span class="sd">    pass command line options to the executable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># &quot;voluptuous&quot; schema  to add automatic validation</span>
+<div class="viewcode-block" id="DiffParameters.schema">
+<a class="viewcode-back" href="../autoapi/data/index.html#data.DiffParameters.schema">[docs]</a>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="p">(</span><span class="n">cmdline_options</span><span class="p">)</span></div>
+
+
+    <span class="c1"># pylint: disable=redefined-builtin</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor for the data class</span>
+
+<span class="sd">        Usage: ``DiffParameters(dict{&#39;ignore-case&#39;: True})``</span>
+
+<span class="sd">        :param parameters_dict: dictionary with commandline parameters</span>
+<span class="sd">        :param type parameters_dict: dict</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DiffParameters.validate">
+<a class="viewcode-back" href="../autoapi/data/index.html#data.DiffParameters.validate">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters_dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate command line options.</span>
+
+<span class="sd">        Uses the voluptuous package for validation. Find out about allowed keys using::</span>
+
+<span class="sd">            print(DiffParameters).schema.schema</span>
+
+<span class="sd">        :param parameters_dict: dictionary with commandline parameters</span>
+<span class="sd">        :param type parameters_dict: dict</span>
+<span class="sd">        :returns: validated dictionary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DiffParameters</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span><span class="n">parameters_dict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DiffParameters.cmdline_params">
+<a class="viewcode-back" href="../autoapi/data/index.html#data.DiffParameters.cmdline_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">cmdline_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file1_name</span><span class="p">,</span> <span class="n">file2_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Synthesize command line parameters.</span>
+
+<span class="sd">        e.g. [ &#39;--ignore-case&#39;, &#39;filename1&#39;, &#39;filename2&#39;]</span>
+
+<span class="sd">        :param file_name1: Name of first file</span>
+<span class="sd">        :param type file_name1: str</span>
+<span class="sd">        :param file_name2: Name of second file</span>
+<span class="sd">        :param type file_name2: str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">pm_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">option</span><span class="p">,</span> <span class="n">enabled</span> <span class="ow">in</span> <span class="n">pm_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">enabled</span><span class="p">:</span>
+                <span class="n">parameters</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;--&quot;</span> <span class="o">+</span> <span class="n">option</span><span class="p">]</span>
+
+        <span class="n">parameters</span> <span class="o">+=</span> <span class="p">[</span><span class="n">file1_name</span><span class="p">,</span> <span class="n">file2_name</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DiffParameters.__str__">
+<a class="viewcode-back" href="../autoapi/data/index.html#data.DiffParameters.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;String representation of node.</span>
+
+<span class="sd">        Append values of dictionary to usual representation. E.g.::</span>
+
+<span class="sd">            uuid: b416cbee-24e8-47a8-8c11-6d668770158b (pk: 590)</span>
+<span class="sd">            {&#39;ignore-case&#39;: True}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+        <span class="n">string</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_dict</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">string</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

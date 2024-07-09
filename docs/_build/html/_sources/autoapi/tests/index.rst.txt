@@ -1,0 +1,46 @@
+tests
+=====
+
+.. py:module:: tests
+
+.. autoapi-nested-parse::
+
+   Tests for the plugin.
+
+   Includes both tests written in unittest style (test_cli.py) and tests written
+   in pytest style (test_calculations.py).
+
+
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/tests/input_files/index
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/tests/test_calculations/index
+   /autoapi/tests/test_cli/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   tests.TEST_DIR
+
+
+Package Contents
+----------------
+
+.. py:data:: TEST_DIR
+

@@ -1,0 +1,57 @@
+mace_output_parser
+==================
+
+.. py:module:: mace_output_parser
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   mace_output_parser.file_path
+   mace_output_parser.parsed_data
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   mace_output_parser.parse_tables_from_singlefiledata
+   mace_output_parser.parse_log_file
+
+
+Module Contents
+---------------
+
+.. py:function:: parse_tables_from_singlefiledata(node)
+
+   Parses tables from a SinglefileData node in AiiDA and returns the data as dictionaries,
+   including the number of epochs.
+
+   Args:
+   node_uuid (str): The UUID of the SinglefileData node containing the tables.
+
+   Returns:
+   list of dict: A list containing dictionaries for each parsed table with epoch information.
+
+
+.. py:function:: parse_log_file(node)
+
+   Parses a log file containing JSON-like entries and returns a list of parsed JSON objects
+   that match the required format.
+
+   Args:
+   file_path (str): The path to the log file.
+
+   Returns:
+   list: A list of parsed JSON objects.
+
+
+.. py:data:: file_path
+   :value: 'aiida_run-3904_train.txt'
+
+
+.. py:data:: parsed_data
+

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QECalculationWorkChain &mdash; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="lammps_frame_extraction" href="../lammps_frame_extraction/index.html" />
+    <link rel="prev" title="run_lammps_extraction" href="../run_lammps_extraction/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Data-Driven Interatomic Potential WorkChain
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../cli/index.html">cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data/index.html">data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conf/index.html">conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tests/index.html">tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parsers/index.html">parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../helpers/index.html">helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nnip_wc/index.html">nnip_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conftest/index.html">conftest</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_nnip/index.html">run_nnip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lammps_wc/index.html">lammps_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pdb_loader/index.html">pdb_loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../example_01/index.html">example_01</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../input_files/index.html">input_files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../calculations/index.html">calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mace_train_wc/index.html">mace_train_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_nnip_bora/index.html">run_nnip_bora</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_evaluation/index.html">run_evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../NNIPdevelopment/index.html">NNIPdevelopment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../launch_mace_chain/index.html">launch_mace_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mace_train_plugin/index.html">mace_train_plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preprocess_config/index.html">preprocess_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datageneration/index.html">run_datageneration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mace_output_parser/index.html">mace_output_parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_lammps_extraction/index.html">run_lammps_extraction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">QECalculationWorkChain</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#classes">Classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#QECalculationWorkChain.PwBaseWorkChain"><code class="docutils literal notranslate"><span class="pre">PwBaseWorkChain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#QECalculationWorkChain.StructureData"><code class="docutils literal notranslate"><span class="pre">StructureData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#QECalculationWorkChain.TrajectoryData"><code class="docutils literal notranslate"><span class="pre">TrajectoryData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#QECalculationWorkChain.SinglefileData"><code class="docutils literal notranslate"><span class="pre">SinglefileData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#QECalculationWorkChain.WriteDataset"><code class="docutils literal notranslate"><span class="pre">WriteDataset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#QECalculationWorkChain.QECalculationWorkChain"><code class="docutils literal notranslate"><span class="pre">QECalculationWorkChain</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../lammps_frame_extraction/index.html">lammps_frame_extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datasetgenerator_test_cm/index.html">run_datasetgenerator_test_cm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datasetgenerator_test_gr/index.html">run_datasetgenerator_test_gr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../launch_rattle_qe_lammps_chain/index.html">launch_rattle_qe_lammps_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../launch_rattle_qe_mace_lammps_chain/index.html">launch_rattle_qe_mace_lammps_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datasetgenerator_test_leonardo/index.html">run_datasetgenerator_test_leonardo</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Data-Driven Interatomic Potential WorkChain</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">QECalculationWorkChain</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/autoapi/QECalculationWorkChain/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-QECalculationWorkChain">
+<span id="qecalculationworkchain"></span><h1>QECalculationWorkChain<a class="headerlink" href="#module-QECalculationWorkChain" title="Link to this heading"></a></h1>
+<p>Equation of State WorkChain.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#QECalculationWorkChain.PwBaseWorkChain" title="QECalculationWorkChain.PwBaseWorkChain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PwBaseWorkChain</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#QECalculationWorkChain.StructureData" title="QECalculationWorkChain.StructureData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StructureData</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#QECalculationWorkChain.TrajectoryData" title="QECalculationWorkChain.TrajectoryData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrajectoryData</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#QECalculationWorkChain.SinglefileData" title="QECalculationWorkChain.SinglefileData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SinglefileData</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#QECalculationWorkChain.QECalculationWorkChain" title="QECalculationWorkChain.QECalculationWorkChain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QECalculationWorkChain</span></code></a></p></td>
+<td><p>WorkChain to generate a training dataset for a given structure using Quantum ESPRESSO.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#QECalculationWorkChain.WriteDataset" title="QECalculationWorkChain.WriteDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WriteDataset</span></code></a>(**params)</p></td>
+<td><p>Calculation function to write a dataset to a file</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="QECalculationWorkChain.PwBaseWorkChain">
+<span class="sig-prename descclassname"><span class="pre">QECalculationWorkChain.</span></span><span class="sig-name descname"><span class="pre">PwBaseWorkChain</span></span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#PwBaseWorkChain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.PwBaseWorkChain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="QECalculationWorkChain.StructureData">
+<span class="sig-prename descclassname"><span class="pre">QECalculationWorkChain.</span></span><span class="sig-name descname"><span class="pre">StructureData</span></span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#StructureData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.StructureData" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="QECalculationWorkChain.TrajectoryData">
+<span class="sig-prename descclassname"><span class="pre">QECalculationWorkChain.</span></span><span class="sig-name descname"><span class="pre">TrajectoryData</span></span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#TrajectoryData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.TrajectoryData" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="QECalculationWorkChain.SinglefileData">
+<span class="sig-prename descclassname"><span class="pre">QECalculationWorkChain.</span></span><span class="sig-name descname"><span class="pre">SinglefileData</span></span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#SinglefileData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.SinglefileData" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="QECalculationWorkChain.WriteDataset">
+<span class="sig-prename descclassname"><span class="pre">QECalculationWorkChain.</span></span><span class="sig-name descname"><span class="pre">WriteDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#WriteDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.WriteDataset" title="Link to this definition"></a></dt>
+<dd><p>Calculation function to write a dataset to a file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>structures</strong> – A list of AiiDA <cite>StructureData</cite> nodes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="QECalculationWorkChain.QECalculationWorkChain">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">QECalculationWorkChain.</span></span><span class="sig-name descname"><span class="pre">QECalculationWorkChain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">logging.Logger</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">aiida.engine.runners.Runner</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_persistence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#QECalculationWorkChain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.QECalculationWorkChain" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">aiida_quantumespresso.workflows.protocols.utils.ProtocolMixin</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">aiida.engine.WorkChain</span></code></p>
+<p>WorkChain to generate a training dataset for a given structure using Quantum ESPRESSO.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="QECalculationWorkChain.QECalculationWorkChain.define">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">define</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#QECalculationWorkChain.define"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.QECalculationWorkChain.define" title="Link to this definition"></a></dt>
+<dd><p>Specify inputs and outputs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="QECalculationWorkChain.QECalculationWorkChain.get_builder_from_protocol">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_builder_from_protocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_hole_treatments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">protocol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elements_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure_preparation_settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correction_energies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#QECalculationWorkChain.get_builder_from_protocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.QECalculationWorkChain.get_builder_from_protocol" title="Link to this definition"></a></dt>
+<dd><p>Return a builder prepopulated with inputs selected according to the chosen protocol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>code</strong> – the <code class="docutils literal notranslate"><span class="pre">Code</span></code> instance configured for the <code class="docutils literal notranslate"><span class="pre">quantumespresso.pw</span></code> plugin.</p></li>
+<li><p><strong>structure</strong> – the <code class="docutils literal notranslate"><span class="pre">StructureData</span></code> instance to use.</p></li>
+<li><p><strong>pseudos</strong> – the core-hole pseudopotential pairs (ground-state and
+excited-state) for the elements to be calculated. These must
+use the mapping of {“element” : {“core_hole” : &lt;upf&gt;, “gipaw” : &lt;upf&gt;}}</p></li>
+<li><p><strong>protocol</strong> – the protocol to use. If not specified, the default will be used.</p></li>
+<li><p><strong>overrides</strong> – optional dictionary of inputs to override the defaults of the
+XpsWorkChain itself.</p></li>
+<li><p><strong>kwargs</strong> – additional keyword arguments that will be passed to the
+<code class="docutils literal notranslate"><span class="pre">get_builder_from_protocol</span></code> of all the sub processes that are called by this
+workchain.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a process builder instance with all inputs defined ready for launch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="QECalculationWorkChain.QECalculationWorkChain._run_rattle_and_submit">
+<span class="sig-name descname"><span class="pre">_run_rattle_and_submit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#QECalculationWorkChain._run_rattle_and_submit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.QECalculationWorkChain._run_rattle_and_submit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="QECalculationWorkChain.QECalculationWorkChain.run_rattle_qe">
+<span class="sig-name descname"><span class="pre">run_rattle_qe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#QECalculationWorkChain.run_rattle_qe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.QECalculationWorkChain.run_rattle_qe" title="Link to this definition"></a></dt>
+<dd><p>Run calculations for dataset generation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="QECalculationWorkChain.QECalculationWorkChain.results">
+<span class="sig-name descname"><span class="pre">results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#QECalculationWorkChain.results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.QECalculationWorkChain.results" title="Link to this definition"></a></dt>
+<dd><p>Process results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="QECalculationWorkChain.QECalculationWorkChain.finalize">
+<span class="sig-name descname"><span class="pre">finalize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#QECalculationWorkChain.finalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.QECalculationWorkChain.finalize" title="Link to this definition"></a></dt>
+<dd><p>Finalize.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="QECalculationWorkChain.QECalculationWorkChain.error_check">
+<span class="sig-name descname"><span class="pre">error_check</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/QECalculationWorkChain.html#QECalculationWorkChain.error_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#QECalculationWorkChain.QECalculationWorkChain.error_check" title="Link to this definition"></a></dt>
+<dd><p>Check for errors.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../run_lammps_extraction/index.html" class="btn btn-neutral float-left" title="run_lammps_extraction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../lammps_frame_extraction/index.html" class="btn btn-neutral float-right" title="lammps_frame_extraction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

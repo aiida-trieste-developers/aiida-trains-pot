@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>run_nnip &mdash; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="lammps_wc" href="../lammps_wc/index.html" />
+    <link rel="prev" title="conftest" href="../conftest/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Data-Driven Interatomic Potential WorkChain
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../cli/index.html">cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../data/index.html">data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conf/index.html">conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tests/index.html">tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parsers/index.html">parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../helpers/index.html">helpers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nnip_wc/index.html">nnip_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../conftest/index.html">conftest</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">run_nnip</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.KpointsData"><code class="docutils literal notranslate"><span class="pre">KpointsData</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.NNIPWorkChain"><code class="docutils literal notranslate"><span class="pre">NNIPWorkChain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.machine_dft"><code class="docutils literal notranslate"><span class="pre">machine_dft</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.machine_mace"><code class="docutils literal notranslate"><span class="pre">machine_mace</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.machine_lammps"><code class="docutils literal notranslate"><span class="pre">machine_lammps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.machine_evaluation"><code class="docutils literal notranslate"><span class="pre">machine_evaluation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.description"><code class="docutils literal notranslate"><span class="pre">description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.get_memory"><code class="docutils literal notranslate"><span class="pre">get_memory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.get_time"><code class="docutils literal notranslate"><span class="pre">get_time()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.mem_dft"><code class="docutils literal notranslate"><span class="pre">mem_dft</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.time_dft"><code class="docutils literal notranslate"><span class="pre">time_dft</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.mem_mace"><code class="docutils literal notranslate"><span class="pre">mem_mace</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.time_mace"><code class="docutils literal notranslate"><span class="pre">time_mace</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.mem_lammps"><code class="docutils literal notranslate"><span class="pre">mem_lammps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.time_lammps"><code class="docutils literal notranslate"><span class="pre">time_lammps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.mem_evaluation"><code class="docutils literal notranslate"><span class="pre">mem_evaluation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.time_evaluation"><code class="docutils literal notranslate"><span class="pre">time_evaluation</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.structures"><code class="docutils literal notranslate"><span class="pre">structures</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.kpoints"><code class="docutils literal notranslate"><span class="pre">kpoints</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.pseudo_family"><code class="docutils literal notranslate"><span class="pre">pseudo_family</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.builder"><code class="docutils literal notranslate"><span class="pre">builder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.mace_config"><code class="docutils literal notranslate"><span class="pre">mace_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run_nnip.code"><code class="docutils literal notranslate"><span class="pre">code</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../lammps_wc/index.html">lammps_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pdb_loader/index.html">pdb_loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../example_01/index.html">example_01</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../input_files/index.html">input_files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../calculations/index.html">calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mace_train_wc/index.html">mace_train_wc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_nnip_bora/index.html">run_nnip_bora</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_evaluation/index.html">run_evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../NNIPdevelopment/index.html">NNIPdevelopment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../launch_mace_chain/index.html">launch_mace_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mace_train_plugin/index.html">mace_train_plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preprocess_config/index.html">preprocess_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datageneration/index.html">run_datageneration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mace_output_parser/index.html">mace_output_parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_lammps_extraction/index.html">run_lammps_extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../QECalculationWorkChain/index.html">QECalculationWorkChain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../lammps_frame_extraction/index.html">lammps_frame_extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datasetgenerator_test_cm/index.html">run_datasetgenerator_test_cm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datasetgenerator_test_gr/index.html">run_datasetgenerator_test_gr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../launch_rattle_qe_lammps_chain/index.html">launch_rattle_qe_lammps_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../launch_rattle_qe_mace_lammps_chain/index.html">launch_rattle_qe_mace_lammps_chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../run_datasetgenerator_test_leonardo/index.html">run_datasetgenerator_test_leonardo</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Data-Driven Interatomic Potential WorkChain</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">run_nnip</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/autoapi/run_nnip/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-run_nnip">
+<span id="run-nnip"></span><h1>run_nnip<a class="headerlink" href="#module-run_nnip" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.KpointsData" title="run_nnip.KpointsData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KpointsData</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.NNIPWorkChain" title="run_nnip.NNIPWorkChain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NNIPWorkChain</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.machine_dft" title="run_nnip.machine_dft"><code class="xref py py-obj docutils literal notranslate"><span class="pre">machine_dft</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.machine_mace" title="run_nnip.machine_mace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">machine_mace</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.machine_lammps" title="run_nnip.machine_lammps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">machine_lammps</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.machine_evaluation" title="run_nnip.machine_evaluation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">machine_evaluation</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.description" title="run_nnip.description"><code class="xref py py-obj docutils literal notranslate"><span class="pre">description</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.mem_dft" title="run_nnip.mem_dft"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mem_dft</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.time_dft" title="run_nnip.time_dft"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_dft</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.mem_mace" title="run_nnip.mem_mace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mem_mace</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.time_mace" title="run_nnip.time_mace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_mace</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.mem_lammps" title="run_nnip.mem_lammps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mem_lammps</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.time_lammps" title="run_nnip.time_lammps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_lammps</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.mem_evaluation" title="run_nnip.mem_evaluation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mem_evaluation</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.time_evaluation" title="run_nnip.time_evaluation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_evaluation</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.structures" title="run_nnip.structures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">structures</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.kpoints" title="run_nnip.kpoints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kpoints</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.pseudo_family" title="run_nnip.pseudo_family"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pseudo_family</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.builder" title="run_nnip.builder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">builder</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.mace_config" title="run_nnip.mace_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mace_config</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.code" title="run_nnip.code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">code</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#run_nnip.get_memory" title="run_nnip.get_memory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_memory</span></code></a>(mem)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#run_nnip.get_time" title="run_nnip.get_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_time</span></code></a>(time)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.KpointsData">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">KpointsData</span></span><a class="reference internal" href="../../_modules/run_nnip.html#KpointsData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.KpointsData" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.NNIPWorkChain">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">NNIPWorkChain</span></span><a class="reference internal" href="../../_modules/run_nnip.html#NNIPWorkChain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.NNIPWorkChain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.machine_dft">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">machine_dft</span></span><a class="reference internal" href="../../_modules/run_nnip.html#machine_dft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.machine_dft" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.machine_mace">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">machine_mace</span></span><a class="reference internal" href="../../_modules/run_nnip.html#machine_mace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.machine_mace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.machine_lammps">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">machine_lammps</span></span><a class="reference internal" href="../../_modules/run_nnip.html#machine_lammps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.machine_lammps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.machine_evaluation">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">machine_evaluation</span></span><a class="reference internal" href="../../_modules/run_nnip.html#machine_evaluation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.machine_evaluation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.description">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'mote'</span></em><a class="reference internal" href="../../_modules/run_nnip.html#description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.description" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="run_nnip.get_memory">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">get_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mem</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/run_nnip.html#get_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.get_memory" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="run_nnip.get_time">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">get_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/run_nnip.html#get_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.get_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.mem_dft">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">mem_dft</span></span><a class="reference internal" href="../../_modules/run_nnip.html#mem_dft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.mem_dft" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.time_dft">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">time_dft</span></span><a class="reference internal" href="../../_modules/run_nnip.html#time_dft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.time_dft" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.mem_mace">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">mem_mace</span></span><a class="reference internal" href="../../_modules/run_nnip.html#mem_mace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.mem_mace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.time_mace">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">time_mace</span></span><a class="reference internal" href="../../_modules/run_nnip.html#time_mace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.time_mace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.mem_lammps">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">mem_lammps</span></span><a class="reference internal" href="../../_modules/run_nnip.html#mem_lammps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.mem_lammps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.time_lammps">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">time_lammps</span></span><a class="reference internal" href="../../_modules/run_nnip.html#time_lammps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.time_lammps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.mem_evaluation">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">mem_evaluation</span></span><a class="reference internal" href="../../_modules/run_nnip.html#mem_evaluation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.mem_evaluation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.time_evaluation">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">time_evaluation</span></span><a class="reference internal" href="../../_modules/run_nnip.html#time_evaluation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.time_evaluation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.structures">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">structures</span></span><a class="reference internal" href="../../_modules/run_nnip.html#structures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.structures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.kpoints">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">kpoints</span></span><a class="reference internal" href="../../_modules/run_nnip.html#kpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.kpoints" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.pseudo_family">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">pseudo_family</span></span><a class="reference internal" href="../../_modules/run_nnip.html#pseudo_family"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.pseudo_family" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.builder">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">builder</span></span><a class="reference internal" href="../../_modules/run_nnip.html#builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.builder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.mace_config">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">mace_config</span></span><a class="reference internal" href="../../_modules/run_nnip.html#mace_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.mace_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="run_nnip.code">
+<span class="sig-prename descclassname"><span class="pre">run_nnip.</span></span><span class="sig-name descname"><span class="pre">code</span></span><a class="reference internal" href="../../_modules/run_nnip.html#code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#run_nnip.code" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../conftest/index.html" class="btn btn-neutral float-left" title="conftest" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../lammps_wc/index.html" class="btn btn-neutral float-right" title="lammps_wc" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

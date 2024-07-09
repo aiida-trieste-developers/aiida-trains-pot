@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>launch_mace_chain &mdash; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Data-Driven Interatomic Potential WorkChain
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Data-Driven Interatomic Potential WorkChain</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">launch_mace_chain</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for launch_mace_chain</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Launch a calculation using the &#39;diff-tutorial&#39; plugin&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">aiida</span>
+<span class="kn">from</span> <span class="nn">aiida.plugins</span> <span class="kn">import</span> <span class="n">WorkflowFactory</span>
+<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="kn">from</span> <span class="nn">aiida.engine</span> <span class="kn">import</span> <span class="n">submit</span><span class="p">,</span> <span class="n">run</span>
+<span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="n">load_group</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">load_code</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">load_node</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1">#MaceWorkChain = WorkflowFactory(&#39;maceworkchain&#39;)</span>
+<span class="kn">from</span> <span class="nn">MaceWorkChain.MaceWorkChain</span> <span class="kn">import</span> <span class="n">MaceWorkChain</span>
+
+<span class="n">aiida</span><span class="o">.</span><span class="n">load_profile</span><span class="p">()</span>
+
+<span class="c1"># Create or load code</span>
+<div class="viewcode-block" id="code">
+<a class="viewcode-back" href="../autoapi/launch_mace_chain/index.html#launch_mace_chain.code">[docs]</a>
+<span class="n">code</span> <span class="o">=</span> <span class="n">load_code</span><span class="p">(</span><span class="s2">&quot;mace@leo2_scratch_bind&quot;</span><span class="p">)</span></div>
+
+<span class="c1"># try:</span>
+<span class="c1">#     code = orm.load_code(&#39;diff@localhost&#39;)</span>
+<span class="c1"># except NotExistent:</span>
+<span class="c1">#     # Setting up code via python API (or use &quot;verdi code setup&quot;)</span>
+<span class="c1">#     code = orm.Code(label=&#39;diff&#39;, remote_computer_exec=[computer, &#39;/usr/bin/diff&#39;], input_plugin_name=&#39;diff-tutorial&#39;)</span>
+
+<span class="c1"># Set up inputs</span>
+
+<span class="c1"># atoms = read(&#39;/home/bidoggia/onedrive/ML/WTe2/ref_structures/interface-x2.xyz&#39;)</span>
+<span class="c1"># structure = StructureData(ase=atoms)</span>
+<span class="c1"># structure.store()</span>
+<span class="c1"># macecalc = load_node(71415)</span>
+<span class="c1"># retrived = macecalc.get_retrieved_node()</span>
+<span class="c1"># with retrived.open(&#39;aiida_swa.model-lammps.pt&#39;, &#39;rb&#39;) as handle:</span>
+<span class="c1"># 	potential = SinglefileData(file=handle)</span>
+<span class="c1"># # potential=SinglefileData(file=f&#39;/home/bidoggia/onedrive/ML/WTe2/MACE/RET-R_1H_1T1+R_inter+LMP-MACE_1H_1T1/potential.dat&#39;)</span>
+<span class="c1"># potential.store()</span>
+
+
+<div class="viewcode-block" id="machine">
+<a class="viewcode-back" href="../autoapi/launch_mace_chain/index.html#launch_mace_chain.machine">[docs]</a>
+<span class="n">machine</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s1">&#39;time&#39;</span>                             <span class="p">:</span> <span class="s2">&quot;00:30:00&quot;</span><span class="p">,</span>
+<span class="s1">&#39;nodes&#39;</span>                            <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="s1">&#39;mem&#39;</span>                              <span class="p">:</span> <span class="s2">&quot;70GB&quot;</span><span class="p">,</span>
+<span class="s1">&#39;taskpn&#39;</span>                           <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="s1">&#39;taskps&#39;</span>                           <span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="s1">&#39;cpupt&#39;</span>                            <span class="p">:</span> <span class="s2">&quot;8&quot;</span><span class="p">,</span>
+<span class="s1">&#39;account&#39;</span>                          <span class="p">:</span> <span class="s2">&quot;IscrB_DeepVTe2&quot;</span><span class="p">,</span>
+<span class="s1">&#39;partition&#39;</span>                        <span class="p">:</span> <span class="s2">&quot;boost_usr_prod&quot;</span><span class="p">,</span>
+<span class="c1">#&#39;partition&#39;                        : &quot;lrd_all_serial&quot;,</span>
+<span class="s1">&#39;gpu&#39;</span>                              <span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="s1">&#39;pool&#39;</span>                             <span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="s1">&#39;poolx&#39;</span>                            <span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="s1">&#39;pools&#39;</span>                            <span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="s1">&#39;pooln&#39;</span>                            <span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="s1">&#39;poolp&#39;</span>                            <span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+<span class="c1">#&#39;qos&#39;                              : &quot;normal&quot;</span>
+<span class="s1">&#39;qos&#39;</span>                              <span class="p">:</span> <span class="s2">&quot;boost_qos_dbg&quot;</span>
+<span class="p">}</span></div>
+
+
+
+<span class="k">if</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;mem&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;MB&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+<div class="viewcode-block" id="mem">
+<a class="viewcode-back" href="../autoapi/launch_mace_chain/index.html#launch_mace_chain.mem">[docs]</a>
+    <span class="n">mem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">machine</span><span class="p">[</span><span class="s1">&#39;mem&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;MB&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">*</span><span class="mi">1024</span></div>
+
+<span class="k">elif</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;mem&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;GB&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+    <span class="n">mem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">machine</span><span class="p">[</span><span class="s1">&#39;mem&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;GB&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span>
+<span class="k">elif</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;mem&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;KB&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+    <span class="n">mem</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">machine</span><span class="p">[</span><span class="s1">&#39;mem&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;KB&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span>
+<div class="viewcode-block" id="time">
+<a class="viewcode-back" href="../autoapi/launch_mace_chain/index.html#launch_mace_chain.time">[docs]</a>
+<span class="n">time</span> <span class="o">=</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="time_sec">
+<a class="viewcode-back" href="../autoapi/launch_mace_chain/index.html#launch_mace_chain.time_sec">[docs]</a>
+<span class="n">time_sec</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="mi">3600</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">*</span><span class="mi">60</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span></div>
+
+
+
+
+<span class="c1"># structure_group = load_group(label = &#39;wte2/str/1t1-9x5&#39;)</span>
+<span class="c1"># structure_group = load_group(label = &#39;wte2/str/1h-10x10&#39;)</span>
+<span class="c1"># structure_group = load_group(label = &#39;wte2/str/interface3-2x2&#39;)</span>
+<span class="c1"># structure_group = load_group(label = &#39;WTe2/1H/20x20/vacTe1&#39;)</span>
+<span class="c1"># nnip_group = load_group(label = &#39;WTe2/nnip&#39;)</span>
+
+
+<span class="c1"># if len(structure_group.nodes) == 0:</span>
+<span class="c1">#     raise ValueError(&#39;No structures found in group&#39;)</span>
+<span class="c1"># elif len(structure_group.nodes) &gt; 1:</span>
+<span class="c1">#     raise ValueError(&#39;More than one structure found in group&#39;)</span>
+
+<span class="c1"># if len(nnip_group.nodes) == 0:</span>
+<span class="c1">#     raise ValueError(&#39;No potentials found in group&#39;)</span>
+<span class="c1"># elif len(nnip_group.nodes) &gt; 1:</span>
+<span class="c1">#     raise ValueError(&#39;More than one potential found in group&#39;)</span>
+
+<span class="c1"># potential = nnip_group.nodes[0]</span>
+<span class="c1"># structure = structure_group.nodes[0]</span>
+
+<div class="viewcode-block" id="dataset">
+<a class="viewcode-back" href="../autoapi/launch_mace_chain/index.html#launch_mace_chain.dataset">[docs]</a>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">load_node</span><span class="p">(</span><span class="mi">22888</span><span class="p">)</span></div>
+
+<span class="c1">#dataset = load_node(22289) </span>
+<span class="c1">#print(&quot;dataset&quot;)</span>
+<span class="c1">#print(dataset)</span>
+
+<div class="viewcode-block" id="builder">
+<a class="viewcode-back" href="../autoapi/launch_mace_chain/index.html#launch_mace_chain.builder">[docs]</a>
+<span class="n">builder</span> <span class="o">=</span> <span class="n">MaceWorkChain</span><span class="o">.</span><span class="n">get_builder_from_protocol</span><span class="p">()</span></div>
+
+
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">resources</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;num_machines&#39;</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;num_mpiprocs_per_machine&#39;</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;taskpn&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;num_cores_per_mpiproc&#39;</span><span class="p">:</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;cpupt&#39;</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;pot 1.4&quot;</span>
+<span class="c1"># builder.mace.metadata.options.parser_name = &quot;lammps_base&quot;</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">qos</span> <span class="o">=</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;qos&#39;</span><span class="p">]</span>
+
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">account</span> <span class="o">=</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;account&#39;</span><span class="p">]</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">queue_name</span> <span class="o">=</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;partition&#39;</span><span class="p">]</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">custom_scheduler_commands</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;#SBATCH --gres=gpu:</span><span class="si">{</span><span class="n">machine</span><span class="p">[</span><span class="s1">&#39;gpu&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">qos</span> <span class="o">=</span> <span class="n">machine</span><span class="p">[</span><span class="s1">&#39;qos&#39;</span><span class="p">]</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">max_wallclock_seconds</span> <span class="o">=</span> <span class="n">time_sec</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">max_memory_kb</span> <span class="o">=</span> <span class="n">mem</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">import_sys_environment</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="n">builder</span><span class="p">)</span>
+
+<div class="viewcode-block" id="calc">
+<a class="viewcode-back" href="../autoapi/launch_mace_chain/index.html#launch_mace_chain.calc">[docs]</a>
+<span class="n">calc</span> <span class="o">=</span> <span class="n">submit</span><span class="p">(</span><span class="n">builder</span><span class="p">,</span>
+                <span class="n">code</span>		<span class="o">=</span>	<span class="n">code</span><span class="p">,</span>
+                <span class="n">dataset_list</span> 	<span class="o">=</span> 	<span class="n">dataset</span><span class="p">,</span>
+                <span class="n">parent_folder</span> 	<span class="o">=</span>	<span class="n">Str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+                <span class="p">)</span></div>
+
+
+<span class="c1"># run(builder, code=code, structure=structure, potential=potential, temperature=Float(200.0), dt=Float(0.00242))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

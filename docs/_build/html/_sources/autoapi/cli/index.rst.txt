@@ -1,0 +1,43 @@
+cli
+===
+
+.. py:module:: cli
+
+.. autoapi-nested-parse::
+
+   Command line interface (cli) for aiida_diff.
+
+   Register new commands either via the "console_scripts" entry point or plug them
+   directly into the 'verdi' command by using AiiDA-specific entry points like
+   "aiida.cmdline.data" (both in the setup.json file).
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   cli.data_cli
+   cli.list_
+   cli.export
+
+
+Module Contents
+---------------
+
+.. py:function:: data_cli()
+
+   Command line interface for aiida-diff
+
+
+.. py:function:: list_()
+
+   Display all DiffParameters nodes
+
+
+.. py:function:: export(node, outfile)
+
+   Export a DiffParameters node (identified by PK, UUID or label) to plain text.
+
+

@@ -1,0 +1,25 @@
+run_datageneration
+==================
+
+.. py:module:: run_datageneration
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   run_datageneration.DatasetGeneratorWorkChain
+   run_datageneration.structures
+   run_datageneration.builder
+
+
+Module Contents
+---------------
+
+.. py:data:: DatasetGeneratorWorkChain
+
+.. py:data:: structures
+
+.. py:data:: builder
+

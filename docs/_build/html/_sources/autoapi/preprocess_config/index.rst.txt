@@ -1,0 +1,38 @@
+preprocess_config
+=================
+
+.. py:module:: preprocess_config
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   preprocess_config.preprocess_path
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   preprocess_config.load_config
+   preprocess_config.build_command
+   preprocess_config.run_command
+   preprocess_config.main
+
+
+Module Contents
+---------------
+
+.. py:function:: load_config(file_path)
+
+.. py:data:: preprocess_path
+
+.. py:function:: build_command(params)
+
+.. py:function:: run_command(command)
+
+.. py:function:: main()
+
