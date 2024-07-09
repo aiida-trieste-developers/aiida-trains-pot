@@ -8,7 +8,7 @@ sphinx:
 
 # Optionally specify the Python version to use
 python:
-  version: 3.10
+  version: "3.10"
   install:
     - method: pip
       path: .
