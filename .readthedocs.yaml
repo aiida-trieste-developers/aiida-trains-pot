@@ -14,13 +14,11 @@ python:
       path: .
     - requirements: docs/requirements.txt
 
-# Build using a Read the Docs environment
-build:
-  image: "latest"
-
 # Configure the build to use your Makefile
-formats:
-  - pdf
+build:
+  image: latest  # This line is optional and might not be needed
+  formats:
+    - pdf  # Specify the formats you want to build (e.g., pdf, htmlzip, epub)
 
 # Include this to specify your project's dependencies
 requirements_file: docs/requirements.txt
