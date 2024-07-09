@@ -12,6 +12,18 @@ build:
   tools:
     python: '3.10'
     
+python:
+    install:
+        - method: pip
+          path: .
+          extra_requirements:
+            - docs
+
+# Let the build fail if there are any warnings
+sphinx:
+    builder: html
+    fail_on_warning: true
+    
 # Optionally specify the Python version to use
 #python:
 #  version: "3.10"
@@ -27,4 +39,4 @@ build:
 #    - pdf  # Specify the formats you want to build (e.g., pdf, htmlzip, epub)
 
 # Include this to specify your project's dependencies
-requirements_file: docs/requirements.txt
+#requirements_file: docs/requirements.txt
