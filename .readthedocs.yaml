@@ -1,17 +1,10 @@
-# .readthedocs.yml
-
 version: 2
-
-# Build documentation in the docs/ directory with Sphinx
-sphinx:
-  configuration: docs/source/conf.py
-
 
 build:
   os: ubuntu-22.04
   tools:
-    python: '3.10'
-    
+    python: "3.11"
+
 python:
     install:
         - method: pip
@@ -20,23 +13,6 @@ python:
             - docs
 
 # Let the build fail if there are any warnings
-#sphinx:
-#    builder: html
-#    fail_on_warning: true
-    
-# Optionally specify the Python version to use
-#python:
-#  version: "3.10"
-#  install:
-#    - method: pip
-#      path: .
-#    - requirements: docs/requirements.txt
-
-# Configure the build to use your Makefile
-#build:
-#  image: latest  # This line is optional and might not be needed
-#  formats:
-#    - pdf  # Specify the formats you want to build (e.g., pdf, htmlzip, epub)
-
-# Include this to specify your project's dependencies
-#requirements_file: docs/requirements.txt
+sphinx:
+    builder: html
+    fail_on_warning: true
