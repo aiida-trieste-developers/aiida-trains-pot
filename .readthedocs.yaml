@@ -20,7 +20,6 @@ build:
 
 # Configure the build to use your Makefile
 formats:
-  - html
   - pdf
 
 # Include this to specify your project's dependencies
