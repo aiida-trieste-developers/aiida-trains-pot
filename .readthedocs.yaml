@@ -1,0 +1,27 @@
+# .readthedocs.yml
+
+version: 2
+
+# Build documentation in the docs/ directory with Sphinx
+sphinx:
+  configuration: docs/source/conf.py
+
+# Optionally specify the Python version to use
+python:
+  version: 3.10
+  install:
+    - method: pip
+      path: .
+    - requirements: docs/requirements.txt
+
+# Build using a Read the Docs environment
+build:
+  image: "latest"
+
+# Configure the build to use your Makefile
+formats:
+  - html
+  - pdf
+
+# Include this to specify your project's dependencies
+requirements_file: docs/requirements.txt
