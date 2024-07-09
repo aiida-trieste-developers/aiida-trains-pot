@@ -15,21 +15,13 @@ from aiida.manage.configuration import Profile, load_profile
 
 load_profile(Profile("docs", {"process_control": {}, "storage": {}}))
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-import aiida_wannier90_workflows
 
 # -- Project information -----------------------------------------------------
 
-project = "aiida-wannier90-workflows"
-copyright = "2014-{}, ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE (Theory and Simulation of Materials (THEOS) and National Centre for Computational Design and Discovery of Novel Materials (NCCR MARVEL)), Switzerland. All rights reserved".format(
-    time.localtime().tm_year
-)
-# The full version, including alpha/beta/rc tags.
-release = aiida_wannier90_workflows.__version__
-# The short X.Y version.
-version = ".".join(aiida_wannier90_workflows.__version__.split(".")[:2])
+project = 'Data-Driven Interatomic Potential WorkChain'
+copyright = '2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko'
+author = 'Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko'
+release = '1.0.0'
 
 # -- General configuration ------------------------------------------------
 
@@ -109,8 +101,6 @@ html_use_opensearch = "https://aiida.readthedocs.io/projects/aiida-core/en/lates
 #   'nl', 'no', 'pt', 'ro', 'ru', 'sv', 'tr'
 html_search_language = "en"
 
-# Output file base name for HTML help builder.
-htmlhelp_basename = "aiida-wannier90-workflowsdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
