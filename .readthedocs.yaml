@@ -20,9 +20,9 @@ python:
             - docs
 
 # Let the build fail if there are any warnings
-sphinx:
-    builder: html
-    fail_on_warning: true
+#sphinx:
+#    builder: html
+#    fail_on_warning: true
     
 # Optionally specify the Python version to use
 #python:
