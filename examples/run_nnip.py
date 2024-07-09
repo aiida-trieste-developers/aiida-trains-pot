@@ -3,6 +3,8 @@ from aiida import load_profile
 from aiida.engine import submit
 from aiida.plugins import WorkflowFactory, DataFactory
 from aiida.tools.groups import GroupPath
+from pathlib import Path
+from aiida.orm import PortableCode
 from ase.io import read
 import yaml
 import os
@@ -214,6 +216,12 @@ builder.mace.mace.metadata.options.queue_name = machine_mace['partition']
 builder.mace.mace.metadata.options.qos = machine_mace['qos']
 builder.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_mace['gpu']}"
 
+code = PortableCode(
+    label='preprocess',
+    filepath_files=Path('/home/nataliia/Documents/aiida_scripts/src/NNIPdevelopment/mace/mace_train_wc/'),
+    filepath_executable='preprocess_config.py'
+)
+code.store()
 
 #builder.md.code = load_code('lmp4mace2@leo1_scratch')
 #builder.md.code = load_code('lmp4mace3@leo1_scratch_bind')
