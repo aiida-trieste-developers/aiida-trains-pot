@@ -1,41 +1,45 @@
 
 ######################################
-Advanced AiiDA workflows for Wannier90
+Advanced AiiDA workflows for active learning loop using 
+aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.
 ######################################
 
-The |aiida-wannier90-workflows|_ package is an `AiiDA`_ plugin for running advanced workflows with the `wannier90`_ software suite.
+The package is an `AiiDA`_ plugin for running advanced workflows with the quantumespresso, MACE, LAMMPS software suite.
 
 .. rst-class:: center
 
-    |aiida_logo| |hyphen| |w90_logo|
+    |aiida_logo| |hyphen| |qe_logo| |hyphen| |lammps_logo| |hyphen| |MACE_logo|
 
 .. |aiida_logo| image:: images/AiiDA_transparent_logo.png
-    :width: 40%
+    :width: 10%
 
 .. |hyphen| image:: images/hyphen.png
     :width: 8%
 
 .. |qe_logo| image:: images/qe_logo.jpg
-    :width: 40%
+    :width: 10%
 
-.. |w90_logo| image:: images/w90_logo.png
-    :width: 40%
+.. |lammps_logo| image:: images/Lammps-logo.png
+    :width: 10%
+
+.. |MACE_logo| image:: images/MACE_logo.png
+    :width: 10%
 
 Installation
 ============
 
-You can install ``aiida-wannier90-workflows`` in your Python environment using ``pip``:
+You can install  in your Python environment using ``pip``:
 
 .. code-block:: console
 
-   $ pip install aiida-wannier90-workflows
+   $ pip install -e .
 
-Note that this command will also install the ``aiida-core``, ``aiida-quantumespresso``, ``aiida-wannier90`` packages as its dependencies.
+Note that this command will also install the ``aiida-core``, ``aiida-quantumespresso``, ``aiida-lammps`` packages as its dependencies.
 For more information on how to install AiiDA and the required services in different environments, we refer to the |aiida-core documentation|_.
 
 Compatibility
 =============
-For an overview of the plugin's compatibility with Python, AiiDA and wannier90, please refer to the |README.md of the repository|_.
+For an overview of the plugin's compatibility with Python, AiiDA please refer to the |README.md of the repository|_.
 
 Getting Started
 ===============
@@ -80,27 +84,11 @@ If you use this plugin and/or AiiDA for your research, please cite the following
 
     We acknowledge support from:
 
-.. list-table::
-    :widths: 60 40
-    :class: logo-table
-    :header-rows: 0
 
-    * - The `NCCR MARVEL`_ funded by the Swiss National Science Foundation.
-      - |marvel|
-    * - The EU Centre of Excellence "`MaX – Materials Design at the Exascale`_" (Horizon 2020 EINFRA-5, Grant No. 676598).
-      - |max|
-    * - The `swissuniversities P-5 project "Materials Cloud"`_.
-      - |swissuniversities|
 
-.. |marvel| image:: images/MARVEL.png
-    :width: 100%
+    * - The PNRR Progect "National Centre for HPC, Big Data and Quantum Computing" 
 
-.. |max| image:: images/MaX.png
-    :width: 100%
-
-.. |swissuniversities| image:: images/swissuniversities.png
-    :width: 100%
-
+    
 .. |aiida-core documentation| replace:: ``aiida-core`` documentation
 .. _aiida-core documentation: https://aiida.readthedocs.io/projects/aiida-core/en/latest/intro/get_started.html
 
