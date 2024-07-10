@@ -1,8 +1,7 @@
 
-######################################
-Advanced AiiDA workflows for active learning loop using 
-aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.
-######################################
+##################################################################################################################
+Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.
+##################################################################################################################
 
 The package is an `AiiDA`_ plugin for running advanced workflows with the quantumespresso, MACE, LAMMPS software suite.
 
