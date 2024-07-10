@@ -5,4 +5,3 @@ API reference
     :maxdepth: 3
 
     workflows
-    utils

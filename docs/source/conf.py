@@ -36,9 +36,9 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
-    "sphinx_copybutton",
     "sphinx_click",
 ]
+#    "sphinx_copybutton",
 
 # Setting the intersphinx mapping to other readthedocs
 intersphinx_mapping = {
