@@ -54,5 +54,19 @@ Source = "https://github.com/mankoNm/NNIPDevelopment"
 #[project.entry-points."aiida.cmdline.data"]
 #"diff" = "aiida_diff.cli:data_cli"
 
+[project.optional-dependencies]
+docs = [
+    "aiida-core~=2.5",
+    "docutils",
+    "sphinx",
+    "sphinx-copybutton",
+    "sphinx-book-theme",
+    "sphinx-click",
+    "sphinxcontrib-contentui",
+    "sphinxcontrib-details-directive",
+    "furo",
+    "markupsafe"
+]
+
 [tool.flit.module]
 name = "NNIPdevelopment"
