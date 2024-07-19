@@ -1,10 +1,11 @@
 from aiida.orm import load_code, load_node, load_group, Str, Dict, List, Group, Int, Data, Bool, Float, StructureData, FolderData
-from aiida import load_profile
+from aiida import load_profile, orm
 from aiida.engine import submit
 from aiida.plugins import WorkflowFactory, DataFactory
 from aiida.tools.groups import GroupPath
 from pathlib import Path
 from aiida.orm import PortableCode
+from aiida.common.extendeddicts import AttributeDict
 from ase.io import read
 import yaml
 import os
@@ -226,11 +227,75 @@ code.store()
 #builder.md.code = load_code('lmp4mace2@leo1_scratch')
 #builder.md.code = load_code('lmp4mace3@leo1_scratch_bind')
 builder.md.code = load_code('lmp4mace_new@leo1_scratch_bind')
-builder.md.temperatures = List([30, 50])
-builder.md.pressures = List([0])
-builder.md.num_steps = Int(500)
-builder.md.dt = Float(0.00242)
+#builder.md.temperatures = List([30, 50])
+#builder.md.pressures = List([0])
+#builder.md.num_steps = Int(500)
+#builder.md.dt = Float(0.00242)
 builder.md.parent_folder = Str(Path(__file__).resolve().parent)
+# Parameters to control the input file generation
+_parameters = AttributeDict()
+# Control section specifying global simulation parameters
+_parameters.control = AttributeDict()
+# Types of units to be used in the calculation
+_parameters.control.units = "metal"
+# Size of the time step in the units previously defined
+_parameters.control.timestep = 0.00242
+_parameters.control.newton = "on"
+# Set of computes to be evaluated during the calculation
+#_parameters.compute = {
+#    "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+#    "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
+#    "stress/atom": [{"type": ["NULL"], "group": "all"}],
+#    "pressure": [{"type": ["thermo_temp"], "group": "all"}],
+#}
+# Set of values to control the behaviour of the molecular dynamics calculation
+_parameters.md = {
+    "integration": {
+        "style": "npt",
+        "constraints": {
+            "temp": [30, 30, 0.242],
+            "x": [0.0, 0.0, 2.42],
+            "y": [0.0, 0.0, 2.42],
+        },
+    },
+    "max_number_steps": 500,
+    "velocity": [{"create": {"temp": 30, "seed": 633}, "group": "all"}],
+}
+# Control how often the computes are printed to file
+#_parameters.dump = {"dump_rate": 1000}
+# Parameters used to pass special information about the structure
+_parameters.structure = {"atom_style": "atomic", "boundary": "p p f"}
+# Parameters used to pass special information about the potential
+_parameters.potential = {"atom_modify": "map yes","pair_style" : "mace no_domain_decomposition"}
+# Parameters controlling the global values written directly to the output
+_parameters.thermo = {
+    "printing_rate": 20,
+    "thermo_printing": {
+        "step": True,
+        "pe": True,
+        "ke": True,
+        "press": True,
+        "pxx": True,
+        "pyy": True,
+        "pzz": True,
+    },
+}
+# Tell lammps to print the final restartfile
+# (THIS DOES NOT STORE IT IN THE DATABASE JUST PRINTS IT)
+_parameters.restart = {"print_final": True}
+# Convert the parameters to an AiiDA data structure
+PARAMETERS = orm.Dict(dict=_parameters)
+
+# Controlling parameters on how the LAMMPS calculation is performed
+_settings = AttributeDict()
+# Whether or not to store the restart file in the database
+_settings.store_restart = True
+_settings.additional_cmdline_params = ["-k", "on", "g", "1", "-sf", "kk"]
+
+# Store the setting parameters in an AiiDA datastructure
+SETTINGS = orm.Dict(dict=_settings)
+builder.md.lmp.settings = SETTINGS
+builder.md.lmp.parameters = PARAMETERS
 builder.md.lmp.metadata.options.resources = {
     'num_machines': machine_lammps['nodes'],
     'num_mpiprocs_per_machine': machine_lammps['taskpn'],

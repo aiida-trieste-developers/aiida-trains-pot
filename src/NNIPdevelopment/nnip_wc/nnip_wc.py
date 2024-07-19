@@ -304,15 +304,22 @@ class NNIPWorkChain(WorkChain):
         potential = self.ctx.potentials_lammps[-1]
 
         for _, structure in self.ctx.lammps_input_structures.items():
-            for temp in self.inputs.md.temperatures:
-                for press in self.inputs.md.pressures:
-                    inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
-                    inputs.structure = structure
-                    inputs.temperature = Float(temp)
-                    inputs.pressure = Float(press)
-                    inputs.potential = potential
-                    future = self.submit(LammpsWorkChain, **inputs)
-                    self.to_context(md_wc=append_(future))
+            inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
+            inputs.structure = structure
+            inputs.potential = potential
+            future = self.submit(LammpsWorkChain, **inputs)
+            self.to_context(md_wc=append_(future))
+            #inputs.temperature = Float(temp)
+            #inputs.pressure = Float(press)
+            #for temp in self.inputs.md.temperatures:
+            #    for press in self.inputs.md.pressures:
+            #        inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
+            #        inputs.structure = structure
+                    #inputs.temperature = Float(temp)
+                    #inputs.pressure = Float(press)
+            #        inputs.potential = potential
+            #        future = self.submit(LammpsWorkChain, **inputs)
+            #        self.to_context(md_wc=append_(future))
         # inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
         # inputs.structure = self.inputs.structures[0]
         # pass
