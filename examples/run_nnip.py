@@ -314,7 +314,7 @@ builder.frame_extraction.thermalization_time = Float(2.42)
 
 # builder.cometee_evaluation.code = load_code('cometee-evaluation@leo1_scratch')
 #builder.cometee_evaluation.code = load_code('cometee-evaluation@bora')
-builder.cometee_evaluation.code = load_code('cometee-evaluation2@leo1_scratch_bind')
+builder.cometee_evaluation.code = load_code('cometee_evaluation@leo1_scratch_bind')
 builder.cometee_evaluation.metadata.options.resources = {
     'num_machines': machine_evaluation['nodes'],
     'num_mpiprocs_per_machine': machine_evaluation['taskpn'],
@@ -325,8 +325,8 @@ builder.cometee_evaluation.metadata.options.max_memory_kb = mem_evaluation
 builder.cometee_evaluation.metadata.options.import_sys_environment = False
 builder.cometee_evaluation.metadata.options.queue_name = machine_evaluation['partition']
 builder.cometee_evaluation.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_evaluation['gpu']}"
-# builder.cometee_evaluation.metadata.options.qos = machine_evaluation['qos']
-# builder.cometee_evaluation.metadata.options.account = machine_evaluation['account']
+builder.cometee_evaluation.metadata.options.qos = machine_evaluation['qos']
+builder.cometee_evaluation.metadata.options.account = machine_evaluation['account']
 
 
 
