@@ -9,9 +9,12 @@ from aiida_quantumespresso.utils.mapping import prepare_process_inputs
 from aiida_quantumespresso.workflows.protocols.utils import recursive_merge
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
+from aiida_lammps.data.potential import LammpsPotentialData
+import tempfile
 from ase.io.lammpsrun import read_lammps_dump_text
 from io import StringIO
 import numpy as np
+from pathlib import Path
 import os
 import io
 load_profile()
@@ -20,8 +23,44 @@ load_profile()
 DatasetGeneratorWorkChain   = WorkflowFactory('NNIPdevelopment.datageneration')
 PwBaseWorkChain             = WorkflowFactory('quantumespresso.pw.base')
 MaceWorkChain               = WorkflowFactory('NNIPdevelopment.macetrain')
-LammpsWorkChain             = WorkflowFactory('NNIPdevelopment.lammpsmd')
+LammpsWorkChain             = WorkflowFactory('lammps.base')
 EvaluationCalculation       = CalculationFactory('NNIPdevelopment.evaluation')
+
+def generate_potential(potential) -> LammpsPotentialData:
+        """
+        Generate the potential to be used in the calculation.
+
+        Takes a potential form OpenKIM and stores it as a LammpsPotentialData object.
+
+        :return: potential to do the calculation
+        :rtype: LammpsPotentialData
+        """
+
+        potential_parameters = {
+            "species": ["C"],
+            "atom_style": "atomic",        
+            "units": "metal",
+            "extra_tags": {},                
+        }
+
+        # Assuming you have a trained MACE model
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            with potential.open(mode='rb') as potential_handle:
+                potential_content = potential_handle.read()
+            tmp_file.write(potential_content)
+            tmp_file_path = tmp_file.name
+            
+        potential = LammpsPotentialData.get_or_create(
+            #source=binary_stream,
+            source = Path(tmp_file_path),
+            pair_style="mace no_domain_decomposition",
+            **potential_parameters,
+        )
+
+        os.remove(tmp_file_path)
+    
+        return potential
+
 
 def dataset_list_to_ase_list(dataset_list):
     """Convert dataset list to an ASE list."""
@@ -53,18 +92,22 @@ def LammpsFrameExtraction(correlation_time, saving_frequency, thermalization_tim
     """Extract frames from trajectory."""
 
 
-    extracted_frames = []
+    extracted_frames = []      
     for _, trajectory in trajectories.items():
 
         params = {}
+        params = {}
         for inc in trajectory.base.links.get_incoming().all():
-            if inc.node.process_type == 'aiida.workflows:NNIPdevelopment.lammpsmd':
+            if inc.node.process_type == 'aiida.calculations:lammps.base':
+                lammps_id = inc.node.uuid
+            if inc.node.process_type == 'aiida.workflows:lammps.base':
                 for inc2 in inc.node.base.links.get_incoming().all():
-                    if inc2.node.node_type in ['data.core.float.Float.', 'data.core.int.Int.']:
-                        params[inc2.link_label] = inc2.node.value
-                    elif inc2.node.node_type == 'data.core.structure.StructureData.':
+                    if inc2.link_label == 'lammps__parameters':
+                        params = Dict(dict=inc2.node).get_dict()
+                    elif inc2.link_label == 'lammps__structure':
                         
                         input_structure = inc2.node.get_ase()
+                        input_structure_node =  inc2.node
                         masses = []
                         symbols = []
                         symbol = input_structure.get_chemical_symbols()
@@ -74,20 +117,30 @@ def LammpsFrameExtraction(correlation_time, saving_frequency, thermalization_tim
                                 symbols.append(symbol[ii])
                             
                         masses, symbols = zip(*sorted(zip(masses, symbols)))
-        trajectory_frames = read_lammps_dump_text(StringIO(trajectory.get_content()), index=slice(0, int(1e50), 1), specorder=list(symbols))
-    
-        i = int(thermalization_time/params['dt']/saving_frequency)
-        while i < len(trajectory_frames):
-            extracted_frames.append({'cell': List(list(trajectory_frames[i].get_cell())),
-                    'symbols': List(list(trajectory_frames[i].get_chemical_symbols())),
-                    'positions': List(list(trajectory_frames[i].get_positions())),
+        
+        i = int(thermalization_time/params['control']['timestep']/saving_frequency)
+
+        while i < trajectory.number_steps:
+            step_data = trajectory.get_step_data(i)
+            string_components1 = step_data[0][5].split()
+            string_components2 = step_data[0][6].split()
+            string_components3 = step_data[0][7].split()
+            cell = [[float(value) for value in string_components1],[float(value) for value in string_components2],[float(value) for value in string_components3]]
+
+            extracted_frames.append({'cell': List(list(cell)),
+                    'symbols': List(list(step_data[5]['element'])),
+                    'positions': List([[step_data[5]['x'][jj],step_data[5]['y'][jj],step_data[5]['z'][jj]] for jj, _ in enumerate(step_data[5]['y'])]),
+                    'input_structure_uuid': Str(input_structure_node.uuid),
                     # 'md_forces': List(list(trajectory_frames[i].get_forces())),
                     'gen_method': Str('LAMMPS')
                     })
-            for par, val in params.items():
-                extracted_frames[-1][par] = val
+            extracted_frames[-1]['style'] = params['md']['integration']['style']
+            extracted_frames[-1]['temp'] = params['md']['integration']['constraints']['temp']
+            extracted_frames[-1]['timestep'] = params['control']['timestep']
+            extracted_frames[-1]['id_lammps'] = lammps_id
 
-            i = i + int(correlation_time/params['dt']/saving_frequency)
+            i = i + int(correlation_time/params['control']['timestep']/saving_frequency)
+
     return {'lammps_extracted_list': List(list=extracted_frames)}
 
 @calcfunction
@@ -126,8 +179,8 @@ class NNIPWorkChain(WorkChain):
         spec.input_namespace('mace_lammps_potentials', valid_type=SinglefileData, help='MACE potential for MD', required=False)
         spec.input_namespace('mace_ase_potentials', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False)
 
-        spec.input('md.temperatures', valid_type=List, help='List of temperatures for MD', required=False)
-        spec.input('md.pressures', valid_type=List, help='List of pressures for MD', required=False)
+        #spec.input('md.temperatures', valid_type=List, help='List of temperatures for MD', required=False)
+        #spec.input('md.pressures', valid_type=List, help='List of pressures for MD', required=False)
         spec.input('potential', valid_type=SinglefileData, help='MACE potential for MD', required=False)
 
         spec.input('frame_extraction.correlation_time', valid_type=Float, help='Correlation time for frame extraction', required=False)
@@ -140,7 +193,7 @@ class NNIPWorkChain(WorkChain):
         spec.expose_inputs(DatasetGeneratorWorkChain, namespace="datagen", exclude=('structures'))
         spec.expose_inputs(PwBaseWorkChain, namespace="dft", exclude=('pw.structure',), namespace_options={'validator': None})
         spec.expose_inputs(MaceWorkChain, namespace="mace", exclude=('dataset_list',), namespace_options={'validator': None})
-        spec.expose_inputs(LammpsWorkChain, namespace="md", exclude=('structure','temperature', 'pressure', 'potential'), namespace_options={'validator': None})
+        spec.expose_inputs(LammpsWorkChain, namespace="md", exclude=('lammps.structure', 'lammps.potential'), namespace_options={'validator': None})
         spec.expose_inputs(EvaluationCalculation, namespace="cometee_evaluation", exclude=('mace_potentials', 'datasetlist'))
         # spec.expose_inputs(FrameExtractionWorkChain, namespace="frame_extraction", exclude=('trajectories', 'input_structure', 'dt', 'saving_frequency'))
 
@@ -301,12 +354,12 @@ class NNIPWorkChain(WorkChain):
 
     def run_md(self):
         """Run MD calculations."""
-        potential = self.ctx.potentials_lammps[-1]
+        potential = self.ctx.potentials_lammps[-1]        
 
         for _, structure in self.ctx.lammps_input_structures.items():
             inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
-            inputs.structure = structure
-            inputs.potential = potential
+            inputs.lammps.structure = structure
+            inputs.lammps.potential = generate_potential(potential)
             future = self.submit(LammpsWorkChain, **inputs)
             self.to_context(md_wc=append_(future))
             #inputs.temperature = Float(temp)
@@ -399,25 +452,25 @@ class NNIPWorkChain(WorkChain):
         # self.out_many(self.exposed_outputs(self.ctx.mace_wc, MaceWorkChain, namespace="mace"))
 
     def finalize_md(self):
-        
+
         md_out = {}
         self.ctx.trajectories = {}
         calc_no_exception = False
         for ii, calc in enumerate(self.ctx.md_wc):
             self.report(f'md_{ii} exit status: {calc.exit_status}')
-            if calc.exit_status != 309:
+            if calc.exit_status == 0:
                 calc_no_exception = True
                 self.report(f'md_{ii} exit0')
             # self.report(f'ii : {ii}')
             # self.report(f'calc.outputs : {calc.outputs}')
                 # self.report(f'k : {k}')
-                # self.report(f'calc.outputs[k] : {calc.outputs[k]}')
-                for el in calc.outputs['lmp_out']:
+                # self.report(f'calc.outputs[k] : {calc.outputs[k]}')                
+                for el in calc.outputs:
                     # self.report(f'el : {el}')
                     # self.report(f'calc.outputs[k][el] : {calc.outputs[k][el]}')
-                    if el == 'coord_atom':
-                        self.ctx.trajectories[f'md_{ii}'] = calc.outputs['lmp_out'][el]
-                    md_out[f'md_{ii}']={el:calc.outputs['lmp_out'][el] for el in calc.outputs['lmp_out']}
+                    if el == 'trajectories':
+                        self.ctx.trajectories[f'md_{ii}'] = calc.outputs[el]
+                    md_out[f'md_{ii}']={el:calc.outputs[el] for el in calc.outputs}
             # for out in calc.outputs:
             #     md_out[f'md_{ii}'][out] = calc.outputs[out]
         self.ctx.md_wc = []

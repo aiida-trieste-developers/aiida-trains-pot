@@ -6,6 +6,7 @@ from aiida.tools.groups import GroupPath
 from pathlib import Path
 from aiida.orm import PortableCode
 from aiida.common.extendeddicts import AttributeDict
+from aiida_lammps.data.potential import LammpsPotentialData
 from ase.io import read
 import yaml
 import os
@@ -134,13 +135,13 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structu
 builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo2_scratch_bind'))
 builder.do_data_generation = Bool(False)
 builder.do_dft = Bool(False)
-builder.do_mace = Bool(True)
+builder.do_mace = Bool(False)
 builder.do_md = Bool(True)
 builder.max_loops = Int(3)
-builder.labelled_list = load_node(44355)
+builder.labelled_list = load_node(56495)
 #builder.labelled_list = load_node(74946)
-#builder.mace_lammps_potentials = {"pot_1":load_node(49046),"pot_2":load_node(49056), "pot_1":load_node(49066),"pot_2":load_node(49076)}
-#builder.mace_ase_potentials = {"pot_1":load_node(49047),"pot_2":load_node(49057), "pot_1":load_node(49067),"pot_2":load_node(49077)}
+builder.mace_lammps_potentials = {"pot_1":load_node(56510),"pot_2":load_node(56532), "pot_1":load_node(56543),"pot_2":load_node(56521)}
+builder.mace_ase_potentials = {"pot_1":load_node(56511),"pot_2":load_node(56533), "pot_1":load_node(56544),"pot_2":load_node(56522)}
 
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)
@@ -226,7 +227,7 @@ code.store()
 
 #builder.md.code = load_code('lmp4mace2@leo1_scratch')
 #builder.md.code = load_code('lmp4mace3@leo1_scratch_bind')
-builder.md.code = load_code('lmp4mace_new@leo1_scratch_bind')
+builder.md.lammps.code = load_code('lmp4mace_new@leo1_scratch_bind')
 #builder.md.temperatures = List([30, 50])
 #builder.md.pressures = List([0])
 #builder.md.num_steps = Int(500)
@@ -264,9 +265,7 @@ _parameters.md = {
 # Control how often the computes are printed to file
 #_parameters.dump = {"dump_rate": 1000}
 # Parameters used to pass special information about the structure
-_parameters.structure = {"atom_style": "atomic", "boundary": "p p f"}
-# Parameters used to pass special information about the potential
-_parameters.potential = {"atom_modify": "map yes","pair_style" : "mace no_domain_decomposition"}
+_parameters.structure = {"atom_style": "atomic", "atom_modify": "map yes", "boundary": "p p f"}
 # Parameters controlling the global values written directly to the output
 _parameters.thermo = {
     "printing_rate": 20,
@@ -293,21 +292,21 @@ _settings.store_restart = True
 _settings.additional_cmdline_params = ["-k", "on", "g", "1", "-sf", "kk"]
 
 # Store the setting parameters in an AiiDA datastructure
-SETTINGS = orm.Dict(dict=_settings)
-builder.md.lmp.settings = SETTINGS
-builder.md.lmp.parameters = PARAMETERS
-builder.md.lmp.metadata.options.resources = {
+SETTINGS = orm.Dict(dict=_settings)#
+builder.md.lammps.settings = SETTINGS
+builder.md.lammps.parameters = PARAMETERS#
+builder.md.lammps.metadata.options.resources = {
     'num_machines': machine_lammps['nodes'],
     'num_mpiprocs_per_machine': machine_lammps['taskpn'],
     'num_cores_per_mpiproc': machine_lammps['cpupt']
 }
-builder.md.lmp.metadata.options.max_wallclock_seconds = time_lammps
-builder.md.lmp.metadata.options.max_memory_kb = mem_lammps
-builder.md.lmp.metadata.options.import_sys_environment = False
-builder.md.lmp.metadata.options.account = machine_lammps['account']
-builder.md.lmp.metadata.options.queue_name = machine_lammps['partition']
-builder.md.lmp.metadata.options.qos = machine_lammps['qos']
-builder.md.lmp.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_lammps['gpu']}"
+builder.md.lammps.metadata.options.max_wallclock_seconds = time_lammps
+builder.md.lammps.metadata.options.max_memory_kb = mem_lammps
+builder.md.lammps.metadata.options.import_sys_environment = False
+builder.md.lammps.metadata.options.account = machine_lammps['account']
+builder.md.lammps.metadata.options.queue_name = machine_lammps['partition']
+builder.md.lammps.metadata.options.qos = machine_lammps['qos']
+builder.md.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{machine_lammps['gpu']}"
 
 builder.frame_extraction.correlation_time = Float(0.242)
 builder.frame_extraction.thermalization_time = Float(2.42)

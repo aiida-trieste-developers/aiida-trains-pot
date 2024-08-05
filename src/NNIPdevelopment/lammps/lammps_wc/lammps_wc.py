@@ -91,7 +91,7 @@ class LammpsWorkChain(WorkChain):
         potential = LammpsPotentialData.get_or_create(
             #source=binary_stream,
             source = Path(tmp_file_path),
-            pair_style="mace",
+            pair_style="mace no_domain_decomposition",
             **potential_parameters,
         )
 
