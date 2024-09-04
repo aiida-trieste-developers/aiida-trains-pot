@@ -39,17 +39,31 @@ Source = "https://github.com/mankoNm/NNIPDevelopment"
 "NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_wc.lammps_wc:LammpsWorkChain"
 "NNIPdevelopment.nnipdevelopment" = "NNIPdevelopment.nnip_wc.nnip_wc:NNIPWorkChain"
 "NNIPdevelopment.lammpsextraction" = "NNIPdevelopment.lammps.lammps_frame_extraction.lammps_frame_extraction:LammpsFrameExtraction"
+"lammps.base" = "aiida_lammps.workflows.base:LammpsBaseWorkChain"
+"lammps.relax" = "aiida_lammps.workflows.relax:LammpsRelaxWorkChain"
+"lammps.md" = "aiida_lammps.workflows.md:LammpsMDWorkChain"
+
 
 
 [project.entry-points.'aiida.calculations']
 "NNIPdevelopment.macetrain" = "NNIPdevelopment.mace.mace_train_plugin.calculations:MaceTrainCalculation"
-"NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_plugin.calculations:LammpsBaseCalculation"
+#"NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_plugin.calculations.base:LammpsBaseCalculation"
 "NNIPdevelopment.evaluation" = "NNIPdevelopment.evaluation.calculations:EvaluationCalculation"
+"lammps.base" = "aiida_lammps.calculations.base:LammpsBaseCalculation"
+"lammps.raw" = "aiida_lammps.calculations.raw:LammpsRawCalculation"
 
 [project.entry-points.'aiida.parsers']
 "NNIPdevelopment.macetrain" = "NNIPdevelopment.mace.mace_train_plugin.parsers:MaceBaseParser"
 "NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_plugin.parsers:LammpsBaseParser"
 "NNIPdevelopment.evaluation" = "NNIPdevelopment.evaluation.parsers:EvaluationParser"
+"lammps.base" = "aiida_lammps.parsers.base:LammpsBaseParser"
+"lammps.raw" = "aiida_lammps.parsers.raw:LammpsRawParser"
+
+[project.entry-points."aiida.data"]
+"lammps.potential" = "aiida_lammps.data.potential:LammpsPotentialData"
+"lammps.trajectory" = "aiida_lammps.data.trajectory:LammpsTrajectory"
+
+
 
 #[project.entry-points."aiida.cmdline.data"]
 #"diff" = "aiida_diff.cli:data_cli"
