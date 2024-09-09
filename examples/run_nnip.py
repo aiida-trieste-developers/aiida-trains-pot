@@ -25,7 +25,7 @@ machine_dft = {
 'taskpn'                           : 1,
 'taskps'                           : "1",
 'cpupt'                            : "8",
-'account'                          : "IscrB_DeepVTe2",
+'account'                          : "CNHPC_1491920",
 'partition'                        : "boost_usr_prod",
 'gpu'                              : "1",
 'pool'                             : "1",
@@ -38,13 +38,13 @@ machine_dft = {
 
 
 machine_mace = {
-'time'                             : "00:05:00",
+'time'                             : "00:01:00",
 'nodes'                            : 1,
 'mem'                              : "30GB",
 'taskpn'                           : 1,
 'taskps'                           : "1",
 'cpupt'                            : "8",
-'account'                          : "IscrB_DeepVTe2",
+'account'                          : "CNHPC_1491920",
 'partition'                        : "boost_usr_prod",
 'gpu'                              : "1",
 'qos'                              : "boost_qos_dbg"
@@ -57,7 +57,7 @@ machine_lammps= {
 'taskpn'                           : 1,
 'taskps'                           : "1",
 'cpupt'                            : "8",
-'account'                          : "IscrB_DeepVTe2",
+'account'                          : "CNHPC_1491920",
 'partition'                        : "boost_usr_prod",
 'gpu'                              : "1",
 'qos'                              : "boost_qos_dbg"
@@ -83,7 +83,7 @@ machine_evaluation = {
  'taskpn'                           : 1,
  'taskps'                           : "1",
  'cpupt'                            : "8",
- 'account'                          : "IscrB_DeepVTe2",
+ 'account'                          : "CNHPC_1491920",
  'partition'                        : "boost_usr_prod",
  'gpu'                              : "1",
  'qos'                              : "boost_qos_dbg"
@@ -135,13 +135,13 @@ cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=structu
 builder = NNIPWorkChain.get_builder_from_protocol(structures, qe_code = load_code('qe7.2-pw@leo2_scratch_bind'))
 builder.do_data_generation = Bool(False)
 builder.do_dft = Bool(False)
-builder.do_mace = Bool(False)
+builder.do_mace = Bool(True)
 builder.do_md = Bool(True)
-builder.max_loops = Int(3)
-builder.labelled_list = load_node(56495)
-#builder.labelled_list = load_node(74946)
-builder.mace_lammps_potentials = {"pot_1":load_node(56510),"pot_2":load_node(56532), "pot_1":load_node(56543),"pot_2":load_node(56521)}
-builder.mace_ase_potentials = {"pot_1":load_node(56511),"pot_2":load_node(56533), "pot_1":load_node(56544),"pot_2":load_node(56522)}
+builder.max_loops = Int(2)
+#builder.labelled_list = load_node(56495)
+builder.labelled_list = load_node(93634)
+#builder.mace_lammps_potentials = {"pot_1":load_node(56510),"pot_2":load_node(56532), "pot_1":load_node(56543),"pot_2":load_node(56521)}
+#builder.mace_ase_potentials = {"pot_1":load_node(56511),"pot_2":load_node(56533), "pot_1":load_node(56544),"pot_2":load_node(56522)}
 
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)
@@ -208,7 +208,8 @@ builder.mace.num_potentials = Int(4)
 builder.mace.mace.metadata.options.resources = {
     'num_machines': machine_mace['nodes'],
     'num_mpiprocs_per_machine': machine_mace['taskpn'],
-    'num_cores_per_mpiproc': machine_mace['cpupt']
+    'num_cores_per_mpiproc': machine_mace['cpupt'],
+  #  'num_gpus_per_machine': machine_mace['gpu'],
 }
 builder.mace.mace.metadata.options.max_wallclock_seconds = time_mace
 builder.mace.mace.metadata.options.max_memory_kb = mem_mace
