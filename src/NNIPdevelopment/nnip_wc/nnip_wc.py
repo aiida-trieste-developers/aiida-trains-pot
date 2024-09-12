@@ -122,10 +122,7 @@ def LammpsFrameExtraction(correlation_time, saving_frequency, thermalization_tim
 
         while i < trajectory.number_steps:
             step_data = trajectory.get_step_data(i)
-            string_components1 = step_data[0][5].split()
-            string_components2 = step_data[0][6].split()
-            string_components3 = step_data[0][7].split()
-            cell = [[float(value) for value in string_components1],[float(value) for value in string_components2],[float(value) for value in string_components3]]
+            cell = step_data.cell
 
             extracted_frames.append({'cell': List(list(cell)),
                     'symbols': List(list(step_data[5]['element'])),
