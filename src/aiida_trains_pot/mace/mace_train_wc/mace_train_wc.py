@@ -14,7 +14,7 @@ from contextlib import redirect_stdout
 
 load_profile()
 
-MaceCalculation = CalculationFactory('NNIPdevelopment.macetrain')
+MaceCalculation = CalculationFactory('trains_pot.macetrain')
 
 @calcfunction
 def SplitDataset(dataset):
@@ -140,7 +140,6 @@ class MaceTrainWorkChain(WorkChain):
         self.report(f"Test set size: {len(test_set.get_list())}")
         
         # Make sure the path to preprocess.py is absolute
-        #preprocess_script_path = os.path.abspath('../../aiida_scripts/src/NNIPdevelopment/mace/mace_train_wc/preprocess_config.py')
         preprocess_script_path = os.path.abspath('/home/nataliia/Documents/aiida_scripts/src/NNIPdevelopment/mace/mace_train_wc/preprocess_config.py')
         preprocess_script_file = SinglefileData(file=preprocess_script_path) 
     

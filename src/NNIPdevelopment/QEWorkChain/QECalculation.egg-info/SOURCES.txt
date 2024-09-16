@@ -1,7 +1,0 @@
-setup.py
-QECalculation/QECalculationWorkChain.py
-QECalculation.egg-info/PKG-INFO
-QECalculation.egg-info/SOURCES.txt
-QECalculation.egg-info/dependency_links.txt
-QECalculation.egg-info/entry_points.txt
-QECalculation.egg-info/top_level.txt

@@ -10,7 +10,7 @@ from aiida.parsers.parser import Parser
 from aiida.plugins import CalculationFactory
 import numpy as np
 
-EvaluationCalculation = CalculationFactory("NNIPdevelopment.evaluation")
+EvaluationCalculation = CalculationFactory("trains_pot.evaluation")
 
 
 class EvaluationParser(Parser):

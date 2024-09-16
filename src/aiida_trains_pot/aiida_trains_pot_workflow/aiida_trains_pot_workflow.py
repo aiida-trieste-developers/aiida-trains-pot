@@ -20,11 +20,11 @@ import io
 load_profile()
 
 # LammpsCalculation = CalculationFactory('lammps_base')
-DatasetGeneratorWorkChain   = WorkflowFactory('NNIPdevelopment.datageneration')
+DatasetGeneratorWorkChain   = WorkflowFactory('trains_pot.datageneration')
 PwBaseWorkChain             = WorkflowFactory('quantumespresso.pw.base')
-MaceWorkChain               = WorkflowFactory('NNIPdevelopment.macetrain')
+MaceWorkChain               = WorkflowFactory('trains_pot.macetrain')
 LammpsWorkChain             = WorkflowFactory('lammps.base')
-EvaluationCalculation       = CalculationFactory('NNIPdevelopment.evaluation')
+EvaluationCalculation       = CalculationFactory('trains_pot.evaluation')
 
 def generate_potential(potential) -> LammpsPotentialData:
         """
@@ -156,7 +156,7 @@ def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
 
     return {'selected_list':List(list=selected_list), 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
-class NNIPWorkChain(WorkChain):
+class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
 
     @classmethod
@@ -167,7 +167,7 @@ class NNIPWorkChain(WorkChain):
         spec.input('do_dft', valid_type=Bool, default=lambda: Bool(True), help='Do DFT calculations', required=False)
         spec.input('do_mace', valid_type=Bool, default=lambda: Bool(True), help='Do MACE calculations', required=False)
         spec.input('do_md', valid_type=Bool, default=lambda: Bool(True), help='Do MD calculations', required=False)
-        spec.input('max_loops', valid_type=Int, default=lambda: Int(10), help='Maximum number of NNIP workflow loops', required=False)
+        spec.input('max_loops', valid_type=Int, default=lambda: Int(10), help='Maximum number of active learning workflow loops', required=False)
 
         spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
         spec.input('non_labelled_list', valid_type=List, help='List of non labelled structures', required=False)

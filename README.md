@@ -1,6 +1,6 @@
-# DataGenerationWorkChain
+# AiiDA-TrainsPot
 
-Welcome to the aiida-trains-pot repository.
+Welcome to the aiida-trains-pot, the AiiDA workflow that Trains a Potential for you.
 
 ## Contributing
 
@@ -14,8 +14,8 @@ This project was supported by:
 
 - **[Università degli Studi di Trieste](https://portale.units.it/en)**
 - **[Scuola Internazionale Superiore di Studi Avanzati](https://www.sissa.it/it)**
-- **[EU Centre of Excellence "MaX – Materials Design at the Exascale”](https://www.max-centre.eu/)** 
 - **[Centro Nazionale di Ricerca HPC, Big Data e Quantum Computing](https://www.supercomputing-icsc.it/en/icsc-home/)**
+- **[EU Centre of Excellence "MaX – Materials Design at the Exascale”](https://www.max-centre.eu/)**
 
 <p align="center">
   <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgTBDFRADTwpIJqho2NDfWrdCgIMTxFnlHBA&s" alt="Università degli Studi di Trieste Logo" width="250" style="filter: invert(1);"/>

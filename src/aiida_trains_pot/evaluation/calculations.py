@@ -58,10 +58,9 @@ class EvaluationCalculation(CalcJob):
 
         # set default values for AiiDA options
         spec.inputs["metadata"]["options"]["resources"].default = {"num_machines": 1, "num_mpiprocs_per_machine": 1,}
-        spec.inputs["metadata"]["options"]["parser_name"].default = "NNIPdevelopment.evaluation"
+        spec.inputs["metadata"]["options"]["parser_name"].default = "trains_pot.evaluation"
 
         # new ports
-        # spec.input("mace_workchain", valid_type=Int, required=False, help="Mace workchain",)
         spec.input_namespace("mace_potentials", valid_type=SinglefileData, required=True, help="Mace potentials",)
         spec.input("datasetlist", valid_type=List, required=True, help="Optional list on which to compute errors.")
         spec.output("evaluated_list", valid_type=List, help="List of evaluated configurations.")
@@ -80,16 +79,10 @@ class EvaluationCalculation(CalcJob):
         """
 
         codeinfo = datastructures.CodeInfo()
-         
-        
-        # codeinfo.cmdline_params = '/leonardo/home/userexternal/dbidoggi/python_scripts/packages/dnn_potentials/test_configs_aiida.py . -a'.split()
-            # file1_name=self.inputs.file1.filename, file2_name=self.inputs.file2.filename
         codeinfo.code_uuid = self.inputs.code.uuid
-        # codeinfo.stdout_name = "lammps.out"
         
         calcinfo = datastructures.CalcInfo()
         calcinfo.local_copy_list = []
-        # wc = load_node(19359)
         
         n_pot = 0
         for _, pot in self.inputs.mace_potentials.items():
@@ -100,9 +93,6 @@ class EvaluationCalculation(CalcJob):
         dataset_txt = dataset_list_to_txt(dataset_list)
         with folder.open("dataset.xyz", "w") as handle:
             handle.write(dataset_txt)
-        # codeinfo.cmdline_params = '/data/fast/35353/python_scripts/test_configs_aiida.py . -s'.split()
-        # codeinfo.cmdline_params = '/data/fast/35353/python_scripts/test_configs_aiida.py . -s'.split()
-
         
         calcinfo.codes_info = [codeinfo]
         

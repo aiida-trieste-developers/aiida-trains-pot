@@ -13,7 +13,7 @@ import json
 import os
 
 
-MaceTrainCalculation = CalculationFactory("NNIPdevelopment.macetrain")
+MaceTrainCalculation = CalculationFactory("trains_pot.macetrain")
 
 def parse_tables_from_singlefiledata(node):
     """

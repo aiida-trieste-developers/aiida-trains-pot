@@ -4,7 +4,7 @@ requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
-name = "NNIPdevelopment"
+name = "aiida-trainspot"
 dynamic = ["version"]
 description = "AiiDA workchain to generate data for training and testing of neural networks."
 authors = [{name = "Nataliia Manko"}, {name = "Davide Bidoggia"}, {name = "Antimo Marrazzo"}, {name = "Maria Peressi"}]
@@ -13,7 +13,6 @@ license = {file = "LICENSE"}
 classifiers = [
     "Programming Language :: Python",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Development Status :: 4 - Beta",
     "Framework :: AiiDA"
@@ -24,44 +23,36 @@ dependencies = [
     "aiida-core>=2.5,<3",
     "voluptuous",
     "ase",
-    "numba"
+    "numba",
+    "aiida-quantumespresso"
 ]
 
 [project.urls]
-Source = "https://github.com/mankoNm/NNIPDevelopment"
+Source = "https://github.com/aiida-trieste-developers/aiida-trains-pot"
 
 
 
 [project.entry-points.'aiida.workflows']
-"NNIPdevelopment.datageneration" = "NNIPdevelopment.datageneration.datageneration:DataGenerationWorkChain"
-"NNIPdevelopment.qe" = "NNIPdevelopment.QEWorkChain.QEWorkChain.QECalculationWorkChain:QECalculationWorkChain"
-"NNIPdevelopment.macetrain" = "NNIPdevelopment.mace.mace_train_wc.mace_train_wc:MaceTrainWorkChain"
-"NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_wc.lammps_wc:LammpsWorkChain"
-"NNIPdevelopment.nnipdevelopment" = "NNIPdevelopment.nnip_wc.nnip_wc:NNIPWorkChain"
-"NNIPdevelopment.lammpsextraction" = "NNIPdevelopment.lammps.lammps_frame_extraction.lammps_frame_extraction:LammpsFrameExtraction"
-"lammps.base" = "aiida_lammps.workflows.base:LammpsBaseWorkChain"
-"lammps.relax" = "aiida_lammps.workflows.relax:LammpsRelaxWorkChain"
-"lammps.md" = "aiida_lammps.workflows.md:LammpsMDWorkChain"
+"trains_pot.datageneration"   = "aiida_trains_pot.datageneration.datageneration_wc.datageneration_wc:DataGenerationWorkChain"
+"trains_pot.macetrain"        = "aiida_trains_pot.mace.mace_train_wc.mace_train_wc:MaceTrainWorkChain"
+"trains_pot.lammpsmd"         = "aiida_trains_pot.lammps.lammps_wc.lammps_wc:LammpsWorkChain"
+"trains_pot.workflow"         = "aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow:TrainsPotWorkChain"
 
 
 
 [project.entry-points.'aiida.calculations']
-"NNIPdevelopment.macetrain" = "NNIPdevelopment.mace.mace_train_plugin.calculations:MaceTrainCalculation"
-#"NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_plugin.calculations.base:LammpsBaseCalculation"
-"NNIPdevelopment.evaluation" = "NNIPdevelopment.evaluation.calculations:EvaluationCalculation"
-"lammps.base" = "aiida_lammps.calculations.base:LammpsBaseCalculation"
-"lammps.raw" = "aiida_lammps.calculations.raw:LammpsRawCalculation"
+"trains_pot.macetrain"        = "aiida_trains_pot.mace.mace_train_plugin.calculations:MaceTrainCalculation"
+"trains_pot.lammpsmd"         = "aiida_trains_pot.lammps.lammps_plugin.calculations:LammpsBaseCalculation"
+"trains_pot.evaluation"       = "aiida_trains_pot.evaluation.calculations:EvaluationCalculation"
 
 [project.entry-points.'aiida.parsers']
-"NNIPdevelopment.macetrain" = "NNIPdevelopment.mace.mace_train_plugin.parsers:MaceBaseParser"
-"NNIPdevelopment.lammpsmd" = "NNIPdevelopment.lammps.lammps_plugin.parsers:LammpsBaseParser"
-"NNIPdevelopment.evaluation" = "NNIPdevelopment.evaluation.parsers:EvaluationParser"
-"lammps.base" = "aiida_lammps.parsers.base:LammpsBaseParser"
-"lammps.raw" = "aiida_lammps.parsers.raw:LammpsRawParser"
+"trains_pot.macetrain"        = "aiida_trains_pot.mace.mace_train_plugin.parsers:MaceBaseParser"
+"trains_pot.lammpsmd"         = "aiida_trains_pot.lammps.lammps_plugin.parsers:LammpsBaseParser"
+"trains_pot.evaluation"       = "aiida_trains_pot.evaluation.parsers:EvaluationParser"
 
 [project.entry-points."aiida.data"]
-"lammps.potential" = "aiida_lammps.data.potential:LammpsPotentialData"
-"lammps.trajectory" = "aiida_lammps.data.trajectory:LammpsTrajectory"
+"datasetlist"                 = "aiida_trains_pot.data.datasetlist:DatasetList"
+"datasetframe"                = "aiida_trains_pot.data.datasetframe:DatasetFrame"
 
 
 
@@ -83,4 +74,4 @@ docs = [
 ]
 
 [tool.flit.module]
-name = "NNIPdevelopment"
+name = "aiida_trains_pot"
