@@ -1,0 +1,12 @@
+---
+label: "evaluation_portable_bora"
+description: "cometee evaluation"
+filepath_files: "/home/bidoggia/onedrive/aiida/git/NNIPDevelopment/src/NNIPdevelopment/evaluation/portable/"
+filepath_executable: "evaluation.py"
+default_calc_job_plugin: "NNIPdevelopment.evaluation"
+prepend_text: |
+  source /data/fast/35353/py_envs/mace/bin/activate
+
+append_text: |
+
+##  verdi code create core.code.portable --config ~/onedrive/aiida/setups/mace_evaluation_portable.yml

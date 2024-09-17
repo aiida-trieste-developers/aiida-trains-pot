@@ -56,8 +56,9 @@ Source = "https://github.com/aiida-trieste-developers/aiida-trains-pot"
 
 
 
-#[project.entry-points."aiida.cmdline.data"]
-#"diff" = "aiida_diff.cli:data_cli"
+##[project.entry-points."aiida.cmdline.data"]
+[project.scripts]
+portable_codes_installation = "aiida_trains_pot.utils.install_portable_codes:main"
 
 [project.optional-dependencies]
 docs = [

@@ -1,0 +1,21 @@
+---
+label: "mace_pub_tp"
+description: "quantum_espresso v7.2"
+default_calc_job_plugin: "trains_pot.macetrain"
+filepath_executable: "mace_run_train"
+computer: "leo1_scratch"
+prepend_text: |
+  source /leonardo/pub/userexternal/dbidoggi/py_envs/mace/bin/activate
+
+  export OMP_NUM_THREADS=8
+  export CUDA_VISIBLE_DEVICES=0
+  export preprocess_path=//leonardo/pub/userexternal/dbidoggi/software/mace/scripts
+
+  mkdir -p processed_data
+  python preprocess_config.py > mace_preprocess.out
+
+append_text: |
+  python /leonardo/pub/userexternal/dbidoggi/software/mace/mace/cli/create_lammps_model.py aiida_swa.model
+  python /leonardo/pub/userexternal/dbidoggi/software/mace/mace/cli/create_lammps_model.py aiida.model
+
+##  verdi code create core.code.installed --config ~/onedrive/aiida/setups/mace_leo.yml

@@ -47,12 +47,6 @@ def SplitDataset(dataset):
     for _, group in grouped_data:
     # Calculate the number of elements for each set
         group_list = list(group)
-        # print(group_list[0]['gen_method'])
-        # if 'n_vacancies' in group_list[0].keys() and 'sigma_strain' in group_list[0].keys() and 'rattle_radius' in group_list[0].keys() and 'gen_method' in group_list[0].keys() and 'positions' in group_list[0].keys():
-            
-        #     if group_list[0]['n_vacancies'] == 0 and group_list[0]['sigma_strain'] == 1.0 and group_list[0]['rattle_radius'] == 0.0 and group_list[0]['gen_method'] != "EQUILIBRIUM" and len(group_list[0]['positions']) > 1:
-        #         # print(group_list[0]['gen_method'], group_list[0]['energy'], len(group_list[0]['positions']))
-        #         continue
 
         if group_list[0]['gen_method'] == "INPUT_STRUCTURE" or group_list[0]['gen_method'] == "ISOLATED_ATOM" or len(group_list[0]['positions']) == 1 or group_list[0]['gen_method'] == "EQUILIBRIUM":
                 training_set += group_list
@@ -140,7 +134,7 @@ class MaceTrainWorkChain(WorkChain):
         self.report(f"Test set size: {len(test_set.get_list())}")
         
         # Make sure the path to preprocess.py is absolute
-        preprocess_script_path = os.path.abspath('/home/nataliia/Documents/aiida_scripts/src/NNIPdevelopment/mace/mace_train_wc/preprocess_config.py')
+        preprocess_script_path = os.path.abspath('/home/bidoggia/onedrive/aiida/git/organisation/aiida-trains-pot/src/aiida_trains_pot/mace/mace_train_wc/preprocess_config.py')
         preprocess_script_file = SinglefileData(file=preprocess_script_path) 
     
         if 'checkpoints' in self.inputs:
