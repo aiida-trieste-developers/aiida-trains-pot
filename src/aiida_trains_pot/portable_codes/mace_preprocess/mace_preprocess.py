@@ -10,7 +10,7 @@ def load_config(file_path):
 preprocess_path = os.environ.get('preprocess_path')
 def build_command(params):
     command = [
-        'python3', f'{preprocess_path}/preprocess_data.py',
+        f'mace_prepare_data',
         '--train_file', "training.xyz",
         '--valid_file', "validation.xyz",
         '--test_file', "test.xyz",

@@ -16,10 +16,12 @@ TrainsPot   = WorkflowFactory('trains_pot.workflow')
 ####################################################################
 
 
-QE_code         = load_code('qe7.2-pw@leo1_scratch_bind')
-MACE_code       = load_code('mace_pub3@leo1_scratch')
-LAMMPS_code     = load_code('lmp4mace2@leo1_scratch')
-EVALUATION_code = load_code('cometee-evaluation@leo1_scratch')
+QE_code                 = load_code('qe7.2-pw@leo1_scratch_bind')
+MACE_train_code         = load_code('mace_train@leo1_scratch')
+MACE_preprocess_code    = load_code('mace_preprocess@leo1_scratch')
+MAE_postprocess_code    = load_code('mace_postprocess@leo1_scratch')
+LAMMPS_code             = load_code('lmp4mace2@leo1_scratch')
+EVALUATION_code         = load_code('cometee-evaluation@leo1_scratch')
 
 QE_machine = {
 'time'                             : "00:05:00",
@@ -112,12 +114,12 @@ input_structures = [StructureData(ase=read('/home/bidoggia/onedrive/aiida/git/or
 ###############################################
 
 builder = TrainsPot.get_builder_from_protocol(input_structures, qe_code = QE_code)
-builder.do_data_generation = Bool(True)
-builder.do_dft = Bool(True)
+builder.do_data_generation = Bool(False)
+builder.do_dft = Bool(False)
 builder.do_mace = Bool(True)
 builder.do_md = Bool(True)
 builder.max_loops = Int(2)
-# builder.labelled_list = load_node(93634)
+builder.labelled_list = load_node(328538)
 #builder.mace_lammps_potentials = {"pot_1":load_node(56510),"pot_2":load_node(56532), "pot_1":load_node(56543),"pot_2":load_node(56521)}
 #builder.mace_ase_potentials = {"pot_1":load_node(56511),"pot_2":load_node(56533), "pot_1":load_node(56544),"pot_2":load_node(56522)}
 
@@ -187,7 +189,11 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
 ###############################################
 
 MACE_config = '/home/bidoggia/onedrive/aiida/git/organisation/aiida-trains-pot/examples/graphene_example/mace_config.yml'
-builder.mace.mace.code = MACE_code
+builder.mace.mace.code = MACE_train_code
+builder.mace.mace.preprocess_code  = MACE_preprocess_code
+builder.mace.mace.postprocess_code = MAE_postprocess_code
+# builder.mace.mace.do_preprocess = Bool(True)
+
 with open(MACE_config, 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
 builder.mace.mace.mace_config = Dict(mace_config)

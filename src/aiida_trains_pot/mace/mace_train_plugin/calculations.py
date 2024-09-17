@@ -1,11 +1,9 @@
 """
-Calculations provided by aiida_diff.
-
-Register calculations via the "aiida.calculations" entry point in setup.json.
+AiiDA calculation plugin for the MACE training code.
 """
 from aiida.common import datastructures
 from aiida.engine import CalcJob
-from aiida.orm import SinglefileData, StructureData, List, FolderData, Str, Dict, Bool
+from aiida.orm import SinglefileData, List, FolderData, Dict, Bool, Code
 import io
 from contextlib import redirect_stdout
 from ase.io import write
@@ -13,12 +11,10 @@ from ase.calculators.singlepoint import SinglePointCalculator
 from ase import Atoms
 import random
 import yaml
-import re
 import random
 
 
 
-# def dataset_list_to_xyz(dataset_list):
 def dataset_list_to_txt(dataset_list):
     """Convert dataset list to xyz file."""
 
@@ -71,7 +67,9 @@ class MaceTrainCalculation(CalcJob):
         spec.input("test_set", valid_type=List, help="Test dataset list",)
         spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
         spec.input("checkpoints", valid_type=FolderData, help="Checkpoints file", required=False)
-        spec.input("preprocess_script", valid_type=SinglefileData, help="Preprocess script for parallel calculation", required=False)
+        spec.input("do_preprocess", valid_type=Bool, help="Perfrom preprocess", required=False, default=lambda:Bool(False))
+        spec.input("preprocess_code", valid_type=Code, help="Preprocess code, required if do_preprocess is True", required=False)
+        spec.input("postprocess_code", valid_type=Code, help="Postprocess code", required=False)
         spec.input("restart", valid_type=Bool, help="Restart from a previous calculation", required=False, default=lambda:Bool(False))
 
         spec.output("aiida_model", valid_type=SinglefileData, help="Model file",)
@@ -107,6 +105,39 @@ class MaceTrainCalculation(CalcJob):
         :return: `aiida.common.datastructures.CalcInfo` instance
         """
 
+        mace_config_dict = self.inputs.mace_config.get_dict()
+        do_process = False
+        if self.inputs.do_preprocess.value:
+            if 'preprocess_code' in self.inputs:
+                preprocess_code = self.inputs.preprocess_code
+                do_process = True
+            else:
+                raise ValueError("Preprocess code is required if do_preprocess is True")
+
+        
+        if do_process:
+            codeinfo_preprocess = datastructures.CodeInfo()
+            codeinfo_preprocess.code_uuid = preprocess_code.uuid
+            codeinfo_preprocess.cmdline_params = [
+                '--train_file', "training.xyz",
+                '--valid_file', "validation.xyz",
+                '--test_file', "test.xyz",
+                '--energy_key', "dft_energy",
+                '--forces_key', "dft_forces",
+                '--stress_key', "dft_stress",
+                '--r_max', str(mace_config_dict['r_max']),
+                '--compute_statistics',
+                '--h5_prefix', "processed_data/",
+                '--seed', str(mace_config_dict['seed'])
+            ]
+
+        codeinfo_postprocess1 = datastructures.CodeInfo()
+        codeinfo_postprocess1.code_uuid = self.inputs.postprocess_code.uuid
+        codeinfo_postprocess1.cmdline_params = ["aiida_swa.model"]
+        codeinfo_postprocess2 = datastructures.CodeInfo()
+        codeinfo_postprocess2.code_uuid = self.inputs.postprocess_code.uuid
+        codeinfo_postprocess2.cmdline_params = ["aiida.model"]
+
         codeinfo = datastructures.CodeInfo()
         codeinfo.cmdline_params =f"""--config config.yml""".split()                 
 
@@ -124,21 +155,19 @@ class MaceTrainCalculation(CalcJob):
         with folder.open('test.xyz', "w") as handle:
             handle.write(test_txt)
 
-        # Retrieve inputs
-        script = self.inputs.preprocess_script
         
-        # Copy the script to the temporary folder
-        script_path = folder.get_abs_path(script.filename)
-        with script.open(mode='rb') as script_file:
-            with open(script_path, 'wb') as temp_script_file:
-                temp_script_file.write(script_file.read())
         
-        mace_config_dict = self.inputs.mace_config.get_dict()
-        mace_config_dict['seed'] = random.randint(0, 10000) 
-        mace_config_dict['train_file'] = "processed_data/train/"   
-        mace_config_dict['valid_file'] = "processed_data/val/"
-        mace_config_dict['test_file'] = "processed_data/test/"    
-        mace_config_dict['statistics_file'] = "processed_data/statistics.json"  
+        mace_config_dict['seed'] = random.randint(0, 10000)
+        if do_process:
+            mace_config_dict['train_file'] = "processed_data/train/"   
+            mace_config_dict['valid_file'] = "processed_data/val/"
+            mace_config_dict['test_file'] = "processed_data/test/"    
+            mace_config_dict['statistics_file'] = "processed_data/statistics.json"
+        else:
+            mace_config_dict['train_file'] = "training.xyz"   
+            mace_config_dict['valid_file'] = "validation.xyz"
+            mace_config_dict['test_file'] = "test.xyz"
+
         mace_config_dict['energy_key'] = "dft_energy" 
         mace_config_dict['forces_key'] = "dft_forces" 
         mace_config_dict['stress_key'] = "dft_stress"   
@@ -171,19 +200,14 @@ class MaceTrainCalculation(CalcJob):
                         new_checkpoint_file = f"aiida_run-{str(mace_config_dict['seed'])}_epoch-0.pt"
                         with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
                             destination.write(source.read())
-                # Extract numbers from the filename using regex
-                # numbers_match = re.search(r'\d+', checkpoint_file)
-                # if numbers_match:
-                #     original_numbers = numbers_match.group()
-                #     # Replace the extracted numbers with mace_config_dict['seed'] in the filename
-                #     new_checkpoint_file = checkpoint_file.replace(original_numbers, str(mace_config['seed']))
-                #     with checkpoints_folder.open(checkpoint_file, 'rb') as source:
-                #         with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
-                #             destination.write(source.read())
+
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
         calcinfo = datastructures.CalcInfo()
-        calcinfo.codes_info = [codeinfo]
+        if do_process:
+            calcinfo.codes_info = [codeinfo_preprocess, codeinfo, codeinfo_postprocess1, codeinfo_postprocess2]
+        else:
+            calcinfo.codes_info = [codeinfo, codeinfo_postprocess1, codeinfo_postprocess2]
         calcinfo.retrieve_list = ['*model*', 'checkpoints', 'mace.out', 'results', 'logs', '_scheduler-std*']
 
         return calcinfo

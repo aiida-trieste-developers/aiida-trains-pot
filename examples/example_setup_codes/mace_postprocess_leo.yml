@@ -1,0 +1,11 @@
+---
+label: "mace_postprocess"
+description: "Perform MACE post-processing"
+default_calc_job_plugin: "trains_pot.macetrain"
+filepath_executable: "mace_create_lammps_model"
+computer: "leo1_scratch"
+prepend_text: |
+
+append_text: |
+
+##  verdi code create core.code.installed --config mace_postprocess_leo.yml
