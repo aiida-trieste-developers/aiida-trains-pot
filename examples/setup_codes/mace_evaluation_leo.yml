@@ -1,0 +1,12 @@
+---
+label: "cometee-evaluation"
+description: "cometee evaluation"
+default_calc_job_plugin: "trains_pot.evaluation"
+filepath_executable: "cometee_evaluation"
+computer: "leo1_scratch"
+prepend_text: |
+  source /leonardo_scratch/fast/IscrB_DeepVTe2/py_env/mace2/bin/activate
+
+append_text: |
+
+##  verdi code create core.code.installed --config mace_evaluation_leo.yml

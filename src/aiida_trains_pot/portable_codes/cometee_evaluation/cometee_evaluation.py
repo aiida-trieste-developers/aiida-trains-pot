@@ -30,8 +30,16 @@ def calc_rmse(dft_list, dnn_list):
     return rmse
 
 
+def model_deviation(data):
+    shape = data.shape
+    if len(shape) == 1:
+        return np.std(data)
+    else:
+        mean = np.mean(data, axis=0)
+        return np.max(np.mean(np.linalg.norm(data - mean, axis=2)**2, axis=0)**0.5)
 
-def deviation(data):
+
+def maximum_deviation(data):
     shape = data.shape
     if len(shape) == 1:
         return max(data) - min(data)
@@ -80,14 +88,18 @@ def main():
                 evaluated_dataset[-1][f'pot_{n_pot}_forces'] = np.array(atm.get_forces())
                 evaluated_dataset[-1][f'pot_{n_pot}_stress'] = np.array(atm.get_stress(voigt=False))
                 if 'dft_energy' in evaluated_dataset[-1]:
-                    evaluated_dataset[-1][f'energy_rmse_pot_{n_pot}'] = calc_rmse([evaluated_dataset[-1]['dft_energy']], [evaluated_dataset[-1][f'pot_{n_pot}_energy']])
+                    evaluated_dataset[-1][f'pot_{n_pot}_energy_rmse'] = calc_rmse([evaluated_dataset[-1]['dft_energy']], [evaluated_dataset[-1][f'pot_{n_pot}_energy']])
                 if 'dft_forces' in evaluated_dataset[-1]:
-                    evaluated_dataset[-1][f'forces_rmse_pot_{n_pot}'] = calc_rmse(evaluated_dataset[-1]['dft_forces'], evaluated_dataset[-1][f'pot_{n_pot}_forces'])
+                    evaluated_dataset[-1][f'pot_{n_pot}_forces_rmse'] = calc_rmse(evaluated_dataset[-1]['dft_forces'], evaluated_dataset[-1][f'pot_{n_pot}_forces'])
                 if 'dft_stress' in evaluated_dataset[-1]:
-                    evaluated_dataset[-1][f'stress_rmse_pot_{n_pot}'] = calc_rmse(evaluated_dataset[-1]['dft_stress'], evaluated_dataset[-1][f'pot_{n_pot}_stress'])
-            evaluated_dataset[-1][f'energy_deviation'] = deviation(np.array(energy))
-            evaluated_dataset[-1][f'forces_deviation'] = deviation(np.array(forces))
-            evaluated_dataset[-1][f'stress_deviation'] = deviation(np.array(stress))
+                    evaluated_dataset[-1][f'pot_{n_pot}_stress_rmse'] = calc_rmse(evaluated_dataset[-1]['dft_stress'], np.array(atm.get_stress(voigt=True)))
+            evaluated_dataset[-1][f'energy_deviation'] = maximum_deviation(np.array(energy))
+            evaluated_dataset[-1][f'forces_deviation'] = maximum_deviation(np.array(forces))
+            evaluated_dataset[-1][f'stress_deviation'] = maximum_deviation(np.array(stress))
+            evaluated_dataset[-1][f'energy_deviation_model'] = model_deviation(np.array(energy))
+            evaluated_dataset[-1][f'forces_deviation_model'] = model_deviation(np.array(forces))
+            evaluated_dataset[-1][f'stress_deviation_model'] = model_deviation(np.array(stress))
+
 
     np.savez('evaluated_dataset.npz', evaluated_dataset = evaluated_dataset)
 

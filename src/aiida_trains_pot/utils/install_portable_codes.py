@@ -10,12 +10,19 @@ def install_cometee_evaluation():
 
     cometee_evaluation_path = Path.joinpath(Path(aiida_trains_pot.__path__[0]), 'portable_codes/cometee_evaluation/')
 
-    load_profile()
+    prepend = input("Prepend command (es. source mace_env/bin/activate): ")
+    append = input("Append command: ")
 
     code = PortableCode(
         label = 'cometee_evaluation_portable',
         filepath_files = cometee_evaluation_path,
-        filepath_executable = 'launch.sh',
+        prepend_text = f'''{prepend}
+function launch() {{
+    ./launch $@
+}}
+export launch''',
+        append_text = append,
+        filepath_executable = 'launch',
     )
 
     code.store()

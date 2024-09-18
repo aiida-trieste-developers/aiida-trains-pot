@@ -1,6 +1,41 @@
 # AiiDA-TrainsPot
 
-Welcome to the aiida-trains-pot, the AiiDA workflow that Trains a Potential for you.
+Welcome to the AiiDA-TrainsPot, the AiiDA workflow that Trains a Potential for you.
+
+## Remote machine requirements
+
+AiiDA-TrainsPot requires to have installed in the remote machine:
+
+- Quantum ESPRESSO (at least pw.x executable) - [quantum-espresso.org](https://www.quantum-espresso.org/)
+- MACE and PyYAML (better if inside a python environment) - [github.com/ACEsuit/mace](https://github.com/ACEsuit/mace), [github.com/yaml/pyyaml](https://github.com/yaml/pyyaml)
+- LAMMPS with MACE extension - [mace-docs.readthedocs.io/en/latest/guide/lammps.html](https://mace-docs.readthedocs.io/en/latest/guide/lammps.html)
+
+## Installation
+
+Clone and install aiida-trains-pot repository
+
+```
+git clone git@github.com:aiida-trieste-developers/aiida-trains-pot.git
+cd aiida-trains-pot
+pip install
+```
+
+Clone and install aiida-lammps (last release of aiida-lammps was not compatible with MACE)
+
+```
+git clone git@github.com:aiidaplugins/aiida-lammps.git
+cd aiida-lammps
+pip install
+```
+
+Install codes for Quantum ESPRESSO, MACE (pre-process, train and post-process), LAMMPS. Examples of configuration yaml file can be found in examples/setup_codes.
+Install `PortableCode` for cometee evalution:
+
+```
+portable_codes_installation
+```
+
+If needed specify in in prepend command the activation command for the python environment where MACE was installed
 
 ## Contributing
 
