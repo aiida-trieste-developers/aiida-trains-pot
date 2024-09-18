@@ -1,0 +1,96 @@
+- integration:
+    style: "npt"
+    constraints:
+      temp: [30, 30, 0.242]
+      x: [0.0, 0.0, 2.42]
+      y: [0.0, 0.0, 2.42]
+  max_number_steps: 500
+  velocity:
+    - create:
+        temp: 30
+        seed: 144
+      group: "all" 
+- integration:
+    style: "npt"
+    constraints:
+      temp: [30, 30, 0.242]
+      x: [0.0, 0.0, 2.42]
+      y: [0.0, 0.0, 2.42]
+  max_number_steps: 500
+  velocity:
+    - create:
+        temp: 30
+        seed: 244
+      group: "all" 
+- integration:
+    style: "npt"
+    constraints:
+      temp: [30, 30, 0.242]
+      x: [0.0, 0.0, 2.42]
+      y: [0.0, 0.0, 2.42]
+  max_number_steps: 500
+  velocity:
+    - create:
+        temp: 30
+        seed: 344
+      group: "all" 
+- integration:
+    style: "npt"
+    constraints:
+      temp: [30, 30, 0.242]
+      x: [0.0, 0.0, 2.42]
+      y: [0.0, 0.0, 2.42]
+  max_number_steps: 500
+  velocity:
+    - create:
+        temp: 40
+        seed: 444
+      group: "all" 
+- integration:
+    style: "npt"
+    constraints:
+      temp: [30, 30, 0.242]
+      x: [0.0, 0.0, 2.42]
+      y: [0.0, 0.0, 2.42]
+  max_number_steps: 500
+  velocity:
+    - create:
+        temp: 30
+        seed: 544
+      group: "all" 
+- integration:
+    style: "npt"
+    constraints:
+      temp: [30, 30, 0.242]
+      x: [0.0, 0.0, 2.42]
+      y: [0.0, 0.0, 2.42]
+  max_number_steps: 500
+  velocity:
+    - create:
+        temp: 30
+        seed: 644
+      group: "all" 
+- integration:
+    style: "npt"
+    constraints:
+      temp: [30, 30, 0.242]
+      x: [0.0, 0.0, 2.42]
+      y: [0.0, 0.0, 2.42]
+  max_number_steps: 500
+  velocity:
+    - create:
+        temp: 30
+        seed: 744
+      group: "all" 
+- integration:
+    style: "npt"
+    constraints:
+      temp: [30, 30, 0.242]
+      x: [0.0, 0.0, 2.42]
+      y: [0.0, 0.0, 2.42]
+  max_number_steps: 500
+  velocity:
+    - create:
+        temp: 30
+        seed: 844
+      group: "all" 

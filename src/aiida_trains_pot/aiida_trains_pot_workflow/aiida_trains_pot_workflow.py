@@ -176,6 +176,8 @@ class TrainsPotWorkChain(WorkChain):
         spec.input_namespace('mace_lammps_potentials', valid_type=SinglefileData, help='MACE potential for MD', required=False)
         spec.input_namespace('mace_ase_potentials', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False)
 
+        spec.input('md.md_params_list', valid_type=List, help='List of parameters for MD', required=False)
+        spec.input('md.parameters', valid_type=Dict, help='List of parameters for MD', required=False)
         #spec.input('md.temperatures', valid_type=List, help='List of temperatures for MD', required=False)
         #spec.input('md.pressures', valid_type=List, help='List of pressures for MD', required=False)
         spec.input('potential', valid_type=SinglefileData, help='MACE potential for MD', required=False)
@@ -190,7 +192,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.expose_inputs(DatasetGeneratorWorkChain, namespace="datagen", exclude=('structures'))
         spec.expose_inputs(PwBaseWorkChain, namespace="dft", exclude=('pw.structure',), namespace_options={'validator': None})
         spec.expose_inputs(MaceWorkChain, namespace="mace", exclude=('dataset_list',), namespace_options={'validator': None})
-        spec.expose_inputs(LammpsWorkChain, namespace="md", exclude=('lammps.structure', 'lammps.potential'), namespace_options={'validator': None})
+        spec.expose_inputs(LammpsWorkChain, namespace="md", exclude=('lammps.structure', 'lammps.potential','lammps.parameters'), namespace_options={'validator': None})
         spec.expose_inputs(EvaluationCalculation, namespace="cometee_evaluation", exclude=('mace_potentials', 'datasetlist'))
         # spec.expose_inputs(FrameExtractionWorkChain, namespace="frame_extraction", exclude=('trajectories', 'input_structure', 'dt', 'saving_frequency'))
 
@@ -357,8 +359,13 @@ class TrainsPotWorkChain(WorkChain):
             inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
             inputs.lammps.structure = structure
             inputs.lammps.potential = generate_potential(potential)
-            future = self.submit(LammpsWorkChain, **inputs)
-            self.to_context(md_wc=append_(future))
+            params_list=list(self.inputs.md.md_params_list)
+            parameters=AttributeDict(self.inputs.md.parameters)
+            for params_md in params_list:            
+                parameters.md = dict(params_md)            
+                inputs.lammps.parameters = Dict(parameters)                
+                future = self.submit(LammpsWorkChain, **inputs)
+                self.to_context(md_wc=append_(future))
             #inputs.temperature = Float(temp)
             #inputs.pressure = Float(press)
             #for temp in self.inputs.md.temperatures:

@@ -1,4 +1,4 @@
-from aiida.orm import load_code, load_node, load_group, Str, Dict, Int, Bool, Float, StructureData
+from aiida.orm import load_code, load_node, load_group, Str, Dict, List, Int, Bool, Float, StructureData
 from aiida import load_profile
 from aiida.engine import submit
 from aiida.plugins import WorkflowFactory, DataFactory
@@ -219,6 +219,10 @@ builder.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=
 ###############################################
 
 builder.md.lammps.code = LAMMPS_code
+md_params_yaml = '/home/nataliia/Documents/aiida-trains-pot/aiida-trains-pot/examples/graphene/lammps_md_params.yml'
+with open(md_params_yaml, 'r') as yaml_file:
+    md_params_list = yaml.safe_load(yaml_file)
+builder.md.md_params_list = List(md_params_list)
 #builder.md.temperatures = List([30, 50])
 #builder.md.pressures = List([0])
 #builder.md.num_steps = Int(500)
@@ -237,18 +241,19 @@ _parameters.control.newton = "on"
 #    "pressure": [{"type": ["thermo_temp"], "group": "all"}],
 #}
 # Set of values to control the behaviour of the molecular dynamics calculation
-_parameters.md = {
-    "integration": {
-        "style": "npt",
-        "constraints": {
-            "temp": [30, 30, 0.242],
-            "x": [0.0, 0.0, 2.42],
-            "y": [0.0, 0.0, 2.42],
-        },
-    },
-    "max_number_steps": 100,
-    "velocity": [{"create": {"temp": 30, "seed": 633}, "group": "all"}],
-}
+#_parameters.md = {
+#    "integration": {
+#        "style": "npt",
+#        "constraints": {
+#            "temp": [30, 30, 0.242],
+#            "x": [0.0, 0.0, 2.42],
+#            "y": [0.0, 0.0, 2.42],
+#        },
+#    },
+#    "max_number_steps": 100,
+#    "velocity": [{"create": {"temp": 30, "seed": 633}, "group": "all"}],
+#}
+_parameters.md = {}
 # Control how often the computes are printed to file
 #_parameters.dump = {"dump_rate": 1000}
 # Parameters used to pass special information about the structure
@@ -276,7 +281,7 @@ _settings.additional_cmdline_params = ["-k", "on", "g", "1", "-sf", "kk"]
 
 SETTINGS = Dict(dict=_settings)#
 builder.md.lammps.settings = SETTINGS
-builder.md.lammps.parameters = PARAMETERS#
+builder.md.parameters = PARAMETERS#
 builder.md.lammps.metadata.options.resources = {
     'num_machines': LAMMPS_machine['nodes'],
     'num_mpiprocs_per_machine': LAMMPS_machine['taskpn'],
