@@ -17,7 +17,7 @@ Clone and install aiida-trains-pot repository
 ```
 git clone git@github.com:aiida-trieste-developers/aiida-trains-pot.git
 cd aiida-trains-pot
-pip install
+pip install .
 ```
 
 Clone and install aiida-lammps (last release of aiida-lammps was not compatible with MACE)
@@ -25,7 +25,7 @@ Clone and install aiida-lammps (last release of aiida-lammps was not compatible 
 ```
 git clone git@github.com:aiidaplugins/aiida-lammps.git
 cd aiida-lammps
-pip install
+pip install .
 ```
 
 Install codes for Quantum ESPRESSO, MACE (pre-process, train and post-process), LAMMPS. Examples of configuration yaml file can be found in examples/setup_codes.
