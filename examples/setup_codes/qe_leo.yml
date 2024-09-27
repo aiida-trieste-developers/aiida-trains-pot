@@ -12,4 +12,4 @@ prepend_text: |
 
 append_text: ' '
 
-##  verdi code create core.code.installed --config ~/onedrive/aiida/setups/qe_leo.yml
+##  verdi code create core.code.installed --config qe_leo.yml

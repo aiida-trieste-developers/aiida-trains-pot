@@ -1,4 +1,4 @@
-from aiida.orm import load_code, load_node, load_group, Str, Dict, List, Int, Bool, Float, StructureData
+from aiida.orm import load_code, load_node, load_group, load_computer, Str, Dict, List, Int, Bool, Float, StructureData
 from aiida import load_profile
 from aiida.engine import submit
 from aiida.plugins import WorkflowFactory, DataFactory
@@ -6,6 +6,7 @@ from pathlib import Path
 from aiida.common.extendeddicts import AttributeDict
 from ase.io import read
 import yaml
+import os
 load_profile()
 
 KpointsData = DataFactory("core.array.kpoints")
@@ -20,7 +21,7 @@ QE_code                 = load_code('qe7.2-pw@leo1_scratch_bind')
 MACE_train_code         = load_code('mace_train@leo1_scratch')
 MACE_preprocess_code    = load_code('mace_preprocess@leo1_scratch')
 MAE_postprocess_code    = load_code('mace_postprocess@leo1_scratch')
-LAMMPS_code             = load_code('lmp4mace2@leo1_scratch')
+LAMMPS_code             = load_code('lmp4mace@leo1_scratch')
 EVALUATION_code         = load_code('cometee_evaluation_portable')
 
 QE_machine = {
@@ -101,12 +102,13 @@ LAMMPS_time = get_time(LAMMPS_machine['time'])
 EVALUATION_mem = get_memory(EVALUATION_machine['mem'])
 EVALUATION_time = get_time(EVALUATION_machine['time'])
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 ###############################################
 # Input structures
 ###############################################
 
-input_structures = [StructureData(ase=read('/home/bidoggia/onedrive/aiida/git/organisation/aiida-trains-pot/examples/graphene_example/gr8x8.xyz'))]
+input_structures = [StructureData(ase=read(os.path.join(script_dir, 'gr8x8.xyz')))]
 
 
 ###############################################
@@ -114,14 +116,14 @@ input_structures = [StructureData(ase=read('/home/bidoggia/onedrive/aiida/git/or
 ###############################################
 
 builder = TrainsPot.get_builder_from_protocol(input_structures, qe_code = QE_code)
-builder.do_data_generation = Bool(False)
-builder.do_dft = Bool(False)
-builder.do_mace = Bool(False)
+builder.do_data_generation = Bool(True)
+builder.do_dft = Bool(True)
+builder.do_mace = Bool(True)
 builder.do_md = Bool(True)
 builder.max_loops = Int(2)
-builder.labelled_list = load_node(328538)
-builder.mace_lammps_potentials = {"pot_1":load_node(329463)}
-builder.mace_ase_potentials = {"pot_1":load_node(329464)}
+#builder.labelled_list = load_node(113290)
+#builder.mace_lammps_potentials = {"pot_1":load_node(113311),"pot_2":load_node(113321),"pot_3":load_node(113331),"pot_4":load_node(113341)}
+#builder.mace_ase_potentials = {"pot_1":load_node(113312),"pot_2":load_node(113322),"pot_3":load_node(113332),"pot_4":load_node(113342)}
 
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)
@@ -188,7 +190,7 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
 # Setup MACE
 ###############################################
 
-MACE_config = '/home/bidoggia/onedrive/aiida/git/organisation/aiida-trains-pot/examples/graphene_example/mace_config.yml'
+MACE_config = os.path.join(script_dir, 'mace_config.yml')
 builder.mace.mace.code = MACE_train_code
 builder.mace.mace.preprocess_code  = MACE_preprocess_code
 builder.mace.mace.postprocess_code = MAE_postprocess_code
@@ -219,7 +221,7 @@ builder.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=
 ###############################################
 
 builder.md.lammps.code = LAMMPS_code
-md_params_yaml = '/home/nataliia/Documents/aiida-trains-pot/aiida-trains-pot/examples/graphene/lammps_md_params.yml'
+md_params_yaml = os.path.join(script_dir, 'lammps_md_params.yml')
 with open(md_params_yaml, 'r') as yaml_file:
     md_params_list = yaml.safe_load(yaml_file)
 builder.md.md_params_list = List(md_params_list)
@@ -295,7 +297,7 @@ builder.md.lammps.metadata.options.queue_name = LAMMPS_machine['partition']
 builder.md.lammps.metadata.options.qos = LAMMPS_machine['qos']
 builder.md.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{LAMMPS_machine['gpu']}"
 
-builder.frame_extraction.correlation_time = Float(0.0242)
+builder.frame_extraction.correlation_time = Float(2.42)
 builder.frame_extraction.thermalization_time = Float(0)
 
 
@@ -317,6 +319,7 @@ builder.cometee_evaluation.metadata.options.queue_name = EVALUATION_machine['par
 builder.cometee_evaluation.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{EVALUATION_machine['gpu']}"
 builder.cometee_evaluation.metadata.options.qos = EVALUATION_machine['qos']
 builder.cometee_evaluation.metadata.options.account = EVALUATION_machine['account']
+builder.cometee_evaluation.metadata.computer = load_computer('leo1_scratch')
 
 
 
