@@ -20,9 +20,9 @@ TrainsPot   = WorkflowFactory('trains_pot.workflow')
 QE_code                 = load_code('qe7.2-pw@leo1_scratch_bind')
 MACE_train_code         = load_code('mace_train@leo1_scratch')
 MACE_preprocess_code    = load_code('mace_preprocess@leo1_scratch')
-MAE_postprocess_code    = load_code('mace_postprocess@leo1_scratch')
+MACE_postprocess_code   = load_code('mace_postprocess@leo1_scratch')
 LAMMPS_code             = load_code('lmp4mace@leo1_scratch')
-EVALUATION_code         = load_code('cometee_evaluation_portable')
+EVALUATION_code         = load_code('committee_evaluation_portable')
 
 QE_machine = {
 'time'                             : "00:05:00",
@@ -193,7 +193,7 @@ builder.dft.pw.parameters = Dict({'SYSTEM':
 MACE_config = os.path.join(script_dir, 'mace_config.yml')
 builder.mace.mace.code = MACE_train_code
 builder.mace.mace.preprocess_code  = MACE_preprocess_code
-builder.mace.mace.postprocess_code = MAE_postprocess_code
+builder.mace.mace.postprocess_code = MACE_postprocess_code
 # builder.mace.mace.do_preprocess = Bool(True)
 
 with open(MACE_config, 'r') as yaml_file:
@@ -256,8 +256,8 @@ _parameters.control.newton = "on"
 #    "velocity": [{"create": {"temp": 30, "seed": 633}, "group": "all"}],
 #}
 _parameters.md = {}
+_parameters.dump = {"dump_rate": 1} ## This parameter will be updated automatically based on the value of builder.frame_extraction.sampling_time
 # Control how often the computes are printed to file
-#_parameters.dump = {"dump_rate": 1000}
 # Parameters used to pass special information about the structure
 _parameters.structure = {"atom_style": "atomic", "atom_modify": "map yes", "boundary": "p p f"}
 # Parameters controlling the global values written directly to the output
@@ -283,7 +283,7 @@ _settings.additional_cmdline_params = ["-k", "on", "g", "1", "-sf", "kk"]
 
 SETTINGS = Dict(dict=_settings)#
 builder.md.lammps.settings = SETTINGS
-builder.md.parameters = PARAMETERS#
+builder.md.parameters = PARAMETERS
 builder.md.lammps.metadata.options.resources = {
     'num_machines': LAMMPS_machine['nodes'],
     'num_mpiprocs_per_machine': LAMMPS_machine['taskpn'],
@@ -297,29 +297,29 @@ builder.md.lammps.metadata.options.queue_name = LAMMPS_machine['partition']
 builder.md.lammps.metadata.options.qos = LAMMPS_machine['qos']
 builder.md.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{LAMMPS_machine['gpu']}"
 
-builder.frame_extraction.correlation_time = Float(2.42)
+builder.frame_extraction.sampling_time = Float(0.242)
 builder.frame_extraction.thermalization_time = Float(0)
 
 
 
 ###############################################
-# Setup Cometee Evaluation
+# Setup committee Evaluation
 ###############################################
 
-builder.cometee_evaluation.code = EVALUATION_code
-builder.cometee_evaluation.metadata.options.resources = {
+builder.committee_evaluation.code = EVALUATION_code
+builder.committee_evaluation.metadata.options.resources = {
     'num_machines': EVALUATION_machine['nodes'],
     'num_mpiprocs_per_machine': EVALUATION_machine['taskpn'],
     'num_cores_per_mpiproc': EVALUATION_machine['cpupt']
 }
-builder.cometee_evaluation.metadata.options.max_wallclock_seconds = EVALUATION_time
-builder.cometee_evaluation.metadata.options.max_memory_kb = EVALUATION_mem
-builder.cometee_evaluation.metadata.options.import_sys_environment = False
-builder.cometee_evaluation.metadata.options.queue_name = EVALUATION_machine['partition']
-builder.cometee_evaluation.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{EVALUATION_machine['gpu']}"
-builder.cometee_evaluation.metadata.options.qos = EVALUATION_machine['qos']
-builder.cometee_evaluation.metadata.options.account = EVALUATION_machine['account']
-builder.cometee_evaluation.metadata.computer = load_computer('leo1_scratch')
+builder.committee_evaluation.metadata.options.max_wallclock_seconds = EVALUATION_time
+builder.committee_evaluation.metadata.options.max_memory_kb = EVALUATION_mem
+builder.committee_evaluation.metadata.options.import_sys_environment = False
+builder.committee_evaluation.metadata.options.queue_name = EVALUATION_machine['partition']
+builder.committee_evaluation.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{EVALUATION_machine['gpu']}"
+builder.committee_evaluation.metadata.options.qos = EVALUATION_machine['qos']
+builder.committee_evaluation.metadata.options.account = EVALUATION_machine['account']
+builder.committee_evaluation.metadata.computer = load_computer('leo1_scratch')
 
 
 

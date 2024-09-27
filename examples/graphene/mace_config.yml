@@ -1,8 +1,5 @@
 name: "aiida"
 seed: 12345
-train_file: "training.xyz"
-valid_file: "validation.xyz"
-test_file: "test.xyz"
 default_dtype: float32
 model: MACE
 compute_stress: True

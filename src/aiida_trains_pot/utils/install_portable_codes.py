@@ -6,16 +6,16 @@ from aiida.orm import Code
 load_profile()
 
 
-def install_cometee_evaluation():
+def install_committee_evaluation():
 
-    cometee_evaluation_path = Path.joinpath(Path(aiida_trains_pot.__path__[0]), 'portable_codes/cometee_evaluation/')
+    committee_evaluation_path = Path.joinpath(Path(aiida_trains_pot.__path__[0]), 'portable_codes/committee_evaluation/')
 
     prepend = input("Prepend command (es. source mace_env/bin/activate): ")
     append = input("Append command: ")
 
     code = PortableCode(
-        label = 'cometee_evaluation_portable',
-        filepath_files = cometee_evaluation_path,
+        label = 'committee_evaluation_portable',
+        filepath_files = committee_evaluation_path,
         prepend_text = f'''{prepend}
 function launch() {{
     ./launch $@
@@ -32,10 +32,10 @@ export launch''',
 def main():
     codes = Code.collection.find()
     for code in codes:
-        if code.label == 'cometee_evaluation_portable':
-            raise ValueError(f"'cometee_evaluation_portable' code already exists with pk = {code.pk}")
+        if code.label == 'committee_evaluation_portable':
+            raise ValueError(f"'committee_evaluation_portable' code already exists with pk = {code.pk}")
         
-    install_cometee_evaluation()
+    install_committee_evaluation()
 
 if __name__ == '__main__':
     main()

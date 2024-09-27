@@ -88,7 +88,7 @@ def WriteLabelledList(non_labelled_structures, **labelled_data):
     return List(list=labelled_list)
 
 @calcfunction
-def LammpsFrameExtraction(correlation_time, saving_frequency, thermalization_time=0, **trajectories):
+def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0, **trajectories):
     """Extract frames from trajectory."""
 
 
@@ -136,7 +136,7 @@ def LammpsFrameExtraction(correlation_time, saving_frequency, thermalization_tim
             extracted_frames[-1]['timestep'] = params['control']['timestep']
             extracted_frames[-1]['id_lammps'] = lammps_id
 
-            i = i + int(correlation_time/params['control']['timestep']/saving_frequency)
+            i = i + int(sampling_time/params['control']['timestep']/saving_frequency)
 
     return {'lammps_extracted_list': List(list=extracted_frames)}
 
@@ -182,7 +182,7 @@ class TrainsPotWorkChain(WorkChain):
         #spec.input('md.pressures', valid_type=List, help='List of pressures for MD', required=False)
         spec.input('potential', valid_type=SinglefileData, help='MACE potential for MD', required=False)
 
-        spec.input('frame_extraction.correlation_time', valid_type=Float, help='Correlation time for frame extraction', required=False)
+        spec.input('frame_extraction.sampling_time', valid_type=Float, help='Correlation time for frame extraction', required=False)
         spec.input('frame_extraction.thermalization_time', valid_type=Float, default=lambda : Float(0.0), help='Thermalization time for MD', required=False)
 
         spec.input('thr_energy', valid_type=Float, help='Threshold for energy', required=True)
@@ -193,18 +193,18 @@ class TrainsPotWorkChain(WorkChain):
         spec.expose_inputs(PwBaseWorkChain, namespace="dft", exclude=('pw.structure',), namespace_options={'validator': None})
         spec.expose_inputs(MaceWorkChain, namespace="mace", exclude=('dataset_list',), namespace_options={'validator': None})
         spec.expose_inputs(LammpsWorkChain, namespace="md", exclude=('lammps.structure', 'lammps.potential','lammps.parameters'), namespace_options={'validator': None})
-        spec.expose_inputs(EvaluationCalculation, namespace="cometee_evaluation", exclude=('mace_potentials', 'datasetlist'))
+        spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))
         # spec.expose_inputs(FrameExtractionWorkChain, namespace="frame_extraction", exclude=('trajectories', 'input_structure', 'dt', 'saving_frequency'))
 
         spec.input_namespace("structures", valid_type=StructureData, required=True)
 
         spec.output("dft.labelled_list", valid_type=List, help="List of configurations labelled via DFT")
         spec.output("md.lammps_extracted_list", valid_type=List, help="List of extracted frames from MD trajectories")
-        spec.output("cometee_evaluation_list", valid_type=List, help="List of cometee evaluated configurations")
+        spec.output("committee_evaluation_list", valid_type=List, help="List of committee evaluated configurations")
         spec.output_namespace("md", dynamic=True, help="MD outputs")
         spec.output_namespace("mace", dynamic=True, help="MACE outputs")
         spec.expose_outputs(DatasetGeneratorWorkChain, namespace="datagen")
-        # spec.expose_outputs(EvaluationCalculation, namespace="cometee_evaluation")
+        # spec.expose_outputs(EvaluationCalculation, namespace="committee_evaluation")
         # spec.expose_outputs(MaceWorkChain, namespace="mace")
 
         
@@ -224,8 +224,8 @@ class TrainsPotWorkChain(WorkChain):
                     cls.run_md,
                     cls.finalize_md,
                     cls.run_md_frame_extraction,
-                    cls.run_cometee_evaluation,
-                    cls.finalize_cometee_evaluation),
+                    cls.run_committee_evaluation,
+                    cls.finalize_committee_evaluation),
             )
             # cls.finalize,
             # cls.save_files
@@ -300,7 +300,7 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.config += 1
         
         if self.ctx.iteration > 1:
-            ase_list = dataset_list_to_ase_list(self.ctx.cometee_evaluation_list)
+            ase_list = dataset_list_to_ase_list(self.ctx.committee_evaluation_list)
         else:
             if self.ctx.do_data_generation:
                 ase_list = dataset_list_to_ase_list(self.ctx.datagen.outputs.structure_lists.global_structure_list.get_list())            
@@ -354,13 +354,13 @@ class TrainsPotWorkChain(WorkChain):
     def run_md(self):
         """Run MD calculations."""
         potential = self.ctx.potentials_lammps[-1]        
-
         for _, structure in self.ctx.lammps_input_structures.items():
             inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
             inputs.lammps.structure = structure
             inputs.lammps.potential = generate_potential(potential)
             params_list=list(self.inputs.md.md_params_list)
             parameters=AttributeDict(self.inputs.md.parameters)
+            parameters.dump.dump_rate = int(self.inputs.frame_extraction.sampling_time/parameters.control.timestep)
             for params_md in params_list:            
                 parameters.md = dict(params_md)            
                 inputs.lammps.parameters = Dict(parameters)                
@@ -383,10 +383,11 @@ class TrainsPotWorkChain(WorkChain):
     
     def run_md_frame_extraction(self):
         """Run MD frame extraction."""
-        # for _, trajectory in self.ctx.trajectories.items():
-
-        lammps_extracted_list = LammpsFrameExtraction(self.inputs.frame_extraction.correlation_time,
-                                Int(100),
+        # for _, trajectory in self.ctx.trajectories.items():        
+        parameters=AttributeDict(self.inputs.md.parameters)
+        dump_rate = int(self.inputs.frame_extraction.sampling_time/parameters.control.timestep)
+        lammps_extracted_list = LammpsFrameExtraction(self.inputs.frame_extraction.sampling_time,
+                                dump_rate,
                                 thermalization_time = self.inputs.frame_extraction.thermalization_time, 
                                 **self.ctx.trajectories)['lammps_extracted_list']
         self.ctx.lammps_extracted_list = lammps_extracted_list
@@ -399,13 +400,13 @@ class TrainsPotWorkChain(WorkChain):
         # future = self.submit(FrameExtractionWorkChain, **inputs)
         # self.to_context(frame_extraction_wc=append_(future))
 
-    def run_cometee_evaluation(self):
-        inputs = self.exposed_inputs(EvaluationCalculation, namespace="cometee_evaluation")
+    def run_committee_evaluation(self):
+        inputs = self.exposed_inputs(EvaluationCalculation, namespace="committee_evaluation")
         inputs['mace_potentials'] = {f"pot_{ii}": self.ctx.potentials[ii] for ii in range(len(self.ctx.potentials))}
         inputs['datasetlist'] = self.ctx.lammps_extracted_list
 
         future = self.submit(EvaluationCalculation, **inputs)
-        self.to_context(cometee_evalutation = future)
+        self.to_context(committee_evalutation = future)
 
         
 
@@ -429,7 +430,7 @@ class TrainsPotWorkChain(WorkChain):
         if self.ctx.do_data_generation:
             labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.datagen.outputs.structure_lists.global_structure_list, **dft_data)
         elif self.ctx.iteration > 1:
-            labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.cometee_evaluation_list, **dft_data)
+            labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.committee_evaluation_list, **dft_data)
         else:
             labelled_list = WriteLabelledList(non_labelled_structures = self.inputs.non_labelled_list, **dft_data)
         
@@ -484,17 +485,17 @@ class TrainsPotWorkChain(WorkChain):
 
         # self.out('md', self.ctx.md_wc.lmp_out)
     
-    def finalize_cometee_evaluation(self):
-        calc = self.ctx.cometee_evalutation
+    def finalize_committee_evaluation(self):
+        calc = self.ctx.committee_evalutation
 
         selected = SelectToLabel(calc.outputs.evaluated_list, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
-        self.ctx.cometee_evaluation_list = selected['selected_list'].get_list()
-        self.report(f'Structures selected for labelling: {len(self.ctx.cometee_evaluation_list)}/{len(calc.outputs.evaluated_list.get_list())}')
+        self.ctx.committee_evaluation_list = selected['selected_list'].get_list()
+        self.report(f'Structures selected for labelling: {len(self.ctx.committee_evaluation_list)}/{len(calc.outputs.evaluated_list.get_list())}')
         self.report(f'Min energy deviation: {round(selected["min_energy_deviation"].value,2)} eV, Max energy deviation: {round(selected["max_energy_deviation"].value,2)} eV')
         self.report(f'Min forces deviation: {round(selected["min_forces_deviation"].value,2)} eV/Å, Max forces deviation: {round(selected["max_forces_deviation"].value,2)} eV/Å')
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')
-        self.out('cometee_evaluation_list', calc.outputs.evaluated_list)
-        # self.out_many(self.exposed_outputs(self.ctx.cometee_evalutation, EvaluationCalculation, namespace="cometee_evaluation"))
+        self.out('committee_evaluation_list', calc.outputs.evaluated_list)
+        # self.out_many(self.exposed_outputs(self.ctx.committee_evalutation, EvaluationCalculation, namespace="committee_evaluation"))
     # def finalize_md_frame_extraction(self):
         # self.out('frame_extraction', self.ctx.frame_extraction_wc[0].outputs)
 

@@ -29,7 +29,7 @@ pip install .
 ```
 
 Install codes for Quantum ESPRESSO, MACE (pre-process, train and post-process), LAMMPS. Examples of configuration yaml file can be found in examples/setup_codes.
-Install `PortableCode` for cometee evalution:
+Install `PortableCode` for committee evalution:
 
 ```
 portable_codes_installation
