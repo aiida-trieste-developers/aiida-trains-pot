@@ -115,7 +115,9 @@ input_structures = [StructureData(ase=read(os.path.join(script_dir, 'gr8x8.xyz')
 # Setup TrainsPot worflow
 ###############################################
 
-builder = TrainsPot.get_builder_from_protocol(input_structures, qe_code = QE_code)
+builder = TrainsPot.get_builder()
+builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(input_structures))}
+# builder = TrainsPot.get_builder_from_protocol(input_structures, qe_code = QE_code)
 builder.do_data_generation = Bool(True)
 builder.do_dft = Bool(True)
 builder.do_mace = Bool(True)
@@ -154,6 +156,7 @@ kpoints.set_kpoints_mesh([1, 1, 1])
 pseudo_family = load_group('SSSP/1.3/PBE/precision')
 cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=input_structures[0], unit='Ry')
 
+builder.dft.pw.code = QE_code
 builder.dft.pw.metadata.options.withmpi=True
 builder.dft.pw.metadata.options.max_wallclock_seconds = QE_time
 builder.dft.pw.metadata.options.import_sys_environment = False

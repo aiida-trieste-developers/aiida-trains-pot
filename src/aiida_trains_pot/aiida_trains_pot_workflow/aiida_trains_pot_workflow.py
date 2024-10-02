@@ -231,15 +231,15 @@ class TrainsPotWorkChain(WorkChain):
             # cls.save_files
         )
 
-    @classmethod
-    def get_builder_from_protocol(cls, structures, qe_code, qe_protocol=None, qe_options=None, qe_overrides=None, **kwargs):
-        """Return a builder"""
+    # @classmethod
+    # def get_builder_from_protocol(cls, structures, qe_code, qe_protocol=None, qe_options=None, qe_overrides=None, **kwargs):
+    #     """Return a builder"""
         
-        builder = cls.get_builder()
-        builder.structures = {f's{ii}':s for ii, s in enumerate(structures)}
-        builder.dft = PwBaseWorkChain.get_builder_from_protocol(*(qe_code, structures[0], qe_protocol), overrides = qe_overrides, options=qe_options, **kwargs)
+    #     builder = cls.get_builder()
+    #     builder.structures = {f's{ii}':s for ii, s in enumerate(structures)}
+    #     builder.dft = PwBaseWorkChain.get_builder_from_protocol(*(qe_code, structures[0], qe_protocol), overrides = qe_overrides, options=qe_options, **kwargs)
 
-        return builder
+    #     return builder
     
     def ver_do_data_generation(self): return bool(self.ctx.do_data_generation)
     def ver_do_dft(self): return bool(self.ctx.do_dft)
