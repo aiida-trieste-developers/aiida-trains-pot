@@ -87,7 +87,8 @@ class MaceTrainCalculation(CalcJob):
         
 
         spec.exit_code(300, "ERROR_MISSING_OUTPUT_FILES", message="Calculation did not produce all expected output files.",)
-
+        spec.exit_code(400, "ERROR_OUT_OF_WALLTIME", message="The calculation stopped prematurely because it ran out of walltime.", )
+        
     @classmethod
     def get_builder_from_protocol(
         cls, **kwargs):
