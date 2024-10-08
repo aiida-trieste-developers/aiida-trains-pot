@@ -15,6 +15,9 @@ from ase.io.lammpsrun import read_lammps_dump_text
 from io import StringIO
 import numpy as np
 from pathlib import Path
+import random
+import itertools
+import time
 import os
 import io
 load_profile()
@@ -86,6 +89,75 @@ def WriteLabelledList(non_labelled_structures, **labelled_data):
         labelled_list[-1]['dft_forces'] = List(list(value['output_trajectory'].get_array('forces')[0]))
         labelled_list[-1]['dft_stress'] = List(list(value['output_trajectory'].get_array('stress')[0]))
     return List(list=labelled_list)
+
+@calcfunction
+def SplitDataset(dataset):
+    """Divide dataset into training, validation and test sets."""
+    # data = self.inputs.dataset_list.get_list()
+    data = dataset.get_list()
+
+    exclude_list = ["energy", "cell", "stress", "forces", "symbols", "positions"]
+    # Define a function to extract the grouping key
+    def check_esclude_list(string):
+        for el in exclude_list:
+             if el in string:
+                 return False
+        return True
+    
+    def get_grouping_key(d):
+        return tuple((k, v) for k, v in d.items() if check_esclude_list(k))
+
+    # Sort the data based on the grouping key
+    sorted_data = sorted(data, key=get_grouping_key)
+
+    # Group the sorted data by the grouping key
+    grouped_data = itertools.groupby(sorted_data, key=get_grouping_key)
+
+    # Iterate over the groups and print the group key and the list of dictionaries in each group
+    training_set = []
+    validation_set = []
+    test_set = []
+
+    for _, group in grouped_data:
+    # Calculate the number of elements for each set
+        group_list = list(group)
+
+        if group_list[0]['gen_method'] == "INPUT_STRUCTURE" or group_list[0]['gen_method'] == "ISOLATED_ATOM" or len(group_list[0]['positions']) == 1 or group_list[0]['gen_method'] == "EQUILIBRIUM":
+                training_set += group_list
+                continue
+        elif 'set' in group_list[0].keys():
+            if group_list[0]['set'] == 'TRAINING':
+                training_set += group_list
+                continue
+            elif group_list[0]['set'] == 'VALIDATION':
+                validation_set += group_list
+                continue
+            elif group_list[0]['set'] == 'TEST':
+                test_set += group_list
+                continue
+        total_elements = len(group_list)
+        training_size = int(0.8 * total_elements)
+        test_size = int(0.1 * total_elements)
+        validation_size = total_elements - training_size - test_size
+        
+        random.seed(int(time.time()))
+        _ = random.shuffle(group_list)
+
+
+        # Split the data into sets
+        training_set += group_list[:training_size]
+        validation_set += group_list[training_size:training_size+validation_size]
+        test_set += group_list[training_size+validation_size:]
+
+    for ii in range(len(training_set)):
+        training_set[ii]['set'] = 'TRAINING'
+    for ii in range(len(validation_set)):
+        validation_set[ii]['set'] = 'VALIDATION'
+    for ii in range(len(test_set)):
+        test_set[ii]['set'] = 'TEST'
+
+
+    return {"train_set":List(training_set), "validation_set":List(validation_set), "test_set":List(test_set), "global_splitted":List(training_set+validation_set+test_set)}
 
 @calcfunction
 def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0, **trajectories):
@@ -175,7 +247,8 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('mace_workchain_pk', valid_type=Str, help='MACE workchain pk', required=False)
         spec.input_namespace('mace_lammps_potentials', valid_type=SinglefileData, help='MACE potential for MD', required=False)
         spec.input_namespace('mace_ase_potentials', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False)
-
+        spec.input("mace.num_potentials", valid_type=Int, default=lambda:Int(1), required=False)
+        
         spec.input('md.md_params_list', valid_type=List, help='List of parameters for MD', required=False)
         spec.input('md.parameters', valid_type=Dict, help='List of parameters for MD', required=False)
         #spec.input('md.temperatures', valid_type=List, help='List of temperatures for MD', required=False)
@@ -191,7 +264,7 @@ class TrainsPotWorkChain(WorkChain):
 
         spec.expose_inputs(DatasetGeneratorWorkChain, namespace="datagen", exclude=('structures'))
         spec.expose_inputs(PwBaseWorkChain, namespace="dft", exclude=('pw.structure',), namespace_options={'validator': None})
-        spec.expose_inputs(MaceWorkChain, namespace="mace", exclude=('dataset_list',), namespace_options={'validator': None})
+        spec.expose_inputs(MaceWorkChain, namespace="mace",  exclude=('mace.training_set', 'mace.validation_set', 'mace.test_set'), namespace_options={'validator': None})
         spec.expose_inputs(LammpsWorkChain, namespace="md", exclude=('lammps.structure', 'lammps.potential','lammps.parameters'), namespace_options={'validator': None})
         spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))
         # spec.expose_inputs(FrameExtractionWorkChain, namespace="frame_extraction", exclude=('trajectories', 'input_structure', 'dt', 'saving_frequency'))
@@ -203,7 +276,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.output("committee_evaluation_list", valid_type=List, help="List of committee evaluated configurations")
         spec.output_namespace("md", dynamic=True, help="MD outputs")
         spec.output_namespace("mace", dynamic=True, help="MACE outputs")
-        spec.expose_outputs(DatasetGeneratorWorkChain, namespace="datagen")
+        spec.expose_outputs(DatasetGeneratorWorkChain, namespace="datagen")        
         # spec.expose_outputs(EvaluationCalculation, namespace="committee_evaluation")
         # spec.expose_outputs(MaceWorkChain, namespace="mace")
 
@@ -338,17 +411,44 @@ class TrainsPotWorkChain(WorkChain):
 
     def run_mace(self):
         """Run MACE calculations."""
+        if self.ctx.do_dft:
+            dataset_list = List(self.ctx.labelled_list)
+        else:
+            dataset_list = self.inputs.labelled_list
+
+        split_datasets = SplitDataset(dataset_list)
+        train_set = split_datasets["train_set"]
+        validation_set = split_datasets["validation_set"]
+        test_set = split_datasets["test_set"]
+
+        self.global_splitted=split_datasets["global_splitted"]
+        
+        self.report(f"Training set size: {len(train_set.get_list())}")
+        self.report(f"Validation set size: {len(validation_set.get_list())}")
+        self.report(f"Test set size: {len(test_set.get_list())}")     
+      
+
         inputs = self.exposed_inputs(MaceWorkChain, namespace="mace")
 
-        if self.ctx.do_dft:
-            inputs['dataset_list'] = List(self.ctx.labelled_list)
-        else:
-            inputs['dataset_list'] = self.inputs.labelled_list
+        inputs.mace["training_set"] = train_set
+        inputs.mace["validation_set"] = validation_set
+        inputs.mace["test_set"] = test_set
+
+        
         if self.ctx.iteration > 1:
             inputs['checkpoints'] = {f"chkpt_{ii+1}": self.ctx.checkpoints[-ii] for ii in range(min(len(self.ctx.checkpoints), self.inputs.mace.num_potentials.value))}
-            inputs.mace['restart'] = Bool(True)
-        future = self.submit(MaceWorkChain, **inputs)
-        self.to_context(mace_wc = future)
+            inputs.mace['restart'] = Bool(True)    
+
+        if 'checkpoints' in inputs:
+            chkpts = list(dict(inputs.checkpoints).values())
+
+        for ii in range(self.inputs.mace.num_potentials.value):            
+            if 'checkpoints' in self.inputs and ii < len(chkpts):
+                inputs.mace["checkpoints"] = chkpts[ii]
+            
+            inputs.mace["index_pot"] = Int(ii)
+            future = self.submit(MaceWorkChain, **inputs)
+            self.to_context(mace_wc = append_(future))        
         pass
 
     def run_md(self):
@@ -442,18 +542,24 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.potentials = []
         self.ctx.potentials_lammps = []
         self.ctx.checkpoints = []
-        for key, val in self.ctx.mace_wc.outputs.mace.items():
-            for k, v in val.items():
-                if k == 'aiida_swa_compiled_model':
+        potentials = {}
+        for ii, calc in enumerate(self.ctx.mace_wc):
+            potentials[f'mace_{ii}']={}
+            for el, v in calc.outputs.mace_calc.items():
+                
+                if el == 'aiida_swa_compiled_model':
                     self.ctx.potentials.append(v)
-                elif k == 'checkpoints':
+                elif el == 'checkpoints':
                     self.ctx.checkpoints.append(v)
-                elif k == 'aiida_swa_model_lammps':
+                elif el == 'aiida_swa_model_lammps':
                     self.ctx.potentials_lammps.append(v)
             
-
-        self.out('mace', self.ctx.mace_wc.outputs.mace)
-        self.ctx.labelled_list = self.ctx.mace_wc.outputs.global_list_splitted.get_list()
+            
+                potentials[f'mace_{ii}'][el] = v
+                
+            self.out('mace', potentials)
+           
+        self.ctx.labelled_list = self.global_splitted.get_list()
         # self.out_many(self.exposed_outputs(self.ctx.mace_wc, MaceWorkChain, namespace="mace"))
 
     def finalize_md(self):
