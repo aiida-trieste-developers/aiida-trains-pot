@@ -421,7 +421,7 @@ class TrainsPotWorkChain(WorkChain):
         validation_set = split_datasets["validation_set"]
         test_set = split_datasets["test_set"]
 
-        self.global_splitted=split_datasets["global_splitted"]
+        self.ctx.global_splitted=split_datasets["global_splitted"]
         
         self.report(f"Training set size: {len(train_set.get_list())}")
         self.report(f"Validation set size: {len(validation_set.get_list())}")
@@ -559,7 +559,7 @@ class TrainsPotWorkChain(WorkChain):
                 
             self.out('mace', potentials)
            
-        self.ctx.labelled_list = self.global_splitted.get_list()
+        self.ctx.labelled_list = self.ctx.global_splitted.get_list()
         # self.out_many(self.exposed_outputs(self.ctx.mace_wc, MaceWorkChain, namespace="mace"))
 
     def finalize_md(self):
