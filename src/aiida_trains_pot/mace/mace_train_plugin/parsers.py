@@ -234,6 +234,14 @@ class MaceBaseParser(Parser):
                         with self.retrieved.open(file_path, "rb") as handle:                                           
                             parsed_results = parse_log_file(SinglefileData(file=handle))
                             self.out("results", List(parsed_results))    
+                if 'logs' in output_filename:
+                    folder_data = FolderData()
+                    folder_contents = self.retrieved.list_object_names(output_filename)
+                    for file_in_folder in folder_contents:
+                        file_path = os.path.join(output_filename, file_in_folder)
+                        with self.retrieved.open(file_path, "rb") as handle:
+                            folder_data.put_object_from_filelike(handle, file_in_folder)
+                    self.out(output_filename, folder_data)
                 if 'checkpoint' in output_filename:
                     #with self.retrieved.open(output_filename, "rb") as handle:
                     #    output_node = FolderData(folder=handle)
@@ -249,9 +257,9 @@ class MaceBaseParser(Parser):
                 with self.retrieved.open(output_filename, "rb") as handle:
                     output_node = SinglefileData(file=handle)                
                 if 'model' in output_filename and not 'pt' in output_filename:
-                    self.out(output_filename.replace('.','_'), output_node)
+                    self.out(output_filename.replace('.','_').replace('aiida_','').replace('compiled','ase'), output_node)
                 if 'model' in output_filename and 'pt' in output_filename:
-                    self.out(output_filename.replace('.pt','').replace('.','_').replace('-','_'), output_node)
+                    self.out(output_filename.replace('.pt','').replace('.','_').replace('-','_').replace('aiida_','').replace('compiled','ase'), output_node)
                 if 'mace' in output_filename:
                     self.out(output_filename.replace('.out','_out'), output_node)
                     self.out("RMSE", List(parse_tables_from_singlefiledata(output_node)))         

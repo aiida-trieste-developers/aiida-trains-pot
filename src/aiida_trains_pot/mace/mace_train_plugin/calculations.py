@@ -1,6 +1,7 @@
 """
 AiiDA calculation plugin for the MACE training code.
 """
+import re
 from aiida.common import datastructures
 from aiida.engine import CalcJob
 from aiida.orm import SinglefileData, List, FolderData, Dict, Bool, Code
@@ -71,15 +72,15 @@ class MaceTrainCalculation(CalcJob):
         spec.input("preprocess_code", valid_type=Code, help="Preprocess code, required if do_preprocess is True", required=False)
         spec.input("postprocess_code", valid_type=Code, help="Postprocess code", required=False)
         spec.input("restart", valid_type=Bool, help="Restart from a previous calculation", required=False, default=lambda:Bool(False))
+        spec.input("checkpoints_restart", valid_type=FolderData, help="Checkpoints file", required=False)        
 
-        spec.output("aiida_model", valid_type=SinglefileData, help="Model file",)
-        spec.output("aiida_swa_model", valid_type=SinglefileData, help="SWA Model file",)
-        spec.output("aiida_compiled_model", valid_type=SinglefileData, help="Compiled Model file",)
-        spec.output("aiida_swa_compiled_model", valid_type=SinglefileData, help="SWA Compiled Model file",)
-        spec.output("aiida_model_lammps", valid_type=SinglefileData, help="Model lammps file",)
-        spec.output("aiida_swa_model_lammps", valid_type=SinglefileData, help="SWA Model lammps file",)
-        spec.output("mace_out", valid_type=SinglefileData, help="Mace output file",)
-        spec.output("results", valid_type=FolderData, help="Results file",)
+        spec.output("model", valid_type=SinglefileData, help="Model file",)
+        spec.output("swa_model", valid_type=SinglefileData, help="SWA Model file",)
+        spec.output("ase_model", valid_type=SinglefileData, help="Compiled Model file",)
+        spec.output("swa_ase_model", valid_type=SinglefileData, help="SWA Compiled Model file",)
+        spec.output("model_lammps", valid_type=SinglefileData, help="Model lammps file",)
+        spec.output("swa_model_lammps", valid_type=SinglefileData, help="SWA Model lammps file",)
+        spec.output("mace_out", valid_type=SinglefileData, help="Mace output file",)       
         spec.output("logs", valid_type=FolderData, help="Logs file",)
         spec.output("checkpoints", valid_type=FolderData, help="Checkpoints file",)
         spec.output("RMSE", valid_type=List, help="List of the checkpoints result table",)
@@ -200,6 +201,24 @@ class MaceTrainCalculation(CalcJob):
                     with checkpoints_folder.open(checkpoint_file, 'rb') as source:
                         new_checkpoint_file = f"aiida_run-{str(mace_config_dict['seed'])}_epoch-0.pt"
                         with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
+                            destination.write(source.read())
+
+        if 'checkpoints_restart' in self.inputs:
+            mace_config_dict['restart_latest'] = True
+            checkpoints_folder = self.inputs.checkpoints_restart
+            folder.get_subfolder('checkpoints', create=True)  # Create the checkpoints directory
+            for checkpoint_file in checkpoints_folder.list_object_names():
+                if '_epoch' in checkpoint_file and '_swa':
+                    # Regular expression to extract the seed (assumed to be numeric after the first '-')
+                    match = re.search(r'-(\d+)_', checkpoint_file)
+                    if match:
+                        mace_config_dict['seed'] = int(match.group(1))
+                    with checkpoints_folder.open(checkpoint_file, 'rb') as source:                        
+                        with folder.open(f'checkpoints/{checkpoint_file}', 'wb') as destination:
+                            destination.write(source.read())
+                elif '_epoch' in checkpoint_file:
+                    with checkpoints_folder.open(checkpoint_file, 'rb') as source:                        
+                        with folder.open(f'checkpoints/{checkpoint_file}', 'wb') as destination:
                             destination.write(source.read())
 
         with folder.open('config.yml', 'w') as yaml_file:

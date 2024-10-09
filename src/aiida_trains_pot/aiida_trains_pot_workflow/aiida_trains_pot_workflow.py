@@ -545,17 +545,17 @@ class TrainsPotWorkChain(WorkChain):
         potentials = {}
         for ii, calc in enumerate(self.ctx.mace_wc):
             potentials[f'mace_{ii}']={}
-            for el, v in calc.outputs.mace_calc.items():
+            for el in calc.outputs:
                 
-                if el == 'aiida_swa_compiled_model':
-                    self.ctx.potentials.append(v)
+                if el == 'swa_ase_model':
+                    self.ctx.potentials.append(calc.outputs[el])
                 elif el == 'checkpoints':
-                    self.ctx.checkpoints.append(v)
-                elif el == 'aiida_swa_model_lammps':
-                    self.ctx.potentials_lammps.append(v)
+                    self.ctx.checkpoints.append(calc.outputs[el])
+                elif el == 'swa_model_lammps':
+                    self.ctx.potentials_lammps.append(calc.outputs[el])
             
             
-                potentials[f'mace_{ii}'][el] = v
+                potentials[f'mace_{ii}'][el] = calc.outputs[el]
                 
             self.out('mace', potentials)
            
