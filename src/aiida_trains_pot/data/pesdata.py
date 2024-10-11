@@ -3,7 +3,7 @@ import tempfile
 import os
 import numpy as np
 
-class PSEData(List):
+class PESData(List):
     
     @property
     def _list_key(self):

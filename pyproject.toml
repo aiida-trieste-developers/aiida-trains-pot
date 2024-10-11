@@ -51,7 +51,7 @@ Source = "https://github.com/aiida-trieste-developers/aiida-trains-pot"
 "trains_pot.evaluation"       = "aiida_trains_pot.evaluation.parsers:EvaluationParser"
 
 [project.entry-points."aiida.data"]
-"psedata"                 = "aiida_trains_pot.data.psedata:PSEData"
+"pesdata"                 = "aiida_trains_pot.data.psedata:PESData"
 
 
 

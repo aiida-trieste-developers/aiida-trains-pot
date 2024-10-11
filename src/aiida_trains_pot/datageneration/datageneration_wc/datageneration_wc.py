@@ -14,7 +14,7 @@ load_profile()
 
 StructureData  = DataFactory('core.structure')
 SinglefileData = DataFactory('core.singlefile')
-PSEData        = DataFactory('psedata')
+PESData        = DataFactory('pesdata')
 
 @calcfunction
 def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_vacancies, vacancies_per_config, **in_structure_dict):
@@ -57,9 +57,9 @@ def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_
                     'input_structure_uuid': str(structure.uuid),
                     'gen_method': 'RATTLE'
                     })
-    pse_data = PSEData()    
-    pse_data.set_list(structure_list)
-    return {'rattle_structure_list': pse_data}
+    pes_data = PESData()    
+    pes_data.set_list(structure_list)
+    return {'rattle_structure_list': pes_data}
 
 @calcfunction
 def InputStructureGenerator(**in_structure_dict):
@@ -76,9 +76,9 @@ def InputStructureGenerator(**in_structure_dict):
                     'input_structure_uuid': str(structure.uuid),
                     'gen_method': str('INPUT_STRUCTURE')
                     })
-    pse_data = PSEData()    
-    pse_data.set_list(structure_list)
-    return {'input_structure_list': pse_data}
+    pes_data = PESData()    
+    pes_data.set_list(structure_list)
+    return {'input_structure_list': pes_data}
 
 @calcfunction
 def IsolatedStructureGenerator(**in_structure_dict):
@@ -100,9 +100,9 @@ def IsolatedStructureGenerator(**in_structure_dict):
                     'positions': isolated_structure.get_positions().tolist(), 
                     'gen_method': str('ISOLATED_ATOM')
                     })
-    pse_data = PSEData()    
-    pse_data.set_list(structure_list)
-    return {'isolated_atoms_structure_list':  pse_data}
+    pes_data = PESData()    
+    pes_data.set_list(structure_list)
+    return {'isolated_atoms_structure_list':  pes_data}
     
             
 
@@ -117,9 +117,9 @@ def WriteDataset(**dataset_lists_dict):
     dataset_out_list = []
     for _, dataset in dataset_lists_dict.items():
         dataset_out_list.extend(dataset)
-    pse_data = PSEData()    
-    pse_data.set_list(dataset_out_list)
-    return {'global_structure_list':pse_data}
+    pes_data = PESData()    
+    pes_data.set_list(dataset_out_list)
+    return {'global_structure_list':pes_data}
 
 
 @numba.njit(parallel=True)
