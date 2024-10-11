@@ -8,10 +8,11 @@ from aiida.engine import ExitCode
 from aiida.orm import SinglefileData, FolderData, List
 from aiida.parsers.parser import Parser
 from aiida.plugins import CalculationFactory
+from aiida.plugins import DataFactory
 import numpy as np
 
 EvaluationCalculation = CalculationFactory("trains_pot.evaluation")
-
+PESData = DataFactory('pesdata')
 
 class EvaluationParser(Parser):
     """
@@ -61,7 +62,9 @@ class EvaluationParser(Parser):
                     evaluated_list = list(np.load(handle, allow_pickle=True)['evaluated_dataset'])
                 
                 # self.out('evaluated_dataset', output_node)
-                self.out('evaluated_list', List(evaluated_list))
+                pse_eavaluated_list = PESData()
+                pse_eavaluated_list.set_list(evaluated_list)
+                self.out('evaluated_list', pse_eavaluated_list)
             #     with self.retrieved.open(output_filename, "rb") as handle:
             #         output_node = FolderData(folder=handle)
             #     self.out(output_filename, output_node)

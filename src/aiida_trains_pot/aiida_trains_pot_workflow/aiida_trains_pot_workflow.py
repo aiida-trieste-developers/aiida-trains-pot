@@ -10,6 +10,7 @@ from aiida_quantumespresso.workflows.protocols.utils import recursive_merge
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 from aiida_lammps.data.potential import LammpsPotentialData
+from aiida.plugins import DataFactory
 import tempfile
 from ase.io.lammpsrun import read_lammps_dump_text
 from io import StringIO
@@ -28,6 +29,7 @@ PwBaseWorkChain             = WorkflowFactory('quantumespresso.pw.base')
 MaceWorkChain               = WorkflowFactory('trains_pot.macetrain')
 LammpsWorkChain             = WorkflowFactory('lammps.base')
 EvaluationCalculation       = CalculationFactory('trains_pot.evaluation')
+PESData                      = DataFactory('pesdata')
 
 def generate_potential(potential) -> LammpsPotentialData:
         """
@@ -77,7 +79,7 @@ def dataset_list_to_ase_list(dataset_list):
             stress = [s[0][0] ,s[1][1], s[2][2], s[1][2], s[0][2], s[0][1]]
         if 'dft_energy' in config.keys() and 'dft_forces' in config.keys():
             ase_list[-1].set_calculator(SinglePointCalculator(ase_list[-1], energy=config['energy'], forces=config['forces'], stress=stress))
-
+    
     return ase_list
 
 @calcfunction
@@ -85,10 +87,13 @@ def WriteLabelledList(non_labelled_structures, **labelled_data):
     labelled_list = []
     for key, value in labelled_data.items():
         labelled_list.append(non_labelled_structures.get_list()[int(key.split('_')[1])])
-        labelled_list[-1]['dft_energy'] = Float(value['output_parameters'].dict.energy)
-        labelled_list[-1]['dft_forces'] = List(list(value['output_trajectory'].get_array('forces')[0]))
-        labelled_list[-1]['dft_stress'] = List(list(value['output_trajectory'].get_array('stress')[0]))
-    return List(list=labelled_list)
+        labelled_list[-1]['dft_energy'] = float(value['output_parameters'].dict.energy)
+        labelled_list[-1]['dft_forces'] = value['output_trajectory'].get_array('forces')[0].tolist()
+        labelled_list[-1]['dft_stress'] = value['output_trajectory'].get_array('stress')[0].tolist()
+
+    pes_labelled_list = PESData()    
+    pes_labelled_list.set_list(labelled_list)    
+    return pes_labelled_list
 
 @calcfunction
 def SplitDataset(dataset):
@@ -156,8 +161,19 @@ def SplitDataset(dataset):
     for ii in range(len(test_set)):
         test_set[ii]['set'] = 'TEST'
 
+    pes_training_set = PESData()    
+    pes_training_set.set_list(training_set)    
 
-    return {"train_set":List(training_set), "validation_set":List(validation_set), "test_set":List(test_set), "global_splitted":List(training_set+validation_set+test_set)}
+    pes_validation_set = PESData()    
+    pes_validation_set.set_list(validation_set)  
+
+    pes_test_set = PESData()    
+    pes_test_set.set_list(test_set)  
+
+    pes_global_splitted = PESData()    
+    pes_global_splitted.set_list(training_set+validation_set+test_set)  
+    
+    return {"train_set":pes_training_set, "validation_set":pes_validation_set, "test_set":pes_test_set, "global_splitted":pes_global_splitted}
 
 @calcfunction
 def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0, **trajectories):
@@ -196,12 +212,12 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
             step_data = trajectory.get_step_data(i)
             cell = step_data.cell
 
-            extracted_frames.append({'cell': List(list(cell)),
-                    'symbols': List(list(step_data[5]['element'])),
-                    'positions': List([[step_data[5]['x'][jj],step_data[5]['y'][jj],step_data[5]['z'][jj]] for jj, _ in enumerate(step_data[5]['y'])]),
-                    'input_structure_uuid': Str(input_structure_node.uuid),
+            extracted_frames.append({'cell': cell.tolist(),
+                    'symbols': list(step_data[5]['element']),
+                    'positions': [[step_data[5]['x'][jj],step_data[5]['y'][jj],step_data[5]['z'][jj]] for jj, _ in enumerate(step_data[5]['y'])],
+                    'input_structure_uuid': str(input_structure_node.uuid),
                     # 'md_forces': List(list(trajectory_frames[i].get_forces())),
-                    'gen_method': Str('LAMMPS')
+                    'gen_method': str('LAMMPS')
                     })
             extracted_frames[-1]['style'] = params['md']['integration']['style']
             extracted_frames[-1]['temp'] = params['md']['integration']['constraints']['temp']
@@ -210,7 +226,9 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
 
             i = i + int(sampling_time/params['control']['timestep']/saving_frequency)
 
-    return {'lammps_extracted_list': List(list=extracted_frames)}
+    pes_extracted_frames = PESData()    
+    pes_extracted_frames.set_list(extracted_frames)  
+    return {'lammps_extracted_list': pes_extracted_frames}
 
 @calcfunction
 def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
@@ -226,7 +244,9 @@ def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
         if config['energy_deviation'] > thr_energy or config['forces_deviation'] > thr_forces or config['stress_deviation'] > thr_stress:
             selected_list.append(config)
 
-    return {'selected_list':List(list=selected_list), 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
+    pes_selected_list = PESData()    
+    pes_selected_list.set_list(selected_list)
+    return {'selected_list':pes_selected_list, 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
 class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
@@ -242,8 +262,8 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('max_loops', valid_type=Int, default=lambda: Int(10), help='Maximum number of active learning workflow loops', required=False)
 
         spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
-        spec.input('non_labelled_list', valid_type=List, help='List of non labelled structures', required=False)
-        spec.input('labelled_list', valid_type=List, help='List of labelled structures', required=False)
+        spec.input('non_labelled_list', valid_type=PESData, help='List of non labelled structures', required=False)
+        spec.input('labelled_list', valid_type=PESData, help='List of labelled structures', required=False)
         spec.input('mace_workchain_pk', valid_type=Str, help='MACE workchain pk', required=False)
         spec.input_namespace('mace_lammps_potentials', valid_type=SinglefileData, help='MACE potential for MD', required=False)
         spec.input_namespace('mace_ase_potentials', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False)
@@ -271,9 +291,9 @@ class TrainsPotWorkChain(WorkChain):
 
         spec.input_namespace("structures", valid_type=StructureData, required=True)
 
-        spec.output("dft.labelled_list", valid_type=List, help="List of configurations labelled via DFT")
-        spec.output("md.lammps_extracted_list", valid_type=List, help="List of extracted frames from MD trajectories")
-        spec.output("committee_evaluation_list", valid_type=List, help="List of committee evaluated configurations")
+        spec.output("dft.labelled_list", valid_type=PESData, help="List of configurations labelled via DFT")
+        spec.output("md.lammps_extracted_list", valid_type=PESData, help="List of extracted frames from MD trajectories")
+        spec.output("committee_evaluation_list", valid_type=PESData, help="List of committee evaluated configurations")
         spec.output_namespace("md", dynamic=True, help="MD outputs")
         spec.output_namespace("mace", dynamic=True, help="MACE outputs")
         spec.expose_outputs(DatasetGeneratorWorkChain, namespace="datagen")        
@@ -411,8 +431,9 @@ class TrainsPotWorkChain(WorkChain):
 
     def run_mace(self):
         """Run MACE calculations."""
+        dataset_list = PESData()
         if self.ctx.do_dft:
-            dataset_list = List(self.ctx.labelled_list)
+            dataset_list.set_list(self.ctx.labelled_list)
         else:
             dataset_list = self.inputs.labelled_list
 

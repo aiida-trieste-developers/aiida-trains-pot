@@ -57,9 +57,9 @@ def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_
                     'input_structure_uuid': str(structure.uuid),
                     'gen_method': 'RATTLE'
                     })
-    pes_data = PESData()    
-    pes_data.set_list(structure_list)
-    return {'rattle_structure_list': pes_data}
+    pes_structure_list = PESData()    
+    pes_structure_list.set_list(structure_list)
+    return {'rattle_structure_list': pes_structure_list}
 
 @calcfunction
 def InputStructureGenerator(**in_structure_dict):
@@ -76,9 +76,9 @@ def InputStructureGenerator(**in_structure_dict):
                     'input_structure_uuid': str(structure.uuid),
                     'gen_method': str('INPUT_STRUCTURE')
                     })
-    pes_data = PESData()    
-    pes_data.set_list(structure_list)
-    return {'input_structure_list': pes_data}
+    pes_structure_list = PESData()    
+    pes_structure_list.set_list(structure_list)
+    return {'input_structure_list': pes_structure_list}
 
 @calcfunction
 def IsolatedStructureGenerator(**in_structure_dict):
@@ -100,9 +100,9 @@ def IsolatedStructureGenerator(**in_structure_dict):
                     'positions': isolated_structure.get_positions().tolist(), 
                     'gen_method': str('ISOLATED_ATOM')
                     })
-    pes_data = PESData()    
-    pes_data.set_list(structure_list)
-    return {'isolated_atoms_structure_list':  pes_data}
+    pes_structure_list = PESData()    
+    pes_structure_list.set_list(structure_list)
+    return {'isolated_atoms_structure_list':  pes_structure_list}
     
             
 
@@ -117,9 +117,9 @@ def WriteDataset(**dataset_lists_dict):
     dataset_out_list = []
     for _, dataset in dataset_lists_dict.items():
         dataset_out_list.extend(dataset)
-    pes_data = PESData()    
-    pes_data.set_list(dataset_out_list)
-    return {'global_structure_list':pes_data}
+    pes_dataset_out_list = PESData()    
+    pes_dataset_out_list.set_list(dataset_out_list)
+    return {'global_structure_list':pes_dataset_out_list}
 
 
 @numba.njit(parallel=True)

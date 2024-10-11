@@ -9,12 +9,14 @@ from ase.calculators.singlepoint import SinglePointCalculator
 from aiida.engine import CalcJob
 from aiida.orm import SinglefileData, StructureData, List, WorkChainNode, load_node, Int
 from aiida.plugins import WorkflowFactory
+from aiida.plugins import DataFactory
 import io
 from contextlib import redirect_stdout
 from ase.io import write
 import numpy as np
 
 # MaceWorkChain = WorkflowFactory('maceworkchain')
+PESData = DataFactory('pesdata')
 
 def dataset_list_to_txt(dataset_list):
     """Convert dataset list to xyz file."""
@@ -62,8 +64,8 @@ class EvaluationCalculation(CalcJob):
 
         # new ports
         spec.input_namespace("mace_potentials", valid_type=SinglefileData, required=True, help="Mace potentials",)
-        spec.input("datasetlist", valid_type=List, required=True, help="Optional list on which to compute errors.")
-        spec.output("evaluated_list", valid_type=List, help="List of evaluated configurations.")
+        spec.input("datasetlist", valid_type=PESData, required=True, help="Optional list on which to compute errors.")
+        spec.output("evaluated_list", valid_type=PESData, help="List of evaluated configurations.")
         
 
         spec.exit_code(300, "ERROR_MISSING_OUTPUT_FILES", message="Calculation did not produce all expected output files.",)
