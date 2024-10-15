@@ -2,6 +2,8 @@ from aiida.orm import List
 import tempfile
 import os
 import numpy as np
+from ase.calculators.singlepoint import SinglePointCalculator
+from ase import Atoms
 
 class PESData(List):
     
@@ -17,10 +19,7 @@ class PESData(List):
             with self.base.repository.as_path(self._list_key) as f:
                 data = np.load(f, allow_pickle=True)
                 return [item for _, val in data.items() for item in (val.tolist() if isinstance(val, np.ndarray) else val)]
-
-                #return [val.tolist() for _, val in data.items()]
-            
-                #return data
+                
 
         except FileNotFoundError as e:
             print(f"Error: {e}")
@@ -49,3 +48,18 @@ class PESData(List):
 
         except Exception as e:
             print(f"An error occurred while saving {self._list_key}: {e}")
+
+    def dataset_list_to_ase_list(self):
+        """Convert dataset list to an ASE list."""
+
+        ase_list = []
+        dataset_list = self.get_list()
+        for config in dataset_list:
+            ase_list.append(Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell']))
+            if 'dft_stress' in config.keys():
+                s = config['stress']
+                stress = [s[0][0] ,s[1][1], s[2][2], s[1][2], s[0][2], s[0][1]]
+            if 'dft_energy' in config.keys() and 'dft_forces' in config.keys():
+                ase_list[-1].set_calculator(SinglePointCalculator(ase_list[-1], energy=config['energy'], forces=config['forces'], stress=stress))
+        
+        return ase_list
