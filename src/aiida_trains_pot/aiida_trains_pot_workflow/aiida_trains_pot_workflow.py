@@ -66,22 +66,6 @@ def generate_potential(potential) -> LammpsPotentialData:
     
         return potential
 
-
-def dataset_list_to_ase_list(dataset_list):
-    """Convert dataset list to an ASE list."""
-
-    ase_list = []
-
-    for config in dataset_list:
-        ase_list.append(Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell']))
-        if 'dft_stress' in config.keys():
-            s = config['stress']
-            stress = [s[0][0] ,s[1][1], s[2][2], s[1][2], s[0][2], s[0][1]]
-        if 'dft_energy' in config.keys() and 'dft_forces' in config.keys():
-            ase_list[-1].set_calculator(SinglePointCalculator(ase_list[-1], energy=config['energy'], forces=config['forces'], stress=stress))
-    
-    return ase_list
-
 @calcfunction
 def WriteLabelledList(non_labelled_structures, **labelled_data):
     labelled_list = []
@@ -393,12 +377,12 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.config += 1
         
         if self.ctx.iteration > 1:
-            ase_list = dataset_list_to_ase_list(self.ctx.committee_evaluation_list)
+            ase_list = self.ctx.committee_evaluation_list.get_ase_list()
         else:
             if self.ctx.do_data_generation:
-                ase_list = dataset_list_to_ase_list(self.ctx.datagen.outputs.structure_lists.global_structure_list.get_list())            
+                ase_list = self.ctx.datagen.outputs.structure_lists.global_structure_list.get_ase_list()            
             else:
-                ase_list = dataset_list_to_ase_list(self.inputs.non_labelled_list.get_list())
+                ase_list = self.inputs.non_labelled_list.get_ase_list()
 
 
         for _, structure in enumerate(ase_list):
@@ -551,7 +535,7 @@ class TrainsPotWorkChain(WorkChain):
         if self.ctx.do_data_generation:
             labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.datagen.outputs.structure_lists.global_structure_list, **dft_data)
         elif self.ctx.iteration > 1:
-            labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.committee_evaluation_list, **dft_data)
+            labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.committee_evaluation_list.get_list(), **dft_data)
         else:
             labelled_list = WriteLabelledList(non_labelled_structures = self.inputs.non_labelled_list, **dft_data)
         
@@ -616,8 +600,8 @@ class TrainsPotWorkChain(WorkChain):
         calc = self.ctx.committee_evalutation
 
         selected = SelectToLabel(calc.outputs.evaluated_list, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
-        self.ctx.committee_evaluation_list = selected['selected_list'].get_list()
-        self.report(f'Structures selected for labelling: {len(self.ctx.committee_evaluation_list)}/{len(calc.outputs.evaluated_list.get_list())}')
+        self.ctx.committee_evaluation_list = selected['selected_list']
+        self.report(f'Structures selected for labelling: {len(self.ctx.committee_evaluation_list.get_list())}/{len(calc.outputs.evaluated_list.get_list())}')
         self.report(f'Min energy deviation: {round(selected["min_energy_deviation"].value,2)} eV, Max energy deviation: {round(selected["max_energy_deviation"].value,2)} eV')
         self.report(f'Min forces deviation: {round(selected["min_forces_deviation"].value,2)} eV/Å, Max forces deviation: {round(selected["max_forces_deviation"].value,2)} eV/Å')
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')

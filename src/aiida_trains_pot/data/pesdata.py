@@ -4,6 +4,9 @@ import os
 import numpy as np
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase import Atoms
+import io
+from contextlib import redirect_stdout
+from ase.io import write
 
 class PESData(List):
     
@@ -49,7 +52,7 @@ class PESData(List):
         except Exception as e:
             print(f"An error occurred while saving {self._list_key}: {e}")
 
-    def dataset_list_to_ase_list(self):
+    def get_ase_list(self):
         """Convert dataset list to an ASE list."""
 
         ase_list = []
@@ -63,3 +66,31 @@ class PESData(List):
                 ase_list[-1].set_calculator(SinglePointCalculator(ase_list[-1], energy=config['energy'], forces=config['forces'], stress=stress))
         
         return ase_list
+    
+    def get_txt(self):
+        """Convert dataset list to xyz file."""
+
+        dataset_txt = ''
+
+        exclude_params = ['cell', 'symbols', 'positions', 'forces', 'stress', 'energy', 'dft_forces', 'dft_stress', 'dft_energy', 'md_forces', 'md_stress', 'md_energy']
+        for config in self.get_list():
+            params = [key for key in config.keys() if key not in exclude_params]
+            atm = Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'])
+            atm.info = {}
+            for key in params:
+                atm.info[key] = config[key]
+            if 'dft_stress' in config.keys():
+                s = config['dft_stress']
+                atm.info['dft_stress'] = f"{s[0][0]:.6f} {s[1][1]:.6f} {s[2][2]:.6f} {s[1][2]:.6f} {s[0][2]:.6f} {s[0][1]:.6f}"
+
+            if 'dft_energy' in config.keys():
+                atm.info['dft_energy'] = config['dft_energy']
+            if 'dft_forces' in config.keys():
+                atm.set_calculator(SinglePointCalculator(atm, forces=config['dft_forces']))
+            
+            with io.StringIO() as buf, redirect_stdout(buf):
+                write('-', atm, format='extxyz', write_results=True, write_info=True)
+                dataset_txt += buf.getvalue()
+
+
+        return dataset_txt
