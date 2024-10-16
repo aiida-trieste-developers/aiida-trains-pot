@@ -10,11 +10,12 @@ from contextlib import redirect_stdout
 from ase.io import write
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase import Atoms
+from aiida.plugins import DataFactory
 import random
 import yaml
 import random
 
-
+PESData = DataFactory('pesdata')
 
 def dataset_list_to_txt(dataset_list):
     """Convert dataset list to xyz file."""
@@ -63,9 +64,9 @@ class MaceTrainCalculation(CalcJob):
         #ADD input parameters
 
         # new ports
-        spec.input("training_set", valid_type=List, help="Training dataset list",)
-        spec.input("validation_set", valid_type=List, help="Validation dataset list",)
-        spec.input("test_set", valid_type=List, help="Test dataset list",)
+        spec.input("training_set", valid_type=PESData, help="Training dataset list",)
+        spec.input("validation_set", valid_type=PESData, help="Validation dataset list",)
+        spec.input("test_set", valid_type=PESData, help="Test dataset list",)
         spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
         spec.input("checkpoints", valid_type=FolderData, help="Checkpoints file", required=False)
         spec.input("do_preprocess", valid_type=Bool, help="Perfrom preprocess", required=False, default=lambda:Bool(False))

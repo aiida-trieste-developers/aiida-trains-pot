@@ -12,9 +12,9 @@ import numpy as np
 load_profile()
 
 
-StructureData = DataFactory('core.structure')
+StructureData  = DataFactory('core.structure')
 SinglefileData = DataFactory('core.singlefile')
-
+PESData        = DataFactory('pesdata')
 
 @calcfunction
 def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_vacancies, vacancies_per_config, **in_structure_dict):
@@ -48,17 +48,18 @@ def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_
                 rnd = randint(0, len(mod_structure.get_positions())-1)
                 del mod_structure[rnd]
         
-            structure_list.append({'cell': List(list(mod_structure.get_cell())),
-                    'symbols': List(list(mod_structure.get_chemical_symbols())),
-                    'positions': List(list(mod_structure.get_positions())), 
-                    'rattle_fraction': rattle_fraction,
-                    'max_sigma_strain': max_sigma_strain,
+            structure_list.append({'cell': mod_structure.get_cell().tolist(),
+                    'symbols': mod_structure.get_chemical_symbols(),
+                    'positions': mod_structure.get_positions().tolist(), 
+                    'rattle_fraction': rattle_fraction.value,
+                    'max_sigma_strain': max_sigma_strain.value,
                     'n_vacancies': n_vacancies,
-                    'input_structure_uuid': Str(structure.uuid),
-                    'gen_method': Str('RATTLE')
+                    'input_structure_uuid': str(structure.uuid),
+                    'gen_method': 'RATTLE'
                     })
-    
-    return {'rattle_structure_list': List(structure_list)}
+    pes_structure_list = PESData()    
+    pes_structure_list.set_list(structure_list)
+    return {'rattle_structure_list': pes_structure_list}
 
 @calcfunction
 def InputStructureGenerator(**in_structure_dict):
@@ -69,14 +70,15 @@ def InputStructureGenerator(**in_structure_dict):
     structure_list = []
     for _, structure in in_structure_dict.items():
         ase_structure = structure.get_ase()
-        structure_list.append({'cell': List(list(ase_structure.get_cell())),
-                    'symbols': List(list(ase_structure.get_chemical_symbols())),
-                    'positions': List(list(ase_structure.get_positions())), 
-                    'input_structure_uuid': Str(structure.uuid),
-                    'gen_method': Str('INPUT_STRUCTURE')
+        structure_list.append({'cell': ase_structure.get_cell().tolist(),
+                    'symbols': ase_structure.get_chemical_symbols(),
+                    'positions': ase_structure.get_positions().tolist(), 
+                    'input_structure_uuid': str(structure.uuid),
+                    'gen_method': str('INPUT_STRUCTURE')
                     })
-        
-    return {'input_structure_list': List(structure_list)}
+    pes_structure_list = PESData()    
+    pes_structure_list.set_list(structure_list)
+    return {'input_structure_list': pes_structure_list}
 
 @calcfunction
 def IsolatedStructureGenerator(**in_structure_dict):
@@ -93,13 +95,14 @@ def IsolatedStructureGenerator(**in_structure_dict):
                 done_types.append(atm_type)
                 isolated_structure = Atoms(atm_type, positions=[[0.0, 0.0, 0.0]], cell=[[10.0, 0.0, 0.0], [0.0, 10.0, 0.0], [0.0, 0.0, 10.0]])
                 
-                structure_list.append({'cell': List(list(isolated_structure.get_cell())),
-                    'symbols': List(list(isolated_structure.get_chemical_symbols())),
-                    'positions': List(list(isolated_structure.get_positions())), 
-                    'gen_method': Str('ISOLATED_ATOM')
+                structure_list.append({'cell': isolated_structure.get_cell().tolist(),
+                    'symbols': isolated_structure.get_chemical_symbols(),
+                    'positions': isolated_structure.get_positions().tolist(), 
+                    'gen_method': str('ISOLATED_ATOM')
                     })
-
-    return {'isolated_atoms_structure_list': List(structure_list)}
+    pes_structure_list = PESData()    
+    pes_structure_list.set_list(structure_list)
+    return {'isolated_atoms_structure_list':  pes_structure_list}
     
             
 
@@ -114,8 +117,9 @@ def WriteDataset(**dataset_lists_dict):
     dataset_out_list = []
     for _, dataset in dataset_lists_dict.items():
         dataset_out_list.extend(dataset)
-
-    return {'global_structure_list':List(dataset_out_list)}
+    pes_dataset_out_list = PESData()    
+    pes_dataset_out_list.set_list(dataset_out_list)
+    return {'global_structure_list':pes_dataset_out_list}
 
 
 @numba.njit(parallel=True)

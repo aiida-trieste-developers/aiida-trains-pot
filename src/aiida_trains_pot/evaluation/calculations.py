@@ -9,40 +9,12 @@ from ase.calculators.singlepoint import SinglePointCalculator
 from aiida.engine import CalcJob
 from aiida.orm import SinglefileData, StructureData, List, WorkChainNode, load_node, Int
 from aiida.plugins import WorkflowFactory
-import io
-from contextlib import redirect_stdout
-from ase.io import write
+from aiida.plugins import DataFactory
 import numpy as np
 
 # MaceWorkChain = WorkflowFactory('maceworkchain')
+PESData = DataFactory('pesdata')
 
-def dataset_list_to_txt(dataset_list):
-    """Convert dataset list to xyz file."""
-
-    dataset_txt = ''
-
-    exclude_params = ['cell', 'symbols', 'positions', 'forces', 'stress', 'energy', 'dft_forces', 'dft_stress', 'dft_energy', 'md_forces', 'md_stress', 'md_energy']
-    for config in dataset_list.get_list():
-        params = [key for key in config.keys() if key not in exclude_params]
-        atm = Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'])
-        atm.info = {}
-        for key in params:
-            atm.info[key] = config[key]
-        if 'dft_stress' in config.keys():
-            s = config['dft_stress']
-            atm.info['dft_stress'] = f"{s[0][0]:.6f} {s[1][1]:.6f} {s[2][2]:.6f} {s[1][2]:.6f} {s[0][2]:.6f} {s[0][1]:.6f}"
-
-        if 'dft_energy' in config.keys():
-            atm.info['dft_energy'] = config['dft_energy']
-        if 'dft_forces' in config.keys():
-            atm.set_calculator(SinglePointCalculator(atm, forces=config['dft_forces']))
-        
-        with io.StringIO() as buf, redirect_stdout(buf):
-            write('-', atm, format='extxyz', write_results=True, write_info=True)
-            dataset_txt += buf.getvalue()
-
-
-    return dataset_txt
 
 class EvaluationCalculation(CalcJob):
     """
@@ -62,8 +34,8 @@ class EvaluationCalculation(CalcJob):
 
         # new ports
         spec.input_namespace("mace_potentials", valid_type=SinglefileData, required=True, help="Mace potentials",)
-        spec.input("datasetlist", valid_type=List, required=True, help="Optional list on which to compute errors.")
-        spec.output("evaluated_list", valid_type=List, help="List of evaluated configurations.")
+        spec.input("datasetlist", valid_type=PESData, required=True, help="Optional list on which to compute errors.")
+        spec.output("evaluated_list", valid_type=PESData, help="List of evaluated configurations.")
         
 
         spec.exit_code(300, "ERROR_MISSING_OUTPUT_FILES", message="Calculation did not produce all expected output files.",)
@@ -90,7 +62,7 @@ class EvaluationCalculation(CalcJob):
             calcinfo.local_copy_list.append((pot.uuid, pot.filename, f"potential_{n_pot}.dat"))
 
         dataset_list = self.inputs.datasetlist
-        dataset_txt = dataset_list_to_txt(dataset_list)
+        dataset_txt = dataset_list.get_txt()
         with folder.open("dataset.xyz", "w") as handle:
             handle.write(dataset_txt)
         
