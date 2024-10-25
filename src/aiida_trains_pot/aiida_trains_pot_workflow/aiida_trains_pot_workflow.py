@@ -29,7 +29,7 @@ PwBaseWorkChain             = WorkflowFactory('quantumespresso.pw.base')
 MaceWorkChain               = WorkflowFactory('trains_pot.macetrain')
 LammpsWorkChain             = WorkflowFactory('lammps.base')
 EvaluationCalculation       = CalculationFactory('trains_pot.evaluation')
-PESData                      = DataFactory('pesdata')
+PESData                     = DataFactory('pesdata')
 
 def generate_potential(potential) -> LammpsPotentialData:
         """
@@ -336,7 +336,7 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.config = 0
         self.ctx.iteration = 0
         if 'labelled_list' in self.inputs:
-            self.ctx.labelled_list = self.inputs.labelled_list.get_list()
+            self.ctx.labelled_list = self.inputs.labelled_list
         else:
             self.ctx.labelled_list = []
         self.ctx.do_data_generation = self.inputs.do_data_generation
@@ -345,7 +345,7 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.do_md = self.inputs.do_md
         self.ctx.checkpoints = []
         if not self.ctx.do_dft:
-            self.ctx.labelled_list = self.inputs.labelled_list.get_list()
+            self.ctx.labelled_list = self.inputs.labelled_list
 
         if not self.ctx.do_mace:
             self.ctx.potentials_lammps = []
@@ -417,7 +417,7 @@ class TrainsPotWorkChain(WorkChain):
         """Run MACE calculations."""
         dataset_list = PESData()
         if self.ctx.do_dft:
-            dataset_list.set_list(self.ctx.labelled_list)
+            dataset_list = self.ctx.labelled_list
         else:
             dataset_list = self.inputs.labelled_list
 
@@ -539,7 +539,7 @@ class TrainsPotWorkChain(WorkChain):
         else:
             labelled_list = WriteLabelledList(non_labelled_structures = self.inputs.non_labelled_list, **dft_data)
         
-        self.ctx.labelled_list += labelled_list.get_list()
+        self.ctx.labelled_list += labelled_list
         self.out('dft.labelled_list', labelled_list)
         self.ctx.dft_calculations = []
 
@@ -564,7 +564,7 @@ class TrainsPotWorkChain(WorkChain):
                 
             self.out('mace', potentials)
            
-        self.ctx.labelled_list = self.ctx.global_splitted.get_list()
+        self.ctx.labelled_list = self.ctx.global_splitted
         # self.out_many(self.exposed_outputs(self.ctx.mace_wc, MaceWorkChain, namespace="mace"))
 
     def finalize_md(self):

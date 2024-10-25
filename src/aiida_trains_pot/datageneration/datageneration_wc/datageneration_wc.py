@@ -203,7 +203,7 @@ class DataGenerationWorkChain(WorkChain):
         spec.input("rattle.params.frac_vacancies", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RATTLE_frac_vacancies, required=False, help=f"Fraction of configurations with vacancies. Default: {cls.DEFAULT_RATTLE_frac_vacancies}")
         spec.input("rattle.params.vacancies_per_config", valid_type=Int, default=lambda:cls.DEFAULT_RATTLE_vacancies_per_config, required=False, help=f"Number of vacancies per configuration. Default: {cls.DEFAULT_RATTLE_vacancies_per_config}")
 
-        spec.output_namespace("structure_lists", valid_type=List, dynamic=True)
+        spec.output_namespace("structure_lists", valid_type=PESData, dynamic=True)
 
         
         spec.outline(
