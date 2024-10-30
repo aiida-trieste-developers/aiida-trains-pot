@@ -18,9 +18,9 @@ TrainsPot   = WorkflowFactory('trains_pot.workflow')
 
 
 QE_code                 = load_code('qe7.2-pw@leo1_scratch_bind')
-MACE_train_code         = load_code('mace_train@leo1_scratch')
-MACE_preprocess_code    = load_code('mace_preprocess@leo1_scratch')
-MACE_postprocess_code   = load_code('mace_postprocess@leo1_scratch')
+MACE_train_code         = load_code('mace_train@leo1_scratch_mace')
+MACE_preprocess_code    = load_code('mace_preprocess@leo1_scratch_mace')
+MACE_postprocess_code   = load_code('mace_postprocess@leo1_scratch_mace')
 LAMMPS_code             = load_code('lmp4mace@leo1_scratch')
 EVALUATION_code         = load_code('committee_evaluation_portable')
 
@@ -37,10 +37,10 @@ QE_machine = {
 }
 
 MACE_machine = {
-'time'                             : "00:01:00",
+'time'                             : "00:05:00",
 'nodes'                            : 1,
-'gpu'                              : "1",
-'taskpn'                           : 1,
+'gpu'                              : "2",
+'taskpn'                           : 2,
 'cpupt'                            : "8",
 'mem'                              : "30GB",
 'account'                          : "CNHPC_1491920",
@@ -204,6 +204,7 @@ with open(MACE_config, 'r') as yaml_file:
 builder.mace.mace.mace_config = Dict(mace_config)
 
 builder.mace.num_potentials = Int(4)
+builder.mace.mace.metadata.options.withmpi=True
 builder.mace.mace.metadata.options.resources = {
     'num_machines': MACE_machine['nodes'],
     'num_mpiprocs_per_machine': MACE_machine['taskpn'],

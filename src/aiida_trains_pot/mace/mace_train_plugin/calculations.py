@@ -186,6 +186,9 @@ class MaceTrainCalculation(CalcJob):
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
 
+        if not mace_config_dict.get('distributed', False) and self.inputs["metadata"]["options"]["resources"].get('num_mpiprocs_per_machine') > 1:
+            mace_config_dict['distributed'] = True
+
         # Save the checkpoints folder
         if 'checkpoints' in self.inputs and self.inputs.restart.value==True:
             mace_config_dict['restart_latest'] = 'true'

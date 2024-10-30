@@ -3,7 +3,7 @@ label: "mace_preprocess"
 description: "Perform MACE pre-processing"
 default_calc_job_plugin: "trains_pot.macetrain"
 filepath_executable: "mace_prepare_data"
-computer: "leo1_scratch"
+computer: "leo1_scratch_mace"
 prepend_text: |
 
 append_text: |
