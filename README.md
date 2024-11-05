@@ -12,7 +12,7 @@ AiiDA-TrainsPot requires to have installed in the remote machine:
 
 ## Installation
 
-Clone and install aiida-trains-pot repository
+1. Clone and install aiida-trains-pot repository
 
 ```
 git clone git@github.com:aiida-trieste-developers/aiida-trains-pot.git
@@ -20,7 +20,7 @@ cd aiida-trains-pot
 pip install .
 ```
 
-Clone and install aiida-lammps (last release of aiida-lammps was not compatible with MACE)
+2. Clone and install aiida-lammps (last release of aiida-lammps was not compatible with MACE)
 
 ```
 git clone git@github.com:aiidaplugins/aiida-lammps.git
@@ -28,8 +28,9 @@ cd aiida-lammps
 pip install .
 ```
 
-Install codes for Quantum ESPRESSO, MACE (pre-process, train and post-process), LAMMPS. Examples of configuration yaml file can be found in examples/setup_codes.
-Install `PortableCode` for committee evalution:
+3. Install codes for Quantum ESPRESSO, MACE (pre-process, train and post-process), LAMMPS. Examples of configuration yaml file can be found in examples/setup_codes.
+
+4. Install `PortableCode` for committee evalution:
 
 ```
 portable_codes_installation
