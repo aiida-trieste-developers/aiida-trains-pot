@@ -33,7 +33,7 @@ Source = "https://github.com/aiida-trieste-developers/aiida-trains-pot"
 
 
 [project.entry-points.'aiida.workflows']
-"trains_pot.datageneration"   = "aiida_trains_pot.datageneration.datageneration_wc.datageneration_wc:DataGenerationWorkChain"
+"trains_pot.datasetaugmentation"   = "aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc:DatasetAugmentationWorkChain"
 "trains_pot.macetrain"        = "aiida_trains_pot.mace.mace_train_wc.mace_train_wc:MaceTrainWorkChain"
 "trains_pot.lammpsmd"         = "aiida_trains_pot.lammps.lammps_wc.lammps_wc:LammpsWorkChain"
 "trains_pot.workflow"         = "aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow:TrainsPotWorkChain"

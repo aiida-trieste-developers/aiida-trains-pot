@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" datasetaugmentationWorkChain to generate a training dataset """
+"""DatasetAugmentationWorkChain to generate a training dataset """
 from aiida.engine import WorkChain, calcfunction
 from aiida import load_profile
 from aiida.orm import Bool, Float, Str, StructureData, List, Int, Float
