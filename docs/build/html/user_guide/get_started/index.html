@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Get started &#8212; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+    <title>Get Started with aiida-trains-pot &#8212; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
   
   
   
@@ -166,25 +166,33 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../../index.html">
-                    Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.
+                    AiiDA-TrainsPot
                 </a>
             </li>
         </ul>
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">User’s guide</a><ul class="current">
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Get started</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Get Started with aiida-trains-pot</a></li>
 </ul><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../module_guide/index.html">API reference</a><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../module_guide/workflows.html">Workflows</a><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../module_guide/workchains.html">Workchains</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../module_guide/calculations.html">Calculations</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../module_guide/parsers.html">Parsers</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../module_guide/datatypes.html">Data Types</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../module_guide/scripts.html">Scripts</a><ul class="simple">
 </ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
 </ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../cli/index.html">CLI reference</a><ul class="simple">
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
-</details></li>
-<li class="toctree-l1"><a class="reference internal" href="../../developer_guide/index.html">Developer guide</a></li>
 </ul>
 
     </div>
@@ -239,7 +247,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows" target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -256,7 +264,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows/edit/develop/docs/user_guide/get_started/index.rst" target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/edit/main/docs/user_guide/get_started/index.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -273,7 +281,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows/issues/new?title=Issue%20on%20page%20%2Fuser_guide/get_started/index.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/issues/new?title=Issue%20on%20page%20%2Fuser_guide/get_started/index.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -358,7 +366,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -369,11 +379,29 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Get started</h1>
+    <h1>Get Started with aiida-trains-pot</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-setup-the-environment">Step 1: Setup the Environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-define-and-load-the-codes">Step 2: Define and Load the Codes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-set-machine-parameters">Step 3: Set Machine Parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-load-the-graphene-structure">Step 4: Load the Graphene Structure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-setup-the-trainspot-workflow">Step 5: Setup the TrainsPot Workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-configure-dataset-augmentation">Step 6: Configure Dataset Augmentation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-configure-ab-initio-labelling-quantumespresso">Step 7: Configure Ab Initio Labelling (QuantumESPRESSO)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-configure-mace-and-lammps-for-training-and-exploration">Step 8: Configure MACE and LAMMPS for Training and Exploration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-9-setup-committee-evaluation">Step 9: Setup Committee Evaluation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-10-submit-the-workflow">Step 10: Submit the Workflow</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -383,12 +411,151 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="get-started">
-<span id="id1"></span><h1>Get started<a class="headerlink" href="#get-started" title="Link to this heading">#</a></h1>
-<p>We show below a number of tutorials for using the automated Wannierisation workflows.</p>
-<p>Note: these tutorials assume you already installed AiiDA and properly
-configured AiiDA and configured one Quantum ESPRESSO code.
-You can check the <a class="reference external" href="http://aiida-core.readthedocs.io/en/latest/index.html">main AiiDA-core documentation</a> for more information on how to perform these steps.</p>
+  <section id="get-started-with-aiida-trains-pot">
+<span id="get-started"></span><h1>Get Started with aiida-trains-pot<a class="headerlink" href="#get-started-with-aiida-trains-pot" title="Link to this heading">#</a></h1>
+<p>Welcome to <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot">aiida-trains-pot</a>! This guide will walk you through setting up and running the graphene example located in <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/tree/main/examples/graphene">examples/graphene</a> on GitHub.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
+<p>To use <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot">aiida-trains-pot</a>, ensure you have the following prerequisites installed:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://aiida.net">AiiDA</a></p></li>
+<li><p><a class="reference external" href="https://www.quantum-espresso.org">QuantumESPRESSO</a>, <a class="reference external" href="https://github.com/ACEsuit/mace">MACE</a>, and <a class="reference external" href="https://mace-docs.readthedocs.io/en/latest/guide/lammps.html">LAMMPS</a> codes installed on your computing environment and configured in AiiDA</p></li>
+<li><p>Access to a GPU-enabled HPC cluster with SLURM support (e.g., Cineca Leonardo)</p></li>
+</ul>
+<p><strong>Note</strong>: The example in this guide uses QuantumESPRESSO, MACE, and LAMMPS workflows configured with the appropriate GPU parameters.</p>
+</section>
+<section id="step-1-setup-the-environment">
+<h2>Step 1: Setup the Environment<a class="headerlink" href="#step-1-setup-the-environment" title="Link to this heading">#</a></h2>
+<p>Before starting, ensure you load your AiiDA profile and import necessary dependencies. In this example, the graphene structure <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/examples/graphene/gr8x8.xyz">gr8x8.xyz</a> and required configuration files are located in the <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/tree/main/examples/graphene">examples/graphene</a> directory.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="n">load_code</span><span class="p">,</span> <span class="n">load_node</span><span class="p">,</span> <span class="n">load_group</span><span class="p">,</span> <span class="n">load_computer</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Int</span><span class="p">,</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">StructureData</span>
+<span class="kn">from</span> <span class="nn">aiida</span> <span class="kn">import</span> <span class="n">load_profile</span>
+<span class="kn">from</span> <span class="nn">aiida.engine</span> <span class="kn">import</span> <span class="n">submit</span>
+<span class="kn">from</span> <span class="nn">aiida.plugins</span> <span class="kn">import</span> <span class="n">WorkflowFactory</span><span class="p">,</span> <span class="n">DataFactory</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">load_profile</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-define-and-load-the-codes">
+<h2>Step 2: Define and Load the Codes<a class="headerlink" href="#step-2-define-and-load-the-codes" title="Link to this heading">#</a></h2>
+<p>In this example, we use QuantumESPRESSO (QE), MACE, LAMMPS, and committee evaluation codes. Make sure these are installed and available as AiiDA codes. Examples of configuration YAML files can be found in <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/tree/main/examples/setup_codes">examples/setup_codes</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">QE_code</span>                 <span class="o">=</span> <span class="n">load_code</span><span class="p">(</span><span class="s1">&#39;qe7.2-pw@leo1_scratch_bind&#39;</span><span class="p">)</span>
+<span class="n">MACE_train_code</span>         <span class="o">=</span> <span class="n">load_code</span><span class="p">(</span><span class="s1">&#39;mace_train@leo1_scratch_mace&#39;</span><span class="p">)</span>
+<span class="n">MACE_preprocess_code</span>    <span class="o">=</span> <span class="n">load_code</span><span class="p">(</span><span class="s1">&#39;mace_preprocess@leo1_scratch_mace&#39;</span><span class="p">)</span>
+<span class="n">MACE_postprocess_code</span>   <span class="o">=</span> <span class="n">load_code</span><span class="p">(</span><span class="s1">&#39;mace_postprocess@leo1_scratch_mace&#39;</span><span class="p">)</span>
+<span class="n">LAMMPS_code</span>             <span class="o">=</span> <span class="n">load_code</span><span class="p">(</span><span class="s1">&#39;lmp4mace@leo1_scratch&#39;</span><span class="p">)</span>
+<span class="n">EVALUATION_code</span>         <span class="o">=</span> <span class="n">load_code</span><span class="p">(</span><span class="s1">&#39;committee_evaluation_portable&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-set-machine-parameters">
+<h2>Step 3: Set Machine Parameters<a class="headerlink" href="#step-3-set-machine-parameters" title="Link to this heading">#</a></h2>
+<p>Customize machine parameters for each code (time, nodes, GPUs, memory, etc.). Here’s an example for configuring QuantumESPRESSO:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">QE_machine</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="s2">&quot;00:05:00&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;nodes&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;gpu&#39;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;taskpn&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;cpupt&#39;</span><span class="p">:</span> <span class="s2">&quot;8&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;mem&#39;</span><span class="p">:</span> <span class="s2">&quot;70GB&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;account&#39;</span><span class="p">:</span> <span class="s2">&quot;***&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;partition&#39;</span><span class="p">:</span> <span class="s2">&quot;boost_usr_prod&quot;</span><span class="p">,</span>
+    <span class="s1">&#39;qos&#39;</span><span class="p">:</span> <span class="s2">&quot;boost_qos_dbg&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Repeat this process for each code (MACE, LAMMPS, and committee evaluation), adapting the parameters as needed.</p>
+</section>
+<section id="step-4-load-the-graphene-structure">
+<h2>Step 4: Load the Graphene Structure<a class="headerlink" href="#step-4-load-the-graphene-structure" title="Link to this heading">#</a></h2>
+<p>Load the graphene structure <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/examples/graphene/gr8x8.xyz">gr8x8.xyz</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">script_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+<span class="n">input_structures</span> <span class="o">=</span> <span class="p">[</span><span class="n">StructureData</span><span class="p">(</span><span class="n">ase</span><span class="o">=</span><span class="n">read</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script_dir</span><span class="p">,</span> <span class="s1">&#39;gr8x8.xyz&#39;</span><span class="p">)))]</span>
+</pre></div>
+</div>
+</section>
+<section id="step-5-setup-the-trainspot-workflow">
+<h2>Step 5: Setup the TrainsPot Workflow<a class="headerlink" href="#step-5-setup-the-trainspot-workflow" title="Link to this heading">#</a></h2>
+<p>The <cite>TrainsPot</cite> workflow combines several tasks. Use <cite>get_builder()</cite> to set up the workflow:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TrainsPot</span> <span class="o">=</span> <span class="n">WorkflowFactory</span><span class="p">(</span><span class="s1">&#39;trains_pot.workflow&#39;</span><span class="p">)</span>
+<span class="n">builder</span> <span class="o">=</span> <span class="n">TrainsPot</span><span class="o">.</span><span class="n">get_builder</span><span class="p">()</span>
+
+<span class="n">builder</span><span class="o">.</span><span class="n">structures</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s1">&#39;structure_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="n">input_structures</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_structures</span><span class="p">))}</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">do_data_set_augmentation</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">do_ab_initio_labelling</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">do_training</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">do_md_exploration</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">max_loops</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-6-configure-dataset-augmentation">
+<h2>Step 6: Configure Dataset Augmentation<a class="headerlink" href="#step-6-configure-dataset-augmentation" title="Link to this heading">#</a></h2>
+<p>Set up parameters for data augmentation. You can adjust options like <cite>do_rattle</cite>, <cite>do_input</cite>, and <cite>do_isolated</cite> for custom configurations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">builder</span><span class="o">.</span><span class="n">data_set_augmentation</span><span class="o">.</span><span class="n">do_rattle</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">data_set_augmentation</span><span class="o">.</span><span class="n">do_input</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">data_set_augmentation</span><span class="o">.</span><span class="n">do_isolated</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">data_set_augmentation</span><span class="o">.</span><span class="n">rattle</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">rattle_fraction</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">data_set_augmentation</span><span class="o">.</span><span class="n">rattle</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">n_configs</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-7-configure-ab-initio-labelling-quantumespresso">
+<h2>Step 7: Configure Ab Initio Labelling (QuantumESPRESSO)<a class="headerlink" href="#step-7-configure-ab-initio-labelling-quantumespresso" title="Link to this heading">#</a></h2>
+<p>Load QE settings, k-points, and pseudopotentials for labelling:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">kpoints</span> <span class="o">=</span> <span class="n">DataFactory</span><span class="p">(</span><span class="s2">&quot;core.array.kpoints&quot;</span><span class="p">)()</span>
+<span class="n">kpoints</span><span class="o">.</span><span class="n">set_kpoints_mesh</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">pseudo_family</span> <span class="o">=</span> <span class="n">load_group</span><span class="p">(</span><span class="s1">&#39;SSSP/1.3/PBE/precision&#39;</span><span class="p">)</span>
+
+<span class="n">builder</span><span class="o">.</span><span class="n">ab_initio_labelling</span><span class="o">.</span><span class="n">pw</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="n">QE_code</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">ab_initio_labelling</span><span class="o">.</span><span class="n">pw</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">({</span><span class="s1">&#39;SYSTEM&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;ecutwfc&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;ecutrho&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">}})</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">ab_initio_labelling</span><span class="o">.</span><span class="n">kpoints</span> <span class="o">=</span> <span class="n">kpoints</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">ab_initio_labelling</span><span class="o">.</span><span class="n">pw</span><span class="o">.</span><span class="n">pseudos</span> <span class="o">=</span> <span class="n">pseudo_family</span><span class="o">.</span><span class="n">get_pseudos</span><span class="p">(</span><span class="n">structure</span><span class="o">=</span><span class="n">input_structures</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+<section id="step-8-configure-mace-and-lammps-for-training-and-exploration">
+<h2>Step 8: Configure MACE and LAMMPS for Training and Exploration<a class="headerlink" href="#step-8-configure-mace-and-lammps-for-training-and-exploration" title="Link to this heading">#</a></h2>
+<p>Use a YAML configuration for MACE. The additonal information about the MACE parameters can be found in the <a class="reference external" href="https://mace-docs.readthedocs.io/en/latest/guide/training.html">MACE documentation</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MACE_config</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script_dir</span><span class="p">,</span> <span class="s1">&#39;mace_config.yml&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">MACE_config</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yaml_file</span><span class="p">:</span>
+    <span class="n">mace_config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span>
+
+<span class="n">builder</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">mace</span><span class="o">.</span><span class="n">mace_config</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">mace_config</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">num_potentials</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For LAMMPS, load additional parameters from <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/examples/graphene/lammps_md_params.yml">lammps_md_params.yml</a>. The additonal information about the LAMMPS parameters can be found in the <a class="reference external" href="https://aiida-lammps.readthedocs.io/en/latest/topics/data/parameters.html">LAMMPS documentation</a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lammps_params_yaml</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script_dir</span><span class="p">,</span> <span class="s1">&#39;lammps_md_params.yml&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">lammps_params_yaml</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">yaml_file</span><span class="p">:</span>
+    <span class="n">lammps_params_list</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">md_exploration</span><span class="o">.</span><span class="n">lammps_params_list</span> <span class="o">=</span> <span class="n">List</span><span class="p">(</span><span class="n">lammps_params_list</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-9-setup-committee-evaluation">
+<h2>Step 9: Setup Committee Evaluation<a class="headerlink" href="#step-9-setup-committee-evaluation" title="Link to this heading">#</a></h2>
+<p>Define resources and SLURM options for the committee evaluation stage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">builder</span><span class="o">.</span><span class="n">committee_evaluation</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="n">EVALUATION_code</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">committee_evaluation</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">queue_name</span> <span class="o">=</span> <span class="n">EVALUATION_machine</span><span class="p">[</span><span class="s1">&#39;partition&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="step-10-submit-the-workflow">
+<h2>Step 10: Submit the Workflow<a class="headerlink" href="#step-10-submit-the-workflow" title="Link to this heading">#</a></h2>
+<p>Once everything is set up, submit the workflow:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">calc</span> <span class="o">=</span> <span class="n">submit</span><span class="p">(</span><span class="n">builder</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Submitted calculation with PK = </span><span class="si">{</span><span class="n">calc</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will submit the workflow to AiiDA, where you can track its progress and analyze results.</p>
+<p>—</p>
+<p>This guide should help you get started with <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot">aiida-trains-pot</a>! For more information on AiiDA workflows, check the AiiDA documentation.</p>
+</section>
 </section>
 
 
@@ -427,6 +594,31 @@ You can check the <a class="reference external" href="http://aiida-core.readthed
             
             
               
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-setup-the-environment">Step 1: Setup the Environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-define-and-load-the-codes">Step 2: Define and Load the Codes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-set-machine-parameters">Step 3: Set Machine Parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-load-the-graphene-structure">Step 4: Load the Graphene Structure</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-setup-the-trainspot-workflow">Step 5: Setup the TrainsPot Workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-configure-dataset-augmentation">Step 6: Configure Dataset Augmentation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-configure-ab-initio-labelling-quantumespresso">Step 7: Configure Ab Initio Labelling (QuantumESPRESSO)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-configure-mace-and-lammps-for-training-and-exploration">Step 8: Configure MACE and LAMMPS for Training and Exploration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-9-setup-committee-evaluation">Step 9: Setup Committee Evaluation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-10-submit-the-workflow">Step 10: Submit the Workflow</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
             
           </div>
           <footer class="bd-footer-content">
@@ -436,7 +628,7 @@ You can check the <a class="reference external" href="http://aiida-core.readthed
   <div class="footer-item">
     
 <p class="component-author">
-By Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko
+By Nataliia Manko, Davide Bidoggi, Maria Peressi, Antimo Marrazzi
 </p>
 
   </div>
@@ -446,7 +638,7 @@ By Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko
 
   <p class="copyright">
     
-      © Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.
+      © Copyright 2024,  Dipartamento di Fisica (Università degli Studi di Trieste) and Physics Department of Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
       <br/>
     
   </p>

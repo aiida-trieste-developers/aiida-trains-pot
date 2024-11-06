@@ -1,55 +1,74 @@
 
-##################################################################################################################
-Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.
-##################################################################################################################
+###############
+AiiDA-TrainsPot
+###############
 
-The package is an `AiiDA`_ plugin for running advanced workflows with the quantumespresso, MACE, LAMMPS software suite.
+Welcome to AiiDA-TrainsPot, the AiiDA_ workflow that Trains a Potential for you.
 
 .. rst-class:: center
 
-    |aiida_logo| |hyphen| |qe_logo| |hyphen| |lammps_logo| |hyphen| |MACE_logo|
+    |aiida_logo| |qe_logo| |lammps_logo|  |MACE_logo|
 
 .. |aiida_logo| image:: images/AiiDA_transparent_logo.png
-    :width: 10%
-
-.. |hyphen| image:: images/hyphen.png
-    :width: 8%
+    :width: 25%
 
 .. |qe_logo| image:: images/qe_logo.jpg
-    :width: 10%
+    :width: 25%
 
 .. |lammps_logo| image:: images/Lammps-logo.png
-    :width: 10%
+    :width: 25%
 
 .. |MACE_logo| image:: images/MACE_logo.png
     :width: 10%
+    
+Remote Machine Requirements
+===========================
+
+AiiDA-TrainsPot requires the following software installed on the remote machine:
+
+- |Quantum ESPRESSO|_ (at least `pw.x` executable) 
+- MACE_ and PyYAML_ (preferably within a Python environment) 
+- LAMMPS_ with MACE extension
+
 
 Installation
 ============
 
-You can install  in your Python environment using ``pip``:
+1. To clone and install the aiida-trains-pot repository:
 
-.. code-block:: console
+.. code-block:: bash
 
-   $ pip install -e .
+   git clone git@github.com:aiida-trieste-developers/aiida-trains-pot.git
+   cd aiida-trains-pot
+   pip install -e .
 
 Note that this command will also install the ``aiida-core``, ``aiida-quantumespresso``, ``aiida-lammps`` packages as its dependencies.
-For more information on how to install AiiDA and the required services in different environments, we refer to the |aiida-core documentation|_.
+For more information on how to install AiiDA and the required services in different environments, we refer to the |aiida-core|_ documentation.
 
-Compatibility
+2. To clone and install aiida-lammps (the last release of aiida-lammps was not compatible with MACE):
+
+.. code-block:: bash
+
+   git clone git@github.com:aiidaplugins/aiida-lammps.git
+   cd aiida-lammps
+   pip install .
+   
+3. Install codes for Quantum ESPRESSO, MACE (pre-process, train, and post-process), and LAMMPS. Examples of configuration YAML files can be found in `examples/setup_codes`.
+
+4. Install `PortableCode` for committee evaluation:
+
+.. code-block:: bash
+
+   portable_codes_installation
+   
+If needed, specify in the prepend command the activation command for the Python environment where MACE was installed.
+
+Contributing
 =============
-For an overview of the plugin's compatibility with Python, AiiDA please refer to the |README.md of the repository|_.
 
-Getting Started
-===============
+We welcome contributions from everyone. Before you start contributing, please make sure you have read and understood our Contributor License Agreement (CLA). By contributing to this project, you agree to the terms and conditions outlined in our CLA.md_.
 
-A good place to get started with running `Quantum ESPRESSO`_ calculations using AiiDA is the `AiiDA Quantum ESPRESSO tutorial`_ on the main AiiDA tutorials page.
-You can either run the tutorial in your own installation if completed, or use the resources mentioned there, i.e. the `Quantum Mobile`_ virtual machine.
-
-.. warning::
-
-   The documentation is currently undergoing a major revision, but likely still contains some outdated content.
-   If you find any material that you think is incorrect, please `open an issue <https://github.com/aiidateam/aiida-wannier90-workflows/issues/new/choose>`_ on the GitHub repository.
+Please follow our CONTRIBUTING.md_ to get started.
 
 Contents
 ========
@@ -59,51 +78,53 @@ Contents
 
    user_guide/index
    module_guide/index
-   cli/index
-   developer_guide/index
 
-Indices and tables
-==================
+Acknowledgments
+===============
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+This project was supported by:
 
-Acknowledgements
-================
+- |Università degli Studi di Trieste|_.
+- |Scuola Internazionale Superiore di Studi Avanzati|_.
+- |Centro Nazionale di Ricerca HPC, Big Data e Quantum Computing|_.
+- |EU Centre of Excellence "MaX – Materials Design at the Exascale"|_
 
-If you use this plugin and/or AiiDA for your research, please cite the following work:
+.. raw:: html
 
-* Sebastiaan. P. Huber, Spyros Zoupanos, Martin Uhrin, Leopold Talirz, Leonid Kahle, Rico Häuselmann, Dominik Gresch, Tiziano Müller, Aliaksandr V. Yakutovich, Casper W. Andersen, Francisco F. Ramirez, Carl S. Adorf, Fernando Gargiulo, Snehal Kumbhar, Elsa Passaro, Conrad Johnston, Andrius Merkys, Andrea Cepellotti, Nicolas Mounet, Nicola Marzari, Boris Kozinsky, and Giovanni Pizzi, |AiiDA main paper|_, Scientific Data **7**, 300 (2020)
+   <p align="center">
+     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgTBDFRADTwpIJqho2NDfWrdCgIMTxFnlHBA&s" alt="Università degli Studi di Trieste Logo" width="250" style="filter: invert(1);"/>
+     <img src="https://www.sissa.it/themes/custom/sissa/images/logo-type.svg" alt="SISSA Logo" width="100"/>
+     <img src="https://www.max-centre.eu/sites/default/files/styles/news_responsive/public/MaX_900x600.jpg" alt="MaX Centre Logo" width="250"/> 
+     <img src="https://www.supercomputing-icsc.it/wp-content/uploads/2022/10/logoxweb.svg" alt="Centro Nazionale di Ricerca Logo" width="250"/>
+   </p>
 
-* Martin Uhrin, Sebastiaan. P. Huber, Jusong Yu, Nicola Marzari, and Giovanni Pizzi, |AiiDA engine paper|_, Computational Materials Science **187**, 110086 (2021)
-
-
-.. rst-class:: bigfont
-
-    We acknowledge support from:
-
-
-
-    * - The PNRR Progect "National Centre for HPC, Big Data and Quantum Computing" 
 
     
-.. |aiida-core documentation| replace:: ``aiida-core`` documentation
-.. _aiida-core documentation: https://aiida.readthedocs.io/projects/aiida-core/en/latest/intro/get_started.html
+.. |aiida-core| replace:: ``aiida-core``
+.. _aiida-core: https://aiida.readthedocs.io/projects/aiida-core/en/latest/intro/get_started.html
 
 .. |aiida-quantumespresso documentation| replace:: ``aiida-quantumespresso`` documentation
 .. _aiida-quantumespresso documentation: https://aiida.readthedocs.io/projects/aiida-quantumespresso/en/latest/intro/get_started.html
 
-.. |aiida-wannier90 documentation| replace:: ``aiida-wannier90`` documentation
-.. _aiida-wannier90 documentation: https://aiida.readthedocs.io/projects/aiida-wannier90/en/latest/intro/get_started.html
-
-.. |aiida-wannier90-workflows| replace:: ``aiida-wannier90-workflows``
-.. _aiida-wannier90-workflows: https://github.com/aiidateam/aiida-wannier90-workflows
 
 .. _AiiDA Quantum ESPRESSO tutorial: https://aiida-tutorials.readthedocs.io/en/tutorial-qe-short/
 
 .. _AiiDA: http://aiida.net
-.. _Quantum ESPRESSO: http://www.quantumespresso.org
+.. |Quantum ESPRESSO| replace:: Quantum ESPRESSO
+.. _Quantum ESPRESSO: https://www.quantum-espresso.org
+.. _MACE: https://github.com/ACEsuit/mace
+.. _PyYAML: https://github.com/yaml/pyyaml
+.. _LAMMPS: https://mace-docs.readthedocs.io/en/latest/guide/lammps.html
+.. _CLA.md: https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/CLA.md
+.. _CONTRIBUTING.md: https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/CONTRIBUTING.md
+.. |Università degli Studi di Trieste| replace:: Università degli Studi di Trieste
+.. _Università degli Studi di Trieste: https://portale.units.it/en
+.. |Scuola Internazionale Superiore di Studi Avanzati| replace:: Scuola Internazionale Superiore di Studi Avanzati
+.. _Scuola Internazionale Superiore di Studi Avanzati: https://www.sissa.it/it
+.. |Centro Nazionale di Ricerca HPC, Big Data e Quantum Computing| replace:: Centro Nazionale di Ricerca HPC, Big Data e Quantum Computing
+.. _Centro Nazionale di Ricerca HPC, Big Data e Quantum Computing: https://www.supercomputing-icsc.it/en/icsc-home/
+.. |EU Centre of Excellence "MaX – Materials Design at the Exascale"| replace:: EU Centre of Excellence "MaX – Materials Design at the Exascale"
+.. _EU Centre of Excellence "MaX – Materials Design at the Exascale": https://www.max-centre.eu/
 .. _wannier90: http://www.wannier.org
 .. _Quantum Mobile: https://quantum-mobile.readthedocs.io/en/latest/index.html
 
@@ -117,5 +138,3 @@ If you use this plugin and/or AiiDA for your research, please cite the following
 .. _MaX – Materials Design at the Exascale: http://www.max-centre.eu/
 .. _`swissuniversities P-5 project "Materials Cloud"`: https://www.materialscloud.org/swissuniversities
 
-.. |README.md of the repository| replace:: ``README.md`` of the repository
-.. _README.md of the repository: https://github.com/aiidateam/aiida-wannier90-workflows/blob/develop/README.md

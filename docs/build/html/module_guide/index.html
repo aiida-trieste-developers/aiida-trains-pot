@@ -51,8 +51,8 @@
           href="../_static/opensearch.xml"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Workflows" href="workflows.html" />
-    <link rel="prev" title="Automated high-throughput Wannierisation" href="../user_guide/get_started/scdm/scdm.html" />
+    <link rel="next" title="Workchains" href="workchains.html" />
+    <link rel="prev" title="Get Started with aiida-trains-pot" href="../user_guide/get_started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -166,30 +166,32 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../index.html">
-                    Advanced AiiDA workflows for Wannier90
+                    AiiDA-TrainsPot
                 </a>
             </li>
         </ul>
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../user_guide/index.html">User’s guide</a><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../user_guide/get_started/index.html">Get started</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../user_guide/get_started/scdm/scdm.html">Automated high-throughput Wannierisation</a></li>
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
-</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../user_guide/get_started/index.html">Get Started with aiida-trains-pot</a></li>
 </ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">API reference</a><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflows.html">Workflows</a><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="workchains.html">Workchains</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="calculations.html">Calculations</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="parsers.html">Parsers</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="datatypes.html">Data Types</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="scripts.html">Scripts</a><ul class="simple">
 </ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
 </ul><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
-</details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../cli/index.html">CLI reference</a><ul class="simple">
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
-</details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../developer_guide/pseudos.html">Pseudopotentials</a></li>
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
 </ul>
 
@@ -245,7 +247,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows" target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -262,7 +264,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows/edit/develop/docs/module_guide/index.rst" target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/edit/main/docs/module_guide/index.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -279,7 +281,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows/issues/new?title=Issue%20on%20page%20%2Fmodule_guide/index.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/issues/new?title=Issue%20on%20page%20%2Fmodule_guide/index.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -391,9 +393,36 @@ document.write(`
                   
   <section id="api-reference">
 <h1>API reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h1>
+<p>This section describes the various workchains, calculations, parsers, and data types provided by the AiiDA-TrainsPot module for training and evaluating interatomic potentials.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a><ul class="simple">
+<li class="toctree-l1"><a class="reference internal" href="workchains.html">Workchains</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="calculations.html">Calculations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="calculations.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parsers.html#aiida_trains_pot.mace.mace_train_plugin.parsers.MaceBaseParser"><code class="docutils literal notranslate"><span class="pre">MaceBaseParser</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="parsers.html#aiida_trains_pot.evaluation.parsers.EvaluationParser"><code class="docutils literal notranslate"><span class="pre">EvaluationParser</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datatypes.html">Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData"><code class="docutils literal notranslate"><span class="pre">PESData</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.dataset_list_to_ase_list"><code class="docutils literal notranslate"><span class="pre">PESData.dataset_list_to_ase_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_list"><code class="docutils literal notranslate"><span class="pre">PESData.get_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.set_list"><code class="docutils literal notranslate"><span class="pre">PESData.set_list()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scripts.html#aiida_trains_pot.utils.install_portable_codes.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -412,20 +441,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../user_guide/get_started/scdm/scdm.html"
+       href="../user_guide/get_started/index.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Automated high-throughput Wannierisation</p>
+        <p class="prev-next-title">Get Started with aiida-trains-pot</p>
       </div>
     </a>
     <a class="right-next"
-       href="workflows.html"
+       href="workchains.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Workflows</p>
+        <p class="prev-next-title">Workchains</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -445,7 +474,7 @@ document.write(`
   <div class="footer-item">
     
 <p class="component-author">
-By Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko
+By Nataliia Manko, Davide Bidoggi, Maria Peressi, Antimo Marrazzi
 </p>
 
   </div>
@@ -455,7 +484,7 @@ By Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko
 
   <p class="copyright">
     
-      © Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.
+      © Copyright 2024,  Dipartamento di Fisica (Università degli Studi di Trieste) and Physics Department of Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
       <br/>
     
   </p>

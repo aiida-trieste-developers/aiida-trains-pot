@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins. &#8212; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+    <title>AiiDA-TrainsPot &#8212; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
   
   
   
@@ -167,25 +167,33 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1 current active">
                 <a class="reference internal" href="#">
-                    Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.
+                    AiiDA-TrainsPot
                 </a>
             </li>
         </ul>
         <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="user_guide/index.html">User’s guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="user_guide/get_started/index.html">Get started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/get_started/index.html">Get Started with aiida-trains-pot</a></li>
 </ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="module_guide/index.html">API reference</a><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="module_guide/workflows.html">Workflows</a><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="module_guide/workchains.html">Workchains</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="module_guide/calculations.html">Calculations</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="module_guide/parsers.html">Parsers</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="module_guide/datatypes.html">Data Types</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="module_guide/scripts.html">Scripts</a><ul class="simple">
 </ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
 </ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="cli/index.html">CLI reference</a><ul class="simple">
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
-</details></li>
-<li class="toctree-l1"><a class="reference internal" href="developer_guide/index.html">Developer guide</a></li>
 </ul>
 
     </div>
@@ -240,7 +248,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows" target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -257,7 +265,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows/edit/develop/docs/index.rst" target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/edit/main/docs/index.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -274,7 +282,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -372,7 +380,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.</h1>
+    <h1>AiiDA-TrainsPot</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -382,12 +390,11 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#remote-machine-requirements">Remote Machine Requirements</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compatibility">Compatibility</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started">Getting Started</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributing">Contributing</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgements">Acknowledgements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
 </ul>
             </nav>
         </div>
@@ -399,75 +406,87 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="advanced-aiida-workflows-for-active-learning-loop-using-aiida-quantumespresso-aiida-mace-aiida-lammps-plugins">
-<h1>Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.<a class="headerlink" href="#advanced-aiida-workflows-for-active-learning-loop-using-aiida-quantumespresso-aiida-mace-aiida-lammps-plugins" title="Link to this heading">#</a></h1>
-<p>The package is an <a class="reference external" href="http://aiida.net">AiiDA</a> plugin for running advanced workflows with the quantumespresso, MACE, LAMMPS software suite.</p>
-<p class="center"><a class="reference internal" href="_images/AiiDA_transparent_logo.png"><img alt="aiida_logo" src="_images/AiiDA_transparent_logo.png" style="width: 10%;" /></a> <a class="reference internal" href="_images/hyphen.png"><img alt="hyphen" src="_images/hyphen.png" style="width: 8%;" /></a> <a class="reference internal" href="_images/qe_logo.jpg"><img alt="qe_logo" src="_images/qe_logo.jpg" style="width: 10%;" /></a> <a class="reference internal" href="_images/hyphen.png"><img alt="hyphen" src="_images/hyphen.png" style="width: 8%;" /></a> <a class="reference internal" href="_images/Lammps-logo.png"><img alt="lammps_logo" src="_images/Lammps-logo.png" style="width: 10%;" /></a> <a class="reference internal" href="_images/hyphen.png"><img alt="hyphen" src="_images/hyphen.png" style="width: 8%;" /></a> <a class="reference internal" href="_images/MACE_logo.png"><img alt="MACE_logo" src="_images/MACE_logo.png" style="width: 10%;" /></a></p>
+  <section id="aiida-trainspot">
+<h1>AiiDA-TrainsPot<a class="headerlink" href="#aiida-trainspot" title="Link to this heading">#</a></h1>
+<p>Welcome to AiiDA-TrainsPot, the <a class="reference external" href="http://aiida.net">AiiDA</a> workflow that Trains a Potential for you.</p>
+<p class="center"><a class="reference internal" href="_images/AiiDA_transparent_logo.png"><img alt="aiida_logo" src="_images/AiiDA_transparent_logo.png" style="width: 25%;" /></a> <a class="reference internal" href="_images/qe_logo.jpg"><img alt="qe_logo" src="_images/qe_logo.jpg" style="width: 25%;" /></a> <a class="reference internal" href="_images/Lammps-logo.png"><img alt="lammps_logo" src="_images/Lammps-logo.png" style="width: 25%;" /></a>  <a class="reference internal" href="_images/MACE_logo.png"><img alt="MACE_logo" src="_images/MACE_logo.png" style="width: 10%;" /></a></p>
+<section id="remote-machine-requirements">
+<h2>Remote Machine Requirements<a class="headerlink" href="#remote-machine-requirements" title="Link to this heading">#</a></h2>
+<p>AiiDA-TrainsPot requires the following software installed on the remote machine:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.quantum-espresso.org">Quantum ESPRESSO</a> (at least <cite>pw.x</cite> executable)</p></li>
+<li><p><a class="reference external" href="https://github.com/ACEsuit/mace">MACE</a> and <a class="reference external" href="https://github.com/yaml/pyyaml">PyYAML</a> (preferably within a Python environment)</p></li>
+<li><p><a class="reference external" href="https://mace-docs.readthedocs.io/en/latest/guide/lammps.html">LAMMPS</a> with MACE extension</p></li>
+</ul>
+</section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
-<p>You can install  in your Python environment using <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<ol class="arabic simple">
+<li><p>To clone and install the aiida-trains-pot repository:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:aiida-trieste-developers/aiida-trains-pot.git
+<span class="nb">cd</span><span class="w"> </span>aiida-trains-pot
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </pre></div>
 </div>
 <p>Note that this command will also install the <code class="docutils literal notranslate"><span class="pre">aiida-core</span></code>, <code class="docutils literal notranslate"><span class="pre">aiida-quantumespresso</span></code>, <code class="docutils literal notranslate"><span class="pre">aiida-lammps</span></code> packages as its dependencies.
-For more information on how to install AiiDA and the required services in different environments, we refer to the <a class="reference external" href="https://aiida.readthedocs.io/projects/aiida-core/en/latest/intro/get_started.html"><code class="docutils literal notranslate"><span class="pre">aiida-core</span></code> documentation</a>.</p>
-</section>
-<section id="compatibility">
-<h2>Compatibility<a class="headerlink" href="#compatibility" title="Link to this heading">#</a></h2>
-<p>For an overview of the plugin’s compatibility with Python, AiiDA please refer to the <a class="reference external" href="https://github.com/aiidateam/aiida-wannier90-workflows/blob/develop/README.md"><code class="docutils literal notranslate"><span class="pre">README.md</span></code> of the repository</a>.</p>
-</section>
-<section id="getting-started">
-<h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h2>
-<p>A good place to get started with running <a class="reference external" href="http://www.quantumespresso.org">Quantum ESPRESSO</a> calculations using AiiDA is the <a class="reference external" href="https://aiida-tutorials.readthedocs.io/en/tutorial-qe-short/">AiiDA Quantum ESPRESSO tutorial</a> on the main AiiDA tutorials page.
-You can either run the tutorial in your own installation if completed, or use the resources mentioned there, i.e. the <a class="reference external" href="https://quantum-mobile.readthedocs.io/en/latest/index.html">Quantum Mobile</a> virtual machine.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The documentation is currently undergoing a major revision, but likely still contains some outdated content.
-If you find any material that you think is incorrect, please <a class="reference external" href="https://github.com/aiidateam/aiida-wannier90-workflows/issues/new/choose">open an issue</a> on the GitHub repository.</p>
+For more information on how to install AiiDA and the required services in different environments, we refer to the <a class="reference external" href="https://aiida.readthedocs.io/projects/aiida-core/en/latest/intro/get_started.html"><code class="docutils literal notranslate"><span class="pre">aiida-core</span></code></a> documentation.</p>
+<ol class="arabic simple" start="2">
+<li><p>To clone and install aiida-lammps (the last release of aiida-lammps was not compatible with MACE):</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:aiidaplugins/aiida-lammps.git
+<span class="nb">cd</span><span class="w"> </span>aiida-lammps
+pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
 </div>
+<ol class="arabic simple" start="3">
+<li><p>Install codes for Quantum ESPRESSO, MACE (pre-process, train, and post-process), and LAMMPS. Examples of configuration YAML files can be found in <cite>examples/setup_codes</cite>.</p></li>
+<li><p>Install <cite>PortableCode</cite> for committee evaluation:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>portable_codes_installation
+</pre></div>
+</div>
+<p>If needed, specify in the prepend command the activation command for the Python environment where MACE was installed.</p>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">#</a></h2>
+<p>We welcome contributions from everyone. Before you start contributing, please make sure you have read and understood our Contributor License Agreement (CLA). By contributing to this project, you agree to the terms and conditions outlined in our <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/CLA.md">CLA.md</a>.</p>
+<p>Please follow our <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> to get started.</p>
 </section>
 <section id="contents">
 <h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="user_guide/index.html">User’s guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="user_guide/get_started/index.html">Get started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/get_started/index.html">Get Started with aiida-trains-pot</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="module_guide/index.html">API reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="module_guide/workflows.html">Workflows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/workchains.html">Workchains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/calculations.html">Calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/parsers.html">Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/datatypes.html">Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/scripts.html">Scripts</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="cli/index.html">CLI reference</a><ul class="simple">
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="developer_guide/index.html">Developer guide</a></li>
 </ul>
 </div>
 </section>
-<section id="indices-and-tables">
-<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">#</a></h2>
+<section id="acknowledgments">
+<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading">#</a></h2>
+<p>This project was supported by:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+<li><p><a class="reference external" href="https://portale.units.it/en">Università degli Studi di Trieste</a>.</p></li>
+<li><p><a class="reference external" href="https://www.sissa.it/it">Scuola Internazionale Superiore di Studi Avanzati</a>.</p></li>
+<li><p><a class="reference external" href="https://www.supercomputing-icsc.it/en/icsc-home/">Centro Nazionale di Ricerca HPC, Big Data e Quantum Computing</a>.</p></li>
+<li><p><a class="reference external" href="https://www.max-centre.eu/">EU Centre of Excellence “MaX – Materials Design at the Exascale”</a></p></li>
 </ul>
-</section>
-<section id="acknowledgements">
-<h2>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Link to this heading">#</a></h2>
-<p>If you use this plugin and/or AiiDA for your research, please cite the following work:</p>
-<ul class="simple">
-<li><p>Sebastiaan. P. Huber, Spyros Zoupanos, Martin Uhrin, Leopold Talirz, Leonid Kahle, Rico Häuselmann, Dominik Gresch, Tiziano Müller, Aliaksandr V. Yakutovich, Casper W. Andersen, Francisco F. Ramirez, Carl S. Adorf, Fernando Gargiulo, Snehal Kumbhar, Elsa Passaro, Conrad Johnston, Andrius Merkys, Andrea Cepellotti, Nicolas Mounet, Nicola Marzari, Boris Kozinsky, and Giovanni Pizzi, <a class="reference external" href="https://doi.org/10.1038/s41597-020-00638-4"><em>AiiDA 1.0, a scalable computational infrastructure for automated reproducible workflows and data provenance</em></a>, Scientific Data <strong>7</strong>, 300 (2020)</p></li>
-<li><p>Martin Uhrin, Sebastiaan. P. Huber, Jusong Yu, Nicola Marzari, and Giovanni Pizzi, <a class="reference external" href="https://doi.org/10.1016/j.commatsci.2020.110086"><em>Workflows in AiiDA: Engineering a high-throughput, event-based engine for robust and modular computational workflows</em></a>, Computational Materials Science <strong>187</strong>, 110086 (2021)</p></li>
-</ul>
-<p class="bigfont">We acknowledge support from:</p>
-<ul class="bigfont simple">
-<li><ul>
-<li><p>The PNRR Progect “National Centre for HPC, Big Data and Quantum Computing”</p></li>
-</ul>
-</li>
-</ul>
-</section>
+<p align="center">
+  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgTBDFRADTwpIJqho2NDfWrdCgIMTxFnlHBA&s" alt="Università degli Studi di Trieste Logo" width="250" style="filter: invert(1);"/>
+  <img src="https://www.sissa.it/themes/custom/sissa/images/logo-type.svg" alt="SISSA Logo" width="100"/>
+  <img src="https://www.max-centre.eu/sites/default/files/styles/news_responsive/public/MaX_900x600.jpg" alt="MaX Centre Logo" width="250"/>
+  <img src="https://www.supercomputing-icsc.it/wp-content/uploads/2022/10/logoxweb.svg" alt="Centro Nazionale di Ricerca Logo" width="250"/>
+</p></section>
 </section>
 
 
@@ -506,12 +525,11 @@ If you find any material that you think is incorrect, please <a class="reference
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#remote-machine-requirements">Remote Machine Requirements</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compatibility">Compatibility</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-started">Getting Started</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributing">Contributing</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgements">Acknowledgements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
 </ul>
   </nav></div>
 
@@ -526,7 +544,7 @@ If you find any material that you think is incorrect, please <a class="reference
   <div class="footer-item">
     
 <p class="component-author">
-By Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko
+By Nataliia Manko, Davide Bidoggi, Maria Peressi, Antimo Marrazzi
 </p>
 
   </div>
@@ -536,7 +554,7 @@ By Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko
 
   <p class="copyright">
     
-      © Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.
+      © Copyright 2024,  Dipartamento di Fisica (Università degli Studi di Trieste) and Physics Department of Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
       <br/>
     
   </p>

@@ -10,8 +10,16 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 import time
+import os
+import sys
+import aiida
+
+import aiida_trains_pot
 
 from aiida.manage.configuration import Profile, load_profile
+
+sys.path.insert(0, os.path.abspath("../"))  # Adjust as necessary
+aiida.load_profile()
 
 load_profile(Profile("docs", {"process_control": {}, "storage": {}}))
 
@@ -19,8 +27,8 @@ load_profile(Profile("docs", {"process_control": {}, "storage": {}}))
 # -- Project information -----------------------------------------------------
 
 project = 'Data-Driven Interatomic Potential WorkChain'
-copyright = '2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko'
-author = 'Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko'
+copyright = '2024,  Dipartamento di Fisica (Università degli Studi di Trieste) and Physics Department of Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy'
+author = 'Nataliia Manko, Davide Bidoggi, Maria Peressi, Antimo Marrazzi'
 release = '1.0.0'
 
 # -- General configuration ------------------------------------------------
@@ -31,8 +39,12 @@ release = '1.0.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+autodoc_mock_imports = ["aiida_trains_pot" ]
+
+
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
@@ -79,8 +91,8 @@ html_static_path = ["_static"]
 html_css_files = ["aiida-custom.css", "aiida-qe-custom.css"]
 html_theme_options = {
     "home_page_in_toc": True,
-    "repository_url": "https://github.com/aiidateam/aiida-wannier90-workflows",
-    "repository_branch": "develop",
+    "repository_url": "https://github.com/aiida-trieste-developers/aiida-trains-pot",
+    "repository_branch": "main",
     "use_repository_button": True,
     "use_issues_button": True,
     "use_fullscreen_button": False,

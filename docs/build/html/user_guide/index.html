@@ -51,8 +51,8 @@
           href="../_static/opensearch.xml"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Get started" href="get_started/index.html" />
-    <link rel="prev" title="Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins." href="../index.html" />
+    <link rel="next" title="Get Started with aiida-trains-pot" href="get_started/index.html" />
+    <link rel="prev" title="AiiDA-TrainsPot" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -166,25 +166,33 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../index.html">
-                    Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.
+                    AiiDA-TrainsPot
                 </a>
             </li>
         </ul>
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">User’s guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="get_started/index.html">Get started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html">Get Started with aiida-trains-pot</a></li>
 </ul><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../module_guide/index.html">API reference</a><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../module_guide/workflows.html">Workflows</a><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../module_guide/workchains.html">Workchains</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../module_guide/calculations.html">Calculations</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../module_guide/parsers.html">Parsers</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../module_guide/datatypes.html">Data Types</a><ul class="simple">
+</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../module_guide/scripts.html">Scripts</a><ul class="simple">
 </ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
 </ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../cli/index.html">CLI reference</a><ul class="simple">
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
-</details></li>
-<li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
 </ul>
 
     </div>
@@ -239,7 +247,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows" target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -256,7 +264,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows/edit/develop/docs/user_guide/index.rst" target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/edit/main/docs/user_guide/index.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -273,7 +281,7 @@
       
       
       
-      <li><a href="https://github.com/aiidateam/aiida-wannier90-workflows/issues/new?title=Issue%20on%20page%20%2Fuser_guide/index.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/issues/new?title=Issue%20on%20page%20%2Fuser_guide/index.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -387,7 +395,20 @@ document.write(`
 <h1>User’s guide<a class="headerlink" href="#user-s-guide" title="Link to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="get_started/index.html">Get started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="get_started/index.html">Get Started with aiida-trains-pot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-1-setup-the-environment">Step 1: Setup the Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-2-define-and-load-the-codes">Step 2: Define and Load the Codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-3-set-machine-parameters">Step 3: Set Machine Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-4-load-the-graphene-structure">Step 4: Load the Graphene Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-5-setup-the-trainspot-workflow">Step 5: Setup the TrainsPot Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-6-configure-dataset-augmentation">Step 6: Configure Dataset Augmentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-7-configure-ab-initio-labelling-quantumespresso">Step 7: Configure Ab Initio Labelling (QuantumESPRESSO)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-8-configure-mace-and-lammps-for-training-and-exploration">Step 8: Configure MACE and LAMMPS for Training and Exploration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-9-setup-committee-evaluation">Step 9: Setup Committee Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="get_started/index.html#step-10-submit-the-workflow">Step 10: Submit the Workflow</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
@@ -409,7 +430,7 @@ document.write(`
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Advanced AiiDA workflows for active learning loop using aiida-quantumespresso, aiida-MACE, aiida-LAMMPS plugins.</p>
+        <p class="prev-next-title">AiiDA-TrainsPot</p>
       </div>
     </a>
     <a class="right-next"
@@ -417,7 +438,7 @@ document.write(`
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Get started</p>
+        <p class="prev-next-title">Get Started with aiida-trains-pot</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -437,7 +458,7 @@ document.write(`
   <div class="footer-item">
     
 <p class="component-author">
-By Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko
+By Nataliia Manko, Davide Bidoggi, Maria Peressi, Antimo Marrazzi
 </p>
 
   </div>
@@ -447,7 +468,7 @@ By Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko
 
   <p class="copyright">
     
-      © Copyright 2024, Maria Peressi, Antimo Marrazzi, Davide Bidoggi, Nataliia Manko.
+      © Copyright 2024,  Dipartamento di Fisica (Università degli Studi di Trieste) and Physics Department of Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
       <br/>
     
   </p>
