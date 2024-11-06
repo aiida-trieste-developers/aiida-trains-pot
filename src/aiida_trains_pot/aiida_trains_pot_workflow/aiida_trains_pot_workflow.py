@@ -203,8 +203,8 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
                     # 'md_exploration_forces': List(list(trajectory_frames[i].get_forces())),
                     'gen_method': str('LAMMPS')
                     })
-            extracted_frames[-1]['style'] = params['md_exploration']['integration']['style']
-            extracted_frames[-1]['temp'] = params['md_exploration']['integration']['constraints']['temp']
+            extracted_frames[-1]['style'] = params['md']['integration']['style']
+            extracted_frames[-1]['temp'] = params['md']['integration']['constraints']['temp']
             extracted_frames[-1]['timestep'] = params['control']['timestep']
             extracted_frames[-1]['id_lammps'] = lammps_id
 
