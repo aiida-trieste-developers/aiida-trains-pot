@@ -5,8 +5,6 @@ from aiida import load_profile
 from aiida.orm import Code, Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict
 from aiida.plugins import CalculationFactory, WorkflowFactory
 from aiida.common import AttributeDict
-from aiida_quantumespresso.utils.mapping import prepare_process_inputs
-from aiida_quantumespresso.workflows.protocols.utils import recursive_merge
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 from aiida_lammps.data.potential import LammpsPotentialData
@@ -25,8 +23,8 @@ load_profile()
 
 # LammpsCalculation = CalculationFactory('lammps_base')
 DatasetAugmentationWorkChain    = WorkflowFactory('trains_pot.datasetaugmentation')
-PwBaseWorkChain                 = WorkflowFactory('quantumespresso.pw.base')
 MaceWorkChain                   = WorkflowFactory('trains_pot.macetrain')
+AbInitioLabellingWorkChain      = WorkflowFactory('trains_pot.labelling')  
 LammpsWorkChain                 = WorkflowFactory('lammps.base')
 EvaluationCalculation           = CalculationFactory('trains_pot.evaluation')
 PESData                         = DataFactory('pesdata')
@@ -66,18 +64,6 @@ def generate_potential(potential) -> LammpsPotentialData:
     
         return potential
 
-@calcfunction
-def WriteLabelledList(non_labelled_structures, **labelled_data):
-    labelled_list = []
-    for key, value in labelled_data.items():
-        labelled_list.append(non_labelled_structures.get_list()[int(key.split('_')[1])])
-        labelled_list[-1]['dft_energy'] = float(value['output_parameters'].dict.energy)
-        labelled_list[-1]['dft_forces'] = value['output_trajectory'].get_array('forces')[0].tolist()
-        labelled_list[-1]['dft_stress'] = value['output_trajectory'].get_array('stress')[0].tolist()
-
-    pes_labelled_list = PESData()    
-    pes_labelled_list.set_list(labelled_list)    
-    return pes_labelled_list
 
 @calcfunction
 def SplitDataset(dataset):
@@ -266,21 +252,20 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('thr_forces', valid_type=Float, help='Threshold for forces', required=True)
         spec.input('thr_stress', valid_type=Float, help='Threshold for stress', required=True)
 
-        spec.expose_inputs(DatasetAugmentationWorkChain, namespace="data_set_augmentation", exclude=('structures'))
-        spec.expose_inputs(PwBaseWorkChain, namespace="ab_initio_labelling", exclude=('pw.structure',), namespace_options={'validator': None})
+        spec.expose_inputs(DatasetAugmentationWorkChain, namespace="data_set_augmentation", exclude=('structures'))    
+        spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('non_labelled_list'), namespace_options={'validator': None})    
         spec.expose_inputs(MaceWorkChain, namespace="training",  exclude=('mace.training_set', 'mace.validation_set', 'mace.test_set'), namespace_options={'validator': None})
         spec.expose_inputs(LammpsWorkChain, namespace="md_exploration", exclude=('lammps.structure', 'lammps.potential','lammps.parameters'), namespace_options={'validator': None})
         spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))
         # spec.expose_inputs(FrameExtractionWorkChain, namespace="frame_extraction", exclude=('trajectories', 'input_structure', 'dt', 'saving_frequency'))
 
         spec.input_namespace("structures", valid_type=StructureData, required=True)
-
         spec.output("ab_initio_labelling.labelled_list", valid_type=PESData, help="List of configurations labelled via ab_initio_labelling")
         spec.output("md_exploration.lammps_extracted_list", valid_type=PESData, help="List of extracted frames from md_exploration trajectories")
         spec.output("committee_evaluation_list", valid_type=PESData, help="List of committee evaluated configurations")
         spec.output_namespace("md_exploration", dynamic=True, help="md_exploration outputs")
         spec.output_namespace("training", dynamic=True, help="Training outputs")
-        spec.expose_outputs(DatasetAugmentationWorkChain, namespace="data_set_augmentation")        
+        spec.expose_outputs(DatasetAugmentationWorkChain, namespace="data_set_augmentation") 
         # spec.expose_outputs(EvaluationCalculation, namespace="committee_evaluation")
         # spec.expose_outputs(MaceWorkChain, namespace="mace")
 
@@ -332,8 +317,7 @@ class TrainsPotWorkChain(WorkChain):
         return self.ctx.iteration < self.inputs.max_loops+1
 
     def initialization(self):
-        """Initialize variables."""
-        self.ctx.config = 0
+        """Initialize variables."""        
         self.ctx.iteration = 0
         if 'labelled_list' in self.inputs:
             self.ctx.labelled_list = self.inputs.labelled_list
@@ -373,45 +357,25 @@ class TrainsPotWorkChain(WorkChain):
     
     def ab_initio_labelling(self):
         """Run ab_initio_labelling calculations."""
-
-        self.ctx.config += 1
-        
+                
         if self.ctx.iteration > 1:
-            ase_list = self.ctx.committee_evaluation_list.get_ase_list()
+            ase_list = self.ctx.committee_evaluation_list
         else:
             if self.ctx.do_data_set_augmentation:
-                ase_list = self.ctx.data_set_augmentation.outputs.structure_lists.global_structure_list.get_ase_list()            
+                ase_list = self.ctx.data_set_augmentation.outputs.structure_lists.global_structure_list       
             else:
-                ase_list = self.inputs.non_labelled_list.get_ase_list()
+                ase_list = self.inputs.non_labelled_list
 
+        # Set up the inputs for LoopingLabellingWorkChain
+        inputs = self.exposed_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling")
+        inputs.non_labelled_list = ase_list
+                
 
-        for _, structure in enumerate(ase_list):
-            self.ctx.config += 1
-            str_data = StructureData(ase=structure)
-            default_inputs = {'CONTROL': {'calculation': 'scf', 'tstress': True, 'tprnfor': True}}
+        # Submit LoopingLabellingWorkChain
+        future = self.submit(AbInitioLabellingWorkChain, **inputs)
 
-            inputs = AttributeDict(self.exposed_inputs(PwBaseWorkChain, namespace='ab_initio_labelling'))
-            inputs.pw.structure = str_data
-            inputs.metadata.call_link_label = f'ab_initio_labelling_config_{self.ctx.config}'
-            
-            atm_types = list(str_data.get_symbols_set())
-            pseudos = inputs.pw.pseudos
-            inputs.pw.pseudos = {}
-            for tp in atm_types:
-                if tp in pseudos.keys():
-                    inputs.pw.pseudos[tp] = pseudos[tp]
-                else:
-                    raise ValueError(f'Pseudopotential for {tp} not found')
-            
-            
-            inputs.pw.parameters = Dict(recursive_merge(default_inputs, inputs.pw.parameters.get_dict()))
-            
-            inputs = prepare_process_inputs(PwBaseWorkChain, inputs)
-
-            future = self.submit(PwBaseWorkChain, **inputs)
-
-            self.report(f'launched PwBaseWorkChain for configuration {self.ctx.config} <{future.pk}>')
-            self.to_context(ab_initio_labelling_calculations=append_(future))
+        self.report(f'Launched AbInitioLabellingWorkChain with ase_list <{future.pk}>')
+        self.to_context(ab_initio_labelling = future)
 
     def training(self):
         """Run training calculations."""
@@ -525,22 +489,8 @@ class TrainsPotWorkChain(WorkChain):
         self.out_many(self.exposed_outputs(self.ctx.data_set_augmentation, DatasetAugmentationWorkChain, namespace="data_set_augmentation"))
 
     def finalize_ab_initio_labelling(self):
-        ab_initio_labelling_data = {}
-        for ii, calc in enumerate(self.ctx.ab_initio_labelling_calculations):
-            if calc.exit_status == 0:
-                ab_initio_labelling_data[f'abinitiolabelling_{ii}'] = {
-                    'output_parameters': calc.outputs.output_parameters,
-                    'output_trajectory': calc.outputs.output_trajectory
-                    }
-        if self.ctx.do_data_set_augmentation:
-            labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.data_set_augmentation.outputs.structure_lists.global_structure_list, **ab_initio_labelling_data)
-        elif self.ctx.iteration > 1:
-            labelled_list = WriteLabelledList(non_labelled_structures = self.ctx.committee_evaluation_list.get_list(), **ab_initio_labelling_data)
-        else:
-            labelled_list = WriteLabelledList(non_labelled_structures = self.inputs.non_labelled_list, **ab_initio_labelling_data)
-        
-        self.ctx.labelled_list += labelled_list
-        self.out('ab_initio_labelling.labelled_list', labelled_list)
+        self.ctx.labelled_list += self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data
+        self.out('ab_initio_labelling.labelled_list', self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data)
         self.ctx.ab_initio_labelling_calculations = []
 
     def finalize_training(self):

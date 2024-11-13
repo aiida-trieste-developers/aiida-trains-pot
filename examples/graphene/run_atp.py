@@ -39,7 +39,7 @@ QE_machine = {
 MACE_machine = {
 'time'                             : "00:05:00",
 'nodes'                            : 1,
-'gpu'                              : "2",
+'gpu'                              : "1",
 'taskpn'                           : 2,
 'cpupt'                            : "8",
 'mem'                              : "30GB",
@@ -156,36 +156,36 @@ kpoints.set_kpoints_mesh([1, 1, 1])
 pseudo_family = load_group('SSSP/1.3/PBE/precision')
 cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=input_structures[0], unit='Ry')
 
-builder.ab_initio_labelling.pw.code = QE_code
-builder.ab_initio_labelling.pw.metadata.options.withmpi=True
-builder.ab_initio_labelling.pw.metadata.options.max_wallclock_seconds = QE_time
-builder.ab_initio_labelling.pw.metadata.options.import_sys_environment = False
-builder.ab_initio_labelling.pw.metadata.options.max_memory_kb = QE_mem
-builder.ab_initio_labelling.pw.metadata.options.resources = {'num_machines': QE_machine["nodes"], 'num_mpiprocs_per_machine': QE_machine["taskpn"], 'num_cores_per_mpiproc': QE_machine['cpupt']}
-builder.ab_initio_labelling.pw.metadata.options.account = QE_machine['account']
-builder.ab_initio_labelling.pw.metadata.options.queue_name = QE_machine['partition']
-builder.ab_initio_labelling.pw.metadata.options.custom_scheduler_commands = f'#SBATCH --gres=gpu:{QE_machine["gpu"]} '
-builder.ab_initio_labelling.pw.metadata.options.qos = QE_machine['qos']
-builder.ab_initio_labelling.pw.pseudos = pseudo_family.get_pseudos(structure=input_structures[0])
-builder.ab_initio_labelling.kpoints = kpoints
-builder.ab_initio_labelling.pw.parameters = Dict({'SYSTEM':
-                                  {
-                                    'ecutwfc': 10,#cutoff_wfc,
-                                    'ecutrho': 40,#cutoff_rho,
-                                    'degauss': 0.02,
-                                    'occupations': 'smearing',
-                                    'smearing': 'cold',
-                                    'nosym': False,
-                                   },
-                                   'CONTROL': {'calculation': 'scf'},
-                                   'ELECTRONS':
-                                    {
-                                       'conv_thr': 1.0e-1,
-                                       'mixing_beta': 0.5,
-                                       'electron_maxstep': 50,
-                                       'mixing_mode': 'local-TF',
-                                    }
-                                  })
+builder.ab_initio_labelling.quantumespresso.pw.code = QE_code
+builder.ab_initio_labelling.quantumespresso.pw.metadata.options.withmpi=True
+builder.ab_initio_labelling.quantumespresso.pw.metadata.options.max_wallclock_seconds = QE_time
+builder.ab_initio_labelling.quantumespresso.pw.metadata.options.import_sys_environment = False
+builder.ab_initio_labelling.quantumespresso.pw.metadata.options.max_memory_kb = QE_mem
+builder.ab_initio_labelling.quantumespresso.pw.metadata.options.resources = {'num_machines': QE_machine["nodes"], 'num_mpiprocs_per_machine': QE_machine["taskpn"], 'num_cores_per_mpiproc': QE_machine['cpupt']}
+builder.ab_initio_labelling.quantumespresso.pw.metadata.options.account = QE_machine['account']
+builder.ab_initio_labelling.quantumespresso.pw.metadata.options.queue_name = QE_machine['partition']
+builder.ab_initio_labelling.quantumespresso.pw.metadata.options.custom_scheduler_commands = f'#SBATCH --gres=gpu:{QE_machine["gpu"]} '
+builder.ab_initio_labelling.quantumespresso.pw.metadata.options.qos = QE_machine['qos']
+builder.ab_initio_labelling.quantumespresso.pw.pseudos = pseudo_family.get_pseudos(structure=input_structures[0])
+builder.ab_initio_labelling.quantumespresso.kpoints = kpoints
+builder.ab_initio_labelling.quantumespresso.pw.parameters = Dict({'SYSTEM':
+                                                                {
+                                                                    'ecutwfc': 10,#cutoff_wfc,
+                                                                    'ecutrho': 40,#cutoff_rho,
+                                                                    'degauss': 0.02,
+                                                                    'occupations': 'smearing',
+                                                                    'smearing': 'cold',
+                                                                    'nosym': False,
+                                                                },
+                                                                'CONTROL': {'calculation': 'scf'},
+                                                                'ELECTRONS':
+                                                                    {
+                                                                    'conv_thr': 1.0e-1,
+                                                                    'mixing_beta': 0.5,
+                                                                    'electron_maxstep': 50,
+                                                                    'mixing_mode': 'local-TF',
+                                                                    }
+                                                                })
 
 
 
