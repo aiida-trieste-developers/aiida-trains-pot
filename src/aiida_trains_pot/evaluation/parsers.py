@@ -5,7 +5,7 @@ Register parsers via the "aiida.parsers" entry point in setup.json.
 """
 from aiida.common import exceptions
 from aiida.engine import ExitCode
-from aiida.orm import SinglefileData, FolderData, List
+from aiida.orm import SinglefileData, FolderData, List, Dict
 from aiida.parsers.parser import Parser
 from aiida.plugins import CalculationFactory
 from aiida.plugins import DataFactory
@@ -65,6 +65,11 @@ class EvaluationParser(Parser):
                 pse_eavaluated_list = PESData()
                 pse_eavaluated_list.set_list(evaluated_list)
                 self.out('evaluated_list', pse_eavaluated_list)
+            if 'rmse' in output_filename:
+                with self.retrieved.open(output_filename, "rb") as handle:
+                    output_node = SinglefileData(file=handle)
+                with output_node.open(mode='rb') as handle:
+                    self.out('rmse', Dict(np.load(handle, allow_pickle=True)['rmse'].tolist()))
             #     with self.retrieved.open(output_filename, "rb") as handle:
             #         output_node = FolderData(folder=handle)
             #     self.out(output_filename, output_node)

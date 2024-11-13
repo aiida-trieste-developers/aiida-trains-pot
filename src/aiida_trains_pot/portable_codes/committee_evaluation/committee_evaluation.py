@@ -4,7 +4,116 @@ from ase.io import read
 import glob
 import numpy as np
 from mace.calculators import MACECalculator
+from prettytable import PrettyTable
 import torch
+import re
+import logging
+import sys
+import time
+
+def rmse_table(RMSE) -> PrettyTable:
+    table = PrettyTable()
+    table.field_names = ['SET', 'POTENTIAL', 'RMSE Energy (meV/atom)', 'RMSE Forces (meV/Å)', 'RMSE Stress (meV/Å^3/atom)']
+
+    for key in RMSE:
+        keys2 = list(RMSE[key].keys())
+        if 'committee' in keys2:
+            keys2.remove('committee')
+            keys2 = ['committee'] + keys2
+        for key2 in keys2:
+            if key2 == 'committee':
+                table.add_row(
+                        [
+                            key,
+                            key2,
+                            f"{RMSE[key][key2]['rmse_e'] * 1000:8.1f} ± {RMSE[key][key2]['std_e'] * 1000:<8.1f}",
+                            f"{RMSE[key][key2]['rmse_f'] * 1000:8.1f} ± {RMSE[key][key2]['std_f'] * 1000:<8.1f}",
+                            f"{RMSE[key][key2]['rmse_s'] * 1000:8.2f} ± {RMSE[key][key2]['std_s'] * 1000:<8.2f}",
+                        ]
+                    )
+            else:
+                table.add_row(
+                    [
+                        '',
+                        key2.split('_')[-1],
+                        f"{RMSE[key][key2]['rmse_e'] * 1000:8.1f}",
+                        f"{RMSE[key][key2]['rmse_f'] * 1000:8.1f}",
+                        f"{RMSE[key][key2]['rmse_s'] * 1000:8.2f}",
+                    ]
+                )
+    return table
+
+
+
+def global_rmse(dataset):
+    """Calculate global root mean square error between DFT and DNN
+    quantities and return mean and standard deviation among the
+    committee of potentials.
+
+    Parameters
+    ----------
+    dataset : list
+        List of dictionaries containing the information of the
+        evaluated dataset.
+
+    Returns
+    -------
+    dict
+        Dictionary containing the mean and standard deviation of
+        the root mean square error for energy, forces and stress.
+    """
+
+    dnn_f = []
+    dnn_e = []
+    dnn_s = []
+    dft_e = []
+    dft_f = []
+    dft_s = []
+    for key, el in dataset[-1].items():
+        if re.fullmatch(r'pot_\d+_forces',key):
+            dnn_f.append([])
+            for frame in dataset:
+                dnn_f[-1].extend(frame[key].ravel())
+        elif re.fullmatch(r'pot_\d+_energy',key):
+            dnn_e.append([])
+            for frame in dataset:
+                dnn_e[-1].append(frame[key]/len(frame['positions']))
+        elif re.fullmatch(r'pot_\d+_stress',key):
+            dnn_s.append([])
+            for frame in dataset:
+                dnn_s[-1].extend(frame[key].ravel()/len(frame['positions']))
+        elif 'dft_energy' in key:
+            for frame in dataset:
+                dft_e.append(frame[key]/len(frame['positions']))
+        elif 'dft_forces' in key:
+            for frame in dataset:
+                dft_f.extend(frame[key].ravel())
+        elif 'dft_stress' in key:
+            for frame in dataset:
+                dft_s.extend(frame[key].ravel()/len(frame['positions']))
+    
+    rmse_e = np.array([calc_rmse(dft_e, dnn) for dnn in dnn_e])
+    rmse_f = np.array([calc_rmse(dft_f, dnn) for dnn in dnn_f])
+    rmse_s = np.array([calc_rmse(dft_s, dnn) for dnn in dnn_s])
+
+    RMSE = {}
+    for ii, _ in enumerate(dnn_e):
+        RMSE[f'pot_{ii+1}'] = {
+            'rmse_e': rmse_e[ii],
+            'rmse_f': rmse_f[ii],
+            'rmse_s': rmse_s[ii],
+        }
+    if len(dnn_e) > 1:
+        RMSE['committee'] = {
+            'rmse_e': np.mean(rmse_e),
+            'std_e': np.std(rmse_e),
+            'rmse_f': np.mean(rmse_f),
+            'std_f': np.std(rmse_f),
+            'rmse_s': np.mean(rmse_s),
+            'std_s': np.std(rmse_s),
+        }
+
+    return RMSE
 
 
 def calc_rmse(dft_list, dnn_list):
@@ -48,21 +157,33 @@ def maximum_deviation(data):
         return np.mean(np.max(data, axis=0) - np.min(data, axis=0))
 
 
-def main():
+def main(log_freq=100):
+
+    logging.info('###########################################')
+    logging.info('### Committee evaluation of MACE models ###')
+    logging.info('###########################################\n')
+
+
     potential_files = glob.glob('potential*')
     datasets = glob.glob('dataset*')
 
-
+    logging.info('Loading potentials...')
     if torch.cuda.is_available():
         calculators = [MACECalculator(potential_file, device='cuda') for potential_file in potential_files]
     else:
         calculators = [MACECalculator(potential_file, device='cpu') for potential_file in potential_files]
+    
+    logging.info(f'Loaded {len(calculators)} potentials.\n')
 
     evaluated_dataset = []
 
-    for dataset in datasets:
+    for jj, dataset in enumerate(datasets):
+        logging.info(f'Loading dataset {jj+1}/{len(datasets)}...')
         atoms = read(dataset, index=':', format='extxyz')
-        for atm in atoms:
+        logging.info(f'Loaded {len(atoms)} frames from dataset {jj+1}.\n')
+        logging.info(f'Evaluating dataset {jj+1}/{len(datasets)}...')
+        time_i = time.time()
+        for ii, atm in enumerate(atoms):
             evaluated_dataset.append(atm.info)
             evaluated_dataset[-1]['cell'] = np.array(atm.get_cell())
             evaluated_dataset[-1]['positions'] = np.array(atm.get_positions())
@@ -86,7 +207,7 @@ def main():
                 
                 evaluated_dataset[-1][f'pot_{n_pot}_energy'] = atm.get_potential_energy()
                 evaluated_dataset[-1][f'pot_{n_pot}_forces'] = np.array(atm.get_forces())
-                evaluated_dataset[-1][f'pot_{n_pot}_stress'] = np.array(atm.get_stress(voigt=False))
+                evaluated_dataset[-1][f'pot_{n_pot}_stress'] = np.array(atm.get_stress(voigt=True))
                 if 'dft_energy' in evaluated_dataset[-1]:
                     evaluated_dataset[-1][f'pot_{n_pot}_energy_rmse'] = calc_rmse([evaluated_dataset[-1]['dft_energy']], [evaluated_dataset[-1][f'pot_{n_pot}_energy']])
                 if 'dft_forces' in evaluated_dataset[-1]:
@@ -99,9 +220,41 @@ def main():
             evaluated_dataset[-1][f'energy_deviation_model'] = model_deviation(np.array(energy))
             evaluated_dataset[-1][f'forces_deviation_model'] = model_deviation(np.array(forces))
             evaluated_dataset[-1][f'stress_deviation_model'] = model_deviation(np.array(stress))
+            if (ii+1) % log_freq == 0:
+                time_f = time.time()
+                logging.info(f'Frames {ii+1:5d}/{len(atoms)} evaluated - time remaining for dataset {jj+1}: {((time_f-time_i)/(ii+1))*(len(atoms)-ii):.2f} s')
 
-
+    logging.info('Evaluation finished.')
+    logging.info('Saving evaluated dataset...\n')
     np.savez('evaluated_dataset.npz', evaluated_dataset = evaluated_dataset)
 
+    logging.info('Calculating global RMSE...')
+    # compute global RMSE
+    RMSE = {}
+    RMSE['TRAINING'] = global_rmse([el for el in evaluated_dataset if el['set'] == 'TRAINING'])
+    RMSE['VALIDATION'] = global_rmse([el for el in evaluated_dataset if el['set'] == 'VALIDATION'])
+    RMSE['TEST'] = global_rmse([el for el in evaluated_dataset if el['set'] == 'TEST'])
+    not_splited_list = [el for el in evaluated_dataset if el['set'] not in ['TRAINING', 'TEST', 'VALIDATION']]
+    if len(not_splited_list) > 0:
+        RMSE['NOT_SPLITTED'] = global_rmse(not_splited_list)
+    RMSE['ALL'] = global_rmse(evaluated_dataset)
+
+    logging.info("Error-table:\n" + str(rmse_table(RMSE)))
+    logging.info('Saving global RMSE...')
+    np.savez('rmse.npz', rmse = RMSE)
+    logging.info('DONE!')
+
+
+def set_logger(level=logging.INFO):
+    # Create a logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG) 
+    ch = logging.StreamHandler(stream=sys.stdout)
+    ch.setLevel(level)
+    ch.setFormatter(logging.Formatter('%(asctime)s: %(message)s'))
+    logger.addHandler(ch)
+
+
 if __name__ == "__main__":
+    set_logger()
     main()

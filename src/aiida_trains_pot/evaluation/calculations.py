@@ -7,7 +7,7 @@ from aiida.common import datastructures
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 from aiida.engine import CalcJob
-from aiida.orm import SinglefileData, StructureData, List, WorkChainNode, load_node, Int
+from aiida.orm import SinglefileData, StructureData, List, WorkChainNode, load_node, Int, Dict
 from aiida.plugins import WorkflowFactory
 from aiida.plugins import DataFactory
 import numpy as np
@@ -36,7 +36,7 @@ class EvaluationCalculation(CalcJob):
         spec.input_namespace("mace_potentials", valid_type=SinglefileData, required=True, help="Mace potentials",)
         spec.input("datasetlist", valid_type=PESData, required=True, help="Optional list on which to compute errors.")
         spec.output("evaluated_list", valid_type=PESData, help="List of evaluated configurations.")
-        
+        spec.output("rmse", valid_type=Dict, help="Root mean square errors between DFT and DNN quantities for the different sets and potentials.")
 
         spec.exit_code(300, "ERROR_MISSING_OUTPUT_FILES", message="Calculation did not produce all expected output files.",)
 
@@ -52,9 +52,11 @@ class EvaluationCalculation(CalcJob):
 
         codeinfo = datastructures.CodeInfo()
         codeinfo.code_uuid = self.inputs.code.uuid
-        
+        codeinfo.stdout_name = 'evaluation.out'
+
         calcinfo = datastructures.CalcInfo()
         calcinfo.local_copy_list = []
+        
         
         n_pot = 0
         for _, pot in self.inputs.mace_potentials.items():
