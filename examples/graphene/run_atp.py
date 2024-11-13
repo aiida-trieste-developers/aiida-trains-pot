@@ -40,7 +40,7 @@ MACE_machine = {
 'time'                             : "00:05:00",
 'nodes'                            : 1,
 'gpu'                              : "1",
-'taskpn'                           : 2,
+'taskpn'                           : 1,
 'cpupt'                            : "8",
 'mem'                              : "30GB",
 'account'                          : "CNHPC_1491920",
