@@ -41,13 +41,12 @@ class AbInitioLabellingWorkChain(WorkChain):
     def setup(self):
         """Initialize context and input parameters."""                
         # Initialize the list of structures
-        self.ctx.config = 0
-        self.ctx.ase_list = self.inputs.non_labelled_list
+        self.ctx.config = 0        
 
     def run_ab_initio_labelling(self):
         """Run PwBaseWorkChain for each structure."""
         
-        for _, structure in enumerate(self.ctx.ase_list.get_ase_list()):   
+        for _, structure in enumerate(self.inputs.non_labelled_list.get_ase_list()):   
             self.ctx.config += 1    
             str_data = StructureData(ase=structure)
 
@@ -87,7 +86,7 @@ class AbInitioLabellingWorkChain(WorkChain):
                     'output_trajectory': calc.outputs.output_trajectory
                     }
                 
-        pes_dataset_out_list = WriteLabelledList(non_labelled_structures = self.inputs.non_labelled_list, **ab_initio_labelling_data)
+        pes_dataset_out_list = WriteLabelledList(non_labelled_structures = self.inputs.non_labelled_list.get_list(), **ab_initio_labelling_data)
                 
                 
         self.out("ab_initio_labelling_data", pes_dataset_out_list)

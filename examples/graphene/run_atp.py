@@ -123,7 +123,7 @@ builder.do_ab_initio_labelling = Bool(True)
 builder.do_training = Bool(True)
 builder.do_md_exploration = Bool(True)
 builder.max_loops = Int(2)
-#builder.labelled_list = load_node(59120)
+#builder.labelled_list = load_node(75942)
 #builder.training_lammps_potentials = {"pot_1":load_node(59390),"pot_2":load_node(59401),"pot_3":load_node(59413),"pot_4":load_node(59423)}
 #builder.training_ase_potentials = {"pot_1":load_node(59391),"pot_2":load_node(59402),"pot_3":load_node(59412),"pot_4":load_node(59424)}
 
@@ -194,29 +194,29 @@ builder.ab_initio_labelling.quantumespresso.pw.parameters = Dict({'SYSTEM':
 ###############################################
 
 MACE_config = os.path.join(script_dir, 'mace_config.yml')
-builder.training.mace.code = MACE_train_code
-builder.training.mace.preprocess_code  = MACE_preprocess_code
-builder.training.mace.postprocess_code = MACE_postprocess_code
+builder.training.mace.mace.code = MACE_train_code
+builder.training.mace.mace.preprocess_code  = MACE_preprocess_code
+builder.training.mace.mace.postprocess_code = MACE_postprocess_code
 # builder.training.mace.do_preprocess = Bool(True)
 
 with open(MACE_config, 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
-builder.training.mace.mace_config = Dict(mace_config)
+builder.training.mace.mace.mace_config = Dict(mace_config)
 
 builder.training.num_potentials = Int(4)
-builder.training.mace.metadata.options.withmpi=True
-builder.training.mace.metadata.options.resources = {
+builder.training.mace.mace.metadata.options.withmpi=True
+builder.training.mace.mace.metadata.options.resources = {
     'num_machines': MACE_machine['nodes'],
     'num_mpiprocs_per_machine': MACE_machine['taskpn'],
     'num_cores_per_mpiproc': MACE_machine['cpupt'],
 }
-builder.training.mace.metadata.options.max_wallclock_seconds = MACE_time
-builder.training.mace.metadata.options.max_memory_kb = MACE_mem
-builder.training.mace.metadata.options.import_sys_environment = False
-builder.training.mace.metadata.options.account = MACE_machine['account']
-builder.training.mace.metadata.options.queue_name = MACE_machine['partition']
-builder.training.mace.metadata.options.qos = MACE_machine['qos']
-builder.training.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{MACE_machine['gpu']}"
+builder.training.mace.mace.metadata.options.max_wallclock_seconds = MACE_time
+builder.training.mace.mace.metadata.options.max_memory_kb = MACE_mem
+builder.training.mace.mace.metadata.options.import_sys_environment = False
+builder.training.mace.mace.metadata.options.account = MACE_machine['account']
+builder.training.mace.mace.metadata.options.queue_name = MACE_machine['partition']
+builder.training.mace.mace.metadata.options.qos = MACE_machine['qos']
+builder.training.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{MACE_machine['gpu']}"
 
 
 
