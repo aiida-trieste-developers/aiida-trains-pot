@@ -89,24 +89,7 @@ def SplitDataset(dataset):
     
     return {"train_set":pes_training_set, "validation_set":pes_validation_set, "test_set":pes_test_set, "global_splitted":pes_global_splitted}
 
-@calcfunction
-def GetPotentialsCheckpoints(mace_wc):
-    potentials = []
-    potentials_lammps = []
-    checkpoints = []
-
-    for ii, calc in enumerate(mace_wc):        
-        for el in calc.outputs:            
-            if el == 'swa_ase_model':
-                potentials.append(calc.outputs[el])
-            elif el == 'checkpoints':
-                checkpoints.append(calc.outputs[el])
-            elif el == 'swa_model_lammps':
-                potentials_lammps.append(calc.outputs[el])     
-        
-            
-    return {"potentials": List(potentials_lammps), "potentials_lammps": List(potentials_lammps), "checkpoints": checkpoints}
-    
+ 
 class TrainingWorkChain(WorkChain):
     """A workchain to loop over structures and submit AbInitioLabellingWorkChain."""
 

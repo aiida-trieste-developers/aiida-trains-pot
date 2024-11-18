@@ -7,14 +7,10 @@ from aiida.plugins import CalculationFactory, WorkflowFactory
 from aiida.common import AttributeDict
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
-from aiida_lammps.data.potential import LammpsPotentialData
 from aiida.plugins import DataFactory
-import tempfile
 from ase.io.lammpsrun import read_lammps_dump_text
 from io import StringIO
 import numpy as np
-from pathlib import Path
-import os
 import io
 load_profile()
 
@@ -22,44 +18,10 @@ load_profile()
 DatasetAugmentationWorkChain    = WorkflowFactory('trains_pot.datasetaugmentation')
 TrainingWorkChain               = WorkflowFactory('trains_pot.training')
 AbInitioLabellingWorkChain      = WorkflowFactory('trains_pot.labelling')  
-LammpsWorkChain                 = WorkflowFactory('lammps.base')
+MDExplorationWorkChain          = WorkflowFactory('trains_pot.mdexploration')
 EvaluationCalculation           = CalculationFactory('trains_pot.evaluation')
 PESData                         = DataFactory('pesdata')
 
-def generate_potential(potential) -> LammpsPotentialData:
-        """
-        Generate the potential to be used in the calculation.
-
-        Takes a potential form OpenKIM and stores it as a LammpsPotentialData object.
-
-        :return: potential to do the calculation
-        :rtype: LammpsPotentialData
-        """
-
-        potential_parameters = {
-            "species": ["C"],
-            "atom_style": "atomic",        
-            "units": "metal",
-            "extra_tags": {},                
-        }
-
-        # Assuming you have a trained MACE model
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            with potential.open(mode='rb') as potential_handle:
-                potential_content = potential_handle.read()
-            tmp_file.write(potential_content)
-            tmp_file_path = tmp_file.name
-            
-        potential = LammpsPotentialData.get_or_create(
-            #source=binary_stream,
-            source = Path(tmp_file_path),
-            pair_style="mace no_domain_decomposition",
-            **potential_parameters,
-        )
-
-        os.remove(tmp_file_path)
-    
-        return potential
 
 
 
@@ -154,12 +116,9 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('labelled_list', valid_type=PESData, help='List of labelled structures', required=False)
         spec.input('mace_workchain_pk', valid_type=Str, help='MACE workchain pk', required=False)
         spec.input_namespace('training_lammps_potentials', valid_type=SinglefileData, help='MACE potential for md_exploration', required=False)
-        spec.input_namespace('training_ase_potentials', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False)        
+        spec.input_namespace('training_ase_potentials', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False) 
+        spec.input('md_exploration.parameters', valid_type=Dict, help='List of parameters for md_exploration', required=False)        
         
-        spec.input('md_exploration.lammps_params_list', valid_type=List, help='List of parameters for md_exploration', required=False)
-        spec.input('md_exploration.parameters', valid_type=Dict, help='List of parameters for md_exploration', required=False)
-        #spec.input('md_exploration.temperatures', valid_type=List, help='List of temperatures for md_exploration', required=False)
-        #spec.input('md_exploration.pressures', valid_type=List, help='List of pressures for md_exploration', required=False)
         spec.input('potential', valid_type=SinglefileData, help='MACE potential for md_exploration', required=False)
 
         spec.input('frame_extraction.sampling_time', valid_type=Float, help='Correlation time for frame extraction', required=False)
@@ -172,20 +131,18 @@ class TrainsPotWorkChain(WorkChain):
         spec.expose_inputs(DatasetAugmentationWorkChain, namespace="data_set_augmentation", exclude=('structures'))    
         spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('non_labelled_list'), namespace_options={'validator': None})    
         spec.expose_inputs(TrainingWorkChain, namespace="training", exclude=('dataset'), namespace_options={'validator': None})
-        spec.expose_inputs(LammpsWorkChain, namespace="md_exploration", exclude=('lammps.structure', 'lammps.potential','lammps.parameters'), namespace_options={'validator': None})
-        spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))
-        # spec.expose_inputs(FrameExtractionWorkChain, namespace="frame_extraction", exclude=('trajectories', 'input_structure', 'dt', 'saving_frequency'))
-
+        spec.expose_inputs(MDExplorationWorkChain, namespace="md_exploration", exclude=('potential_lammps', 'lammps_input_structures','sampling_time'), namespace_options={'validator': None})
+        spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))        
         spec.input_namespace("structures", valid_type=StructureData, required=True)
         spec.output("ab_initio_labelling.labelled_list", valid_type=PESData, help="List of configurations labelled via ab_initio_labelling")
         spec.output("md_exploration.lammps_extracted_list", valid_type=PESData, help="List of extracted frames from md_exploration trajectories")
-        spec.output("committee_evaluation_list", valid_type=PESData, help="List of committee evaluated configurations")
-        spec.output_namespace("md_exploration", dynamic=True, help="md_exploration outputs")        
+        spec.output("committee_evaluation_list", valid_type=PESData, help="List of committee evaluated configurations")                
         spec.expose_outputs(DatasetAugmentationWorkChain, namespace="data_set_augmentation") 
-        spec.expose_outputs(TrainingWorkChain, namespace="training") 
-        spec.exit_code(300, "LESS_THAN_2_POTENTIALS", message="Calculation did not produce more tha 1 expected potentials.",)
-        # spec.expose_outputs(EvaluationCalculation, namespace="committee_evaluation")
-        # spec.expose_outputs(MaceWorkChain, namespace="mace")
+        #spec.expose_outputs(TrainingWorkChain, namespace="training") 
+        #spec.expose_outputs(MDExplorationWorkChain, namespace="md_exploration") 
+        spec.exit_code(309, "LESS_THAN_2_POTENTIALS", message="Calculation didn't produce more tha 1 expected potentials.",)
+        spec.exit_code(309, "NO_MD_CALCULATIONS", message="Calculation didn't produce any MD calculations.",)
+        
 
         
         spec.outline(
@@ -206,20 +163,9 @@ class TrainsPotWorkChain(WorkChain):
                     cls.md_exploration_frame_extraction,
                     cls.run_committee_evaluation,
                     cls.finalize_committee_evaluation),
-            )
-            # cls.finalize,
-            # cls.save_files
+            )            
         )
-
-    # @classmethod
-    # def get_builder_from_protocol(cls, structures, qe_code, qe_protocol=None, qe_options=None, qe_overrides=None, **kwargs):
-    #     """Return a builder"""
-        
-    #     builder = cls.get_builder()
-    #     builder.structures = {f's{ii}':s for ii, s in enumerate(structures)}
-    #     builder.ab_initio_labelling = PwBaseWorkChain.get_builder_from_protocol(*(qe_code, structures[0], qe_protocol), overrides = qe_overrides, options=qe_options, **kwargs)
-
-    #     return builder
+    
     
     def do_data_set_augmentation(self): return bool(self.ctx.do_data_set_augmentation)
     def do_ab_initio_labelling(self): return bool(self.ctx.do_ab_initio_labelling)
@@ -238,7 +184,7 @@ class TrainsPotWorkChain(WorkChain):
         """Initialize variables."""        
         self.ctx.iteration = 0
         if 'labelled_list' in self.inputs:
-            self.ctx.labelled_list = self.inputs.labelled_list
+            self.ctx.labelled_list = self.inputs.labelled_list.get_list()
         else:
             self.ctx.labelled_list = []
         self.ctx.do_data_set_augmentation = self.inputs.do_data_set_augmentation
@@ -247,7 +193,7 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.do_md_exploration = self.inputs.do_md_exploration
         self.ctx.checkpoints = []
         if not self.ctx.do_ab_initio_labelling:
-            self.ctx.labelled_list = self.inputs.labelled_list
+            self.ctx.labelled_list = self.inputs.labelled_list.get_list()
 
         if not self.ctx.do_training:
             self.ctx.potentials_lammps = []
@@ -301,7 +247,7 @@ class TrainsPotWorkChain(WorkChain):
         if self.ctx.do_ab_initio_labelling:            
             dataset.set_list(self.ctx.labelled_list)
         else:
-            dataset = self.inputs.labelled_list   
+            dataset = self.inputs.labelled_list
         inputs = self.exposed_inputs(TrainingWorkChain, namespace="training")
         inputs.dataset = dataset
         if self.ctx.iteration > 1:
@@ -315,33 +261,15 @@ class TrainsPotWorkChain(WorkChain):
 
     def md_exploration(self):
         """Run md_exploration."""
-        potential = self.ctx.potentials_lammps[-1]        
-        for _, structure in self.ctx.lammps_input_structures.items():
-            inputs = self.exposed_inputs(LammpsWorkChain, namespace="md_exploration")
-            inputs.lammps.structure = structure
-            inputs.lammps.potential = generate_potential(potential)
-            params_list=list(self.inputs.md_exploration.lammps_params_list)
-            parameters=AttributeDict(self.inputs.md_exploration.parameters)
-            parameters.dump.dump_rate = int(self.inputs.frame_extraction.sampling_time/parameters.control.timestep)
-            for params_md_exploration in params_list:            
-                parameters.md = dict(params_md_exploration)            
-                inputs.lammps.parameters = Dict(parameters)                
-                future = self.submit(LammpsWorkChain, **inputs)
-                self.to_context(md_exploration_wc=append_(future))
-            #inputs.temperature = Float(temp)
-            #inputs.pressure = Float(press)
-            #for temp in self.inputs.md_exploration.temperatures:
-            #    for press in self.inputs.md_exploration.pressures:
-            #        inputs = self.exposed_inputs(LammpsWorkChain, namespace="md_exploration")
-            #        inputs.structure = structure
-                    #inputs.temperature = Float(temp)
-                    #inputs.pressure = Float(press)
-            #        inputs.potential = potential
-            #        future = self.submit(LammpsWorkChain, **inputs)
-            #        self.to_context(md_exploration_wc=append_(future))
-        # inputs = self.exposed_inputs(LammpsWorkChain, namespace="md_exploration")
-        # inputs.structure = self.inputs.structures[0]
-        # pass
+        inputs = self.exposed_inputs(MDExplorationWorkChain, namespace="md_exploration")
+        inputs.potential_lammps = self.ctx.potentials_lammps[-1]
+        inputs.lammps_input_structures = self.ctx.lammps_input_structures
+        inputs.sampling_time = self.inputs.frame_extraction.sampling_time
+
+        future = self.submit(MDExplorationWorkChain, **inputs)
+
+        self.report(f'Launched MDExplorationWorkChain with dataset_list <{future.pk}>')
+        self.to_context(md_exploration = future)
     
     def md_exploration_frame_extraction(self):
         """Run md_exploration frame extraction."""
@@ -353,14 +281,7 @@ class TrainsPotWorkChain(WorkChain):
                                 thermalization_time = self.inputs.frame_extraction.thermalization_time, 
                                 **self.ctx.trajectories)['lammps_extracted_list']
         self.ctx.lammps_extracted_list = lammps_extracted_list
-        self.out('md_exploration.lammps_extracted_list', lammps_extracted_list)
-        # inputs = self.exposed_inputs(FrameExtractionWorkChain, namespace="frame_extraction")
-        # inputs.trajectories = self.ctx.trajectories
-        # inputs.input_structure = self.inputs.structures['s0']
-        # inputs.dt = self.inputs.md_exploration.dt
-        # inputs.saving_frequency = Int(100)
-        # future = self.submit(FrameExtractionWorkChain, **inputs)
-        # self.to_context(frame_extraction_wc=append_(future))
+        self.out('md_exploration.lammps_extracted_list', lammps_extracted_list)        
 
     def run_committee_evaluation(self):
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="committee_evaluation")
@@ -376,7 +297,7 @@ class TrainsPotWorkChain(WorkChain):
         self.out_many(self.exposed_outputs(self.ctx.data_set_augmentation, DatasetAugmentationWorkChain, namespace="data_set_augmentation"))
 
     def finalize_ab_initio_labelling(self):
-        self.ctx.labelled_list += self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data
+        self.ctx.labelled_list += self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data.get_list()
         self.out('ab_initio_labelling.labelled_list', self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data)
         self.ctx.ab_initio_labelling_calculations = []
 
@@ -397,35 +318,21 @@ class TrainsPotWorkChain(WorkChain):
                 elif key == 'swa_model_lammps':
                     self.ctx.potentials_lammps.append(value)                   
                        
-        self.ctx.labelled_list = self.ctx.training.outputs.global_splitted        
+        self.ctx.labelled_list = self.ctx.training.outputs.global_splitted.get_list()       
+
+
     def finalize_md_exploration(self):
 
-        md_exploration_out = {}
-        self.ctx.trajectories = {}
-        calc_no_exception = False
-        for ii, calc in enumerate(self.ctx.md_exploration_wc):
-            self.report(f'md_exploration_{ii} exit status: {calc.exit_status}')
-            if calc.exit_status == 0:
-                calc_no_exception = True
-                self.report(f'md_exploration_{ii} exit0')
-            # self.report(f'ii : {ii}')
-            # self.report(f'calc.outputs : {calc.outputs}')
-                # self.report(f'k : {k}')
-                # self.report(f'calc.outputs[k] : {calc.outputs[k]}')                
-                for el in calc.outputs:
-                    # self.report(f'el : {el}')
-                    # self.report(f'calc.outputs[k][el] : {calc.outputs[k][el]}')
-                    if el == 'trajectories':
-                        self.ctx.trajectories[f'md_exploration_{ii}'] = calc.outputs[el]
-                    md_exploration_out[f'md_exploration_{ii}']={el:calc.outputs[el] for el in calc.outputs}
-            # for out in calc.outputs:
-            #     md_exploration_out[f'md_exploration_{ii}'][out] = calc.outputs[out]
-        self.ctx.md_exploration_wc = []
-        self.out('md_exploration', md_exploration_out)
-        if not calc_no_exception:
-            return ExitCode(309, 'No md_exploration calculation ended correctly')
-
-        # self.out('md_exploration', self.ctx.md_exploration_wc.lmp_out)
+        if len(self.ctx.md_exploration.outputs.md_exploration) < 1:
+            return self.exit_codes.NO_MD_CALCULATIONS
+        
+        self.ctx.trajectories = {}        
+        for ii, calc in enumerate(self.ctx.md_exploration.outputs.md_exploration.values()):            
+            
+            for key, value in calc.items():
+                if key == 'trajectories':
+                    self.ctx.trajectories[f'md_exploration_{ii}'] = value
+        self.ctx.md_exploration = []          
     
     def finalize_committee_evaluation(self):
         calc = self.ctx.committee_evalutation
@@ -436,9 +343,6 @@ class TrainsPotWorkChain(WorkChain):
         self.report(f'Min energy deviation: {round(selected["min_energy_deviation"].value,2)} eV, Max energy deviation: {round(selected["max_energy_deviation"].value,2)} eV')
         self.report(f'Min forces deviation: {round(selected["min_forces_deviation"].value,2)} eV/Å, Max forces deviation: {round(selected["max_forces_deviation"].value,2)} eV/Å')
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')
-        self.out('committee_evaluation_list', calc.outputs.evaluated_list)
-        # self.out_many(self.exposed_outputs(self.ctx.committee_evalutation, EvaluationCalculation, namespace="committee_evaluation"))
-    # def finalize_md_exploration_frame_extraction(self):
-        # self.out('frame_extraction', self.ctx.frame_extraction_wc[0].outputs)
+        self.out('committee_evaluation_list', calc.outputs.evaluated_list)       
 
 

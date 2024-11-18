@@ -124,8 +124,8 @@ builder.do_training = Bool(True)
 builder.do_md_exploration = Bool(True)
 builder.max_loops = Int(2)
 #builder.labelled_list = load_node(75942)
-#builder.training_lammps_potentials = {"pot_1":load_node(59390),"pot_2":load_node(59401),"pot_3":load_node(59413),"pot_4":load_node(59423)}
-#builder.training_ase_potentials = {"pot_1":load_node(59391),"pot_2":load_node(59402),"pot_3":load_node(59412),"pot_4":load_node(59424)}
+#builder.training_lammps_potentials = {"pot_1":load_node(77323),"pot_2":load_node(77334),"pot_3":load_node(77345),"pot_4":load_node(77356)}
+#builder.training_ase_potentials = {"pot_1":load_node(77323),"pot_2":load_node(77334),"pot_3":load_node(77345),"pot_4":load_node(77357)}
 
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)
@@ -192,7 +192,6 @@ builder.ab_initio_labelling.quantumespresso.pw.parameters = Dict({'SYSTEM':
 ###############################################
 # Setup MACE
 ###############################################
-
 MACE_config = os.path.join(script_dir, 'mace_config.yml')
 builder.training.mace.mace.code = MACE_train_code
 builder.training.mace.mace.preprocess_code  = MACE_preprocess_code
@@ -224,11 +223,11 @@ builder.training.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATC
 # Setup LAMMPS
 ###############################################
 
-builder.md_exploration.lammps.code = LAMMPS_code
+builder.md_exploration.md_exploration.lammps.lammps.code = LAMMPS_code
 lammps_params_yaml = os.path.join(script_dir, 'lammps_md_params.yml')
 with open(lammps_params_yaml, 'r') as yaml_file:
     lammps_params_list = yaml.safe_load(yaml_file)
-builder.md_exploration.lammps_params_list = List(lammps_params_list)
+builder.md_exploration.params_list = List(lammps_params_list)
 #builder.md_exploration.temperatures = List([30, 50])
 #builder.md_exploration.pressures = List([0])
 #builder.md_exploration.num_steps = Int(500)
@@ -286,20 +285,20 @@ _settings.store_restart = True
 _settings.additional_cmdline_params = ["-k", "on", "g", "1", "-sf", "kk"]
 
 SETTINGS = Dict(dict=_settings)#
-builder.md_exploration.lammps.settings = SETTINGS
+builder.md_exploration.md_exploration.lammps.lammps.settings = SETTINGS
 builder.md_exploration.parameters = PARAMETERS
-builder.md_exploration.lammps.metadata.options.resources = {
+builder.md_exploration.md_exploration.lammps.lammps.metadata.options.resources = {
     'num_machines': LAMMPS_machine['nodes'],
     'num_mpiprocs_per_machine': LAMMPS_machine['taskpn'],
     'num_cores_per_mpiproc': LAMMPS_machine['cpupt']
 }
-builder.md_exploration.lammps.metadata.options.max_wallclock_seconds = LAMMPS_time
-builder.md_exploration.lammps.metadata.options.max_memory_kb = LAMMPS_mem
-builder.md_exploration.lammps.metadata.options.import_sys_environment = False
-builder.md_exploration.lammps.metadata.options.account = LAMMPS_machine['account']
-builder.md_exploration.lammps.metadata.options.queue_name = LAMMPS_machine['partition']
-builder.md_exploration.lammps.metadata.options.qos = LAMMPS_machine['qos']
-builder.md_exploration.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{LAMMPS_machine['gpu']}"
+builder.md_exploration.md_exploration.lammps.lammps.metadata.options.max_wallclock_seconds = LAMMPS_time
+builder.md_exploration.md_exploration.lammps.lammps.metadata.options.max_memory_kb = LAMMPS_mem
+builder.md_exploration.md_exploration.lammps.lammps.metadata.options.import_sys_environment = False
+builder.md_exploration.md_exploration.lammps.lammps.metadata.options.account = LAMMPS_machine['account']
+builder.md_exploration.md_exploration.lammps.lammps.metadata.options.queue_name = LAMMPS_machine['partition']
+builder.md_exploration.md_exploration.lammps.lammps.metadata.options.qos = LAMMPS_machine['qos']
+builder.md_exploration.md_exploration.lammps.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{LAMMPS_machine['gpu']}"
 
 builder.frame_extraction.sampling_time = Float(0.242)
 builder.frame_extraction.thermalization_time = Float(0)
