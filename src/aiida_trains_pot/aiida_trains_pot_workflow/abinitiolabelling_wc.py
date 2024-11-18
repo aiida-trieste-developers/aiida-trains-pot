@@ -17,8 +17,8 @@ def WriteLabelledList(non_labelled_structures, **labelled_data):
         labelled_list[-1]['dft_forces'] = value['output_trajectory'].get_array('forces')[0].tolist()
         labelled_list[-1]['dft_stress'] = value['output_trajectory'].get_array('stress')[0].tolist()
 
-    pes_labelled_list = PESData()    
-    pes_labelled_list.set_list(labelled_list)    
+    pes_labelled_list = PESData(labelled_list)    
+    #pes_labelled_list.set_list(labelled_list)    
     return pes_labelled_list
 
 

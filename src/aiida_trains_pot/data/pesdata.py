@@ -14,6 +14,17 @@ class PESData(Data):
     def _list_key(self):
         """Generate a unique filename for the list based on the node's UUID."""
         return f"psedata_{self.uuid}.npz"  # Unique filename with the node's UUID
+    
+    def __init__(self, data=None, **kwargs):
+        """
+        Initialize a PESData instance.
+
+        :param data: Optional list of data to initialize the PESData node.
+        :param kwargs: Additional keyword arguments passed to the parent Data class.
+        """
+        super().__init__(**kwargs)  # Initialize the parent class
+        if data:
+            self.set_list(data)
 
     def __iter__(self):
         """Return an iterator over the dataset list."""
