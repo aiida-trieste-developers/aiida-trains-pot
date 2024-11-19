@@ -118,7 +118,7 @@ input_structures = [StructureData(ase=read(os.path.join(script_dir, 'gr8x8.xyz')
 builder = TrainsPot.get_builder()
 builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(input_structures))}
 # builder = TrainsPot.get_builder_from_protocol(input_structures, qe_code = QE_code)
-builder.do_data_set_augmentation = Bool(True)
+builder.do_dataset_augmentation = Bool(True)
 builder.do_ab_initio_labelling = Bool(True)
 builder.do_training = Bool(True)
 builder.do_md_exploration = Bool(True)
@@ -136,14 +136,14 @@ builder.thr_stress = Float(1e-1)
 # Setup dataset augmentation
 ###############################################
 
-builder.data_set_augmentation.do_rattle = Bool(True)
-builder.data_set_augmentation.do_input = Bool(True)
-builder.data_set_augmentation.do_isolated = Bool(True)
-builder.data_set_augmentation.rattle.params.rattle_fraction = Float(0.1)
-builder.data_set_augmentation.rattle.params.max_sigma_strain = Float(0.1)
-builder.data_set_augmentation.rattle.params.n_configs = Int(20)
-builder.data_set_augmentation.rattle.params.frac_vacancies = Float(0.1)
-builder.data_set_augmentation.rattle.params.vacancies_per_config = Int(1)
+builder.dataset_augmentation.do_rattle = Bool(True)
+builder.dataset_augmentation.do_input = Bool(True)
+builder.dataset_augmentation.do_isolated = Bool(True)
+builder.dataset_augmentation.rattle.params.rattle_fraction = Float(0.1)
+builder.dataset_augmentation.rattle.params.max_sigma_strain = Float(0.1)
+builder.dataset_augmentation.rattle.params.n_configs = Int(20)
+builder.dataset_augmentation.rattle.params.frac_vacancies = Float(0.1)
+builder.dataset_augmentation.rattle.params.vacancies_per_config = Int(1)
 
 
 

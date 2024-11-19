@@ -105,7 +105,7 @@ class TrainsPotWorkChain(WorkChain):
     def define(cls, spec):
         """Specify inputs and outputs."""
         super().define(spec)
-        spec.input('do_data_set_augmentation', valid_type=Bool, default=lambda: Bool(True), help='Do data generation', required=False)
+        spec.input('do_dataset_augmentation', valid_type=Bool, default=lambda: Bool(True), help='Do data generation', required=False)
         spec.input('do_ab_initio_labelling', valid_type=Bool, default=lambda: Bool(True), help='Do ab_initio_labelling calculations', required=False)
         spec.input('do_training', valid_type=Bool, default=lambda: Bool(True), help='Do MACE calculations', required=False)
         spec.input('do_md_exploration', valid_type=Bool, default=lambda: Bool(True), help='Do md_exploration calculations', required=False)
@@ -128,7 +128,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('thr_forces', valid_type=Float, help='Threshold for forces', required=True)
         spec.input('thr_stress', valid_type=Float, help='Threshold for stress', required=True)
 
-        spec.expose_inputs(DatasetAugmentationWorkChain, namespace="data_set_augmentation", exclude=('structures'))    
+        spec.expose_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation", exclude=('structures'))    
         spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('non_labelled_list'), namespace_options={'validator': None})    
         spec.expose_inputs(TrainingWorkChain, namespace="training", exclude=('dataset'), namespace_options={'validator': None})
         spec.expose_inputs(MDExplorationWorkChain, namespace="md_exploration", exclude=('potential_lammps', 'lammps_input_structures','sampling_time'), namespace_options={'validator': None})
@@ -137,7 +137,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.output("ab_initio_labelling.labelled_list", valid_type=PESData, help="List of configurations labelled via ab_initio_labelling")
         spec.output("md_exploration.lammps_extracted_list", valid_type=PESData, help="List of extracted frames from md_exploration trajectories")
         spec.output("committee_evaluation_list", valid_type=PESData, help="List of committee evaluated configurations")                
-        spec.expose_outputs(DatasetAugmentationWorkChain, namespace="data_set_augmentation") 
+        spec.expose_outputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation") 
         #spec.expose_outputs(TrainingWorkChain, namespace="training") 
         #spec.expose_outputs(MDExplorationWorkChain, namespace="md_exploration") 
         spec.exit_code(309, "LESS_THAN_2_POTENTIALS", message="Calculation didn't produce more tha 1 expected potentials.",)
@@ -147,9 +147,9 @@ class TrainsPotWorkChain(WorkChain):
         
         spec.outline(
             cls.initialization,
-            if_(cls.do_data_set_augmentation)(
-                cls.data_set_augmentation,
-                cls.finalize_data_set_augmentation),
+            if_(cls.do_dataset_augmentation)(
+                cls.dataset_augmentation,
+                cls.finalize_dataset_augmentation),
             while_(cls.check_iteration)(
                 if_(cls.do_ab_initio_labelling)(
                     cls.ab_initio_labelling,
@@ -167,13 +167,13 @@ class TrainsPotWorkChain(WorkChain):
         )
     
     
-    def do_data_set_augmentation(self): return bool(self.ctx.do_data_set_augmentation)
+    def do_dataset_augmentation(self): return bool(self.ctx.do_dataset_augmentation)
     def do_ab_initio_labelling(self): return bool(self.ctx.do_ab_initio_labelling)
     def do_training(self): return bool(self.ctx.do_training)
     def do_md_exploration(self): return bool(self.ctx.do_md_exploration)
     def check_iteration(self):
         if self.ctx.iteration > 0:
-            self.ctx.do_data_set_augmentation = False
+            self.ctx.do_dataset_augmentation = False
             self.ctx.do_ab_initio_labelling = True
             self.ctx.do_training = True
             self.ctx.do_md_exploration = True
@@ -187,7 +187,7 @@ class TrainsPotWorkChain(WorkChain):
             self.ctx.labelled_list = self.inputs.labelled_list.get_list()
         else:
             self.ctx.labelled_list = []
-        self.ctx.do_data_set_augmentation = self.inputs.do_data_set_augmentation
+        self.ctx.do_dataset_augmentation = self.inputs.do_dataset_augmentation
         self.ctx.do_ab_initio_labelling = self.inputs.do_ab_initio_labelling
         self.ctx.do_training = self.inputs.do_training
         self.ctx.do_md_exploration = self.inputs.do_md_exploration
@@ -209,15 +209,15 @@ class TrainsPotWorkChain(WorkChain):
             
 
 
-    def data_set_augmentation(self):
+    def dataset_augmentation(self):
         """Generate data for the dataset."""
         
-        inputs = self.exposed_inputs(DatasetAugmentationWorkChain, namespace="data_set_augmentation")
+        inputs = self.exposed_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation")
         inputs['structures'] = self.inputs.structures
 
         future = self.submit(DatasetAugmentationWorkChain, **inputs)
         self.report(f'launched lammps calculation <{future.pk}>')
-        self.to_context(data_set_augmentation = future)
+        self.to_context(dataset_augmentation = future)
     
     def ab_initio_labelling(self):
         """Run ab_initio_labelling calculations."""
@@ -225,8 +225,8 @@ class TrainsPotWorkChain(WorkChain):
         if self.ctx.iteration > 1:
             ase_list = self.ctx.committee_evaluation_list
         else:
-            if self.ctx.do_data_set_augmentation:
-                ase_list = self.ctx.data_set_augmentation.outputs.structure_lists.global_structure_list       
+            if self.ctx.do_dataset_augmentation:
+                ase_list = self.ctx.dataset_augmentation.outputs.structure_lists.global_structure_list       
             else:
                 ase_list = self.inputs.non_labelled_list
 
@@ -289,12 +289,12 @@ class TrainsPotWorkChain(WorkChain):
         inputs['datasetlist'] = self.ctx.lammps_extracted_list
 
         future = self.submit(EvaluationCalculation, **inputs)
-        self.to_context(committee_evalutation = future)  
+        self.to_context(committee_evaluation = future)  
 
-    def finalize_data_set_augmentation(self):
+    def finalize_dataset_augmentation(self):
         """Finalize."""
 
-        self.out_many(self.exposed_outputs(self.ctx.data_set_augmentation, DatasetAugmentationWorkChain, namespace="data_set_augmentation"))
+        self.out_many(self.exposed_outputs(self.ctx.dataset_augmentation, DatasetAugmentationWorkChain, namespace="dataset_augmentation"))
 
     def finalize_ab_initio_labelling(self):
         self.ctx.labelled_list += self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data.get_list()
@@ -335,7 +335,7 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.md_exploration = []          
     
     def finalize_committee_evaluation(self):
-        calc = self.ctx.committee_evalutation
+        calc = self.ctx.committee_evaluation
 
         selected = SelectToLabel(calc.outputs.evaluated_list, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
         self.ctx.committee_evaluation_list = selected['selected_list']
