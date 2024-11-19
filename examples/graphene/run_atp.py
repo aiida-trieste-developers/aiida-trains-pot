@@ -18,7 +18,7 @@ TrainsPot   = WorkflowFactory('trains_pot.workflow')
 
 
 QE_code                 = load_code('qe7.2-pw@leo1_scratch_bind')
-MACE_train_code         = load_code('mace_train@leo1_scratch_mace')
+MACE_train_code         = load_code('mace_train_037@leo1_scratch_mace')
 MACE_preprocess_code    = load_code('mace_preprocess@leo1_scratch_mace')
 MACE_postprocess_code   = load_code('mace_postprocess@leo1_scratch_mace')
 LAMMPS_code             = load_code('lmp4mace@leo1_scratch')
@@ -118,12 +118,12 @@ input_structures = [StructureData(ase=read(os.path.join(script_dir, 'gr8x8.xyz')
 builder = TrainsPot.get_builder()
 builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(input_structures))}
 # builder = TrainsPot.get_builder_from_protocol(input_structures, qe_code = QE_code)
-builder.do_dataset_augmentation = Bool(True)
-builder.do_ab_initio_labelling = Bool(True)
+builder.do_dataset_augmentation = Bool(False)
+builder.do_ab_initio_labelling = Bool(False)
 builder.do_training = Bool(True)
 builder.do_md_exploration = Bool(True)
 builder.max_loops = Int(2)
-#builder.labelled_list = load_node(75942)
+builder.labelled_list = load_node(677593)
 #builder.training_lammps_potentials = {"pot_1":load_node(77323),"pot_2":load_node(77334),"pot_3":load_node(77345),"pot_4":load_node(77356)}
 #builder.training_ase_potentials = {"pot_1":load_node(77323),"pot_2":load_node(77334),"pot_3":load_node(77345),"pot_4":load_node(77357)}
 

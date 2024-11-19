@@ -91,7 +91,7 @@ The `TrainsPot` workflow combines several tasks. Use `get_builder()` to set up t
     builder = TrainsPot.get_builder()
 
     builder.structures = {f'structure_{i}': input_structures[i] for i in range(len(input_structures))}
-    builder.do_data_set_augmentation = Bool(True)
+    builder.do_dataset_augmentation = Bool(True)
     builder.do_ab_initio_labelling = Bool(True)
     builder.do_training = Bool(True)
     builder.do_md_exploration = Bool(True)
@@ -104,11 +104,11 @@ Set up parameters for data augmentation. You can adjust options like `do_rattle`
 
 .. code-block:: python
 
-    builder.data_set_augmentation.do_rattle = Bool(True)
-    builder.data_set_augmentation.do_input = Bool(True)
-    builder.data_set_augmentation.do_isolated = Bool(True)
-    builder.data_set_augmentation.rattle.params.rattle_fraction = Float(0.1)
-    builder.data_set_augmentation.rattle.params.n_configs = Int(20)
+    builder.dataset_augmentation.do_rattle = Bool(True)
+    builder.dataset_augmentation.do_input = Bool(True)
+    builder.dataset_augmentation.do_isolated = Bool(True)
+    builder.dataset_augmentation.rattle.params.rattle_fraction = Float(0.1)
+    builder.dataset_augmentation.rattle.params.n_configs = Int(20)
 
 Step 7: Configure Ab Initio Labelling (QuantumESPRESSO)
 -------------------------------------------------------

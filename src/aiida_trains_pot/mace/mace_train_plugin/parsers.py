@@ -255,12 +255,23 @@ class MaceBaseParser(Parser):
                     self.out(output_filename, folder_data)       
             else:
                 with self.retrieved.open(output_filename, "rb") as handle:
-                    output_node = SinglefileData(file=handle)                
-                if 'model' in output_filename and not 'pt' in output_filename:
-                    self.out(output_filename.replace('.','_').replace('aiida_','').replace('compiled','ase'), output_node)
-                if 'model' in output_filename and 'pt' in output_filename:
-                    self.out(output_filename.replace('.pt','').replace('.','_').replace('-','_').replace('aiida_','').replace('compiled','ase'), output_node)
-                if 'mace' in output_filename:
+                    output_node = SinglefileData(file=handle)
+
+                if "aiida_swa.model-lammps" in output_filename or "aiida_stagetwo.model-lammps" in output_filename:
+                    self.out("model_stage2_lammps", output_node)
+                elif "aiida_swa_compiled.model" in output_filename or "aiida_stagetwo_compiled.model" in output_filename:
+                    self.out("model_stage2_ase", output_node)
+                elif "aiida_swa.model" in output_filename or "aiida_stagetwo.model" in output_filename:
+                    self.out("model_stage2_pytorch", output_node)
+
+                elif 'aiida.model-lammps' in output_filename:
+                    self.out("model_stage1_lammps", output_node)
+                elif 'aiida_compiled.model' in output_filename:
+                    self.out("model_stage1_ase", output_node)
+                elif 'aiida.model' in output_filename:
+                    self.out("model_stage1_pytorch", output_node)
+                    
+                elif 'mace' in output_filename:
                     self.out(output_filename.replace('.out','_out'), output_node)
                     self.out("RMSE", List(parse_tables_from_singlefiledata(output_node)))         
         return ExitCode(0)

@@ -69,18 +69,20 @@ class MaceTrainCalculation(CalcJob):
         spec.input("test_set", valid_type=PESData, help="Test dataset list",)
         spec.input("mace_config", valid_type=Dict, help="Config parameters for MACE",)
         spec.input("checkpoints", valid_type=FolderData, help="Checkpoints file", required=False)
-        spec.input("do_preprocess", valid_type=Bool, help="Perfrom preprocess", required=False, default=lambda:Bool(False))
+        spec.input("do_preprocess", valid_type=Bool, help="Perform preprocess", required=False, default=lambda:Bool(False))
         spec.input("preprocess_code", valid_type=Code, help="Preprocess code, required if do_preprocess is True", required=False)
         spec.input("postprocess_code", valid_type=Code, help="Postprocess code", required=False)
         spec.input("restart", valid_type=Bool, help="Restart from a previous calculation", required=False, default=lambda:Bool(False))
         spec.input("checkpoints_restart", valid_type=FolderData, help="Checkpoints file", required=False)        
 
-        spec.output("model", valid_type=SinglefileData, help="Model file",)
-        spec.output("swa_model", valid_type=SinglefileData, help="SWA Model file",)
-        spec.output("ase_model", valid_type=SinglefileData, help="Compiled Model file",)
-        spec.output("swa_ase_model", valid_type=SinglefileData, help="SWA Compiled Model file",)
-        spec.output("model_lammps", valid_type=SinglefileData, help="Model lammps file",)
-        spec.output("swa_model_lammps", valid_type=SinglefileData, help="SWA Model lammps file",)
+        spec.output("model_stage1_lammps", valid_type=SinglefileData, help="Stage 1 model compiled for LAMMPS",)
+        spec.output("model_stage1_ase", valid_type=SinglefileData, help="Stage 1 model compiled for ASE",)
+        spec.output("model_stage1_pytorch", valid_type=SinglefileData, help="Stage 1 model not compiled",)
+
+        spec.output("model_stage2_lammps", valid_type=SinglefileData, help="Stage 2 model compiled for LAMMPS",)
+        spec.output("model_stage2_ase", valid_type=SinglefileData, help="Stage 2 model compiled for ASE",)
+        spec.output("model_stage2_pytorch", valid_type=SinglefileData, help="Stage 2 model not compiled",)
+        
         spec.output("mace_out", valid_type=SinglefileData, help="Mace output file",)       
         spec.output("logs", valid_type=FolderData, help="Logs file",)
         spec.output("checkpoints", valid_type=FolderData, help="Checkpoints file",)
@@ -134,9 +136,15 @@ class MaceTrainCalculation(CalcJob):
                 '--seed', str(mace_config_dict['seed'])
             ]
 
+        # for MACE < 0.3.7
         codeinfo_postprocess1 = datastructures.CodeInfo()
         codeinfo_postprocess1.code_uuid = self.inputs.postprocess_code.uuid
         codeinfo_postprocess1.cmdline_params = ["aiida_swa.model"]
+        # for MACE >= 0.3.7
+        codeinfo_postprocess1b = datastructures.CodeInfo()
+        codeinfo_postprocess1b.code_uuid = self.inputs.postprocess_code.uuid
+        codeinfo_postprocess1b.cmdline_params = ["aiida_stagetwo.model"]
+        
         codeinfo_postprocess2 = datastructures.CodeInfo()
         codeinfo_postprocess2.code_uuid = self.inputs.postprocess_code.uuid
         codeinfo_postprocess2.cmdline_params = ["aiida.model"]
@@ -229,9 +237,9 @@ class MaceTrainCalculation(CalcJob):
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
         calcinfo = datastructures.CalcInfo()
         if do_process:
-            calcinfo.codes_info = [codeinfo_preprocess, codeinfo, codeinfo_postprocess1, codeinfo_postprocess2]
+            calcinfo.codes_info = [codeinfo_preprocess, codeinfo, codeinfo_postprocess1, codeinfo_postprocess1b, codeinfo_postprocess2]
         else:
-            calcinfo.codes_info = [codeinfo, codeinfo_postprocess1, codeinfo_postprocess2]
+            calcinfo.codes_info = [codeinfo, codeinfo_postprocess1, codeinfo_postprocess1b, codeinfo_postprocess2]
         calcinfo.retrieve_list = ['*model*', 'checkpoints', 'mace.out', 'results', 'logs', '_scheduler-std*']
 
         return calcinfo
