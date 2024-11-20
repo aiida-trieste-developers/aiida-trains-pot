@@ -228,20 +228,37 @@ def main(log_freq=100):
     logging.info('Saving evaluated dataset...\n')
     np.savez('evaluated_dataset.npz', evaluated_dataset = evaluated_dataset)
 
-    logging.info('Calculating global RMSE...')
-    # compute global RMSE
-    RMSE = {}
-    RMSE['TRAINING'] = global_rmse([el for el in evaluated_dataset if el['set'] == 'TRAINING'])
-    RMSE['VALIDATION'] = global_rmse([el for el in evaluated_dataset if el['set'] == 'VALIDATION'])
-    RMSE['TEST'] = global_rmse([el for el in evaluated_dataset if el['set'] == 'TEST'])
-    not_splited_list = [el for el in evaluated_dataset if el['set'] not in ['TRAINING', 'TEST', 'VALIDATION']]
-    if len(not_splited_list) > 0:
-        RMSE['NOT_SPLITTED'] = global_rmse(not_splited_list)
-    RMSE['ALL'] = global_rmse(evaluated_dataset)
+    labelled_dataset = []
+    for el in evaluated_dataset:
+        if 'dft_energy' in el and 'dft_forces' in el:
+            labelled_dataset.append(el)
 
-    logging.info("Error-table:\n" + str(rmse_table(RMSE)))
-    logging.info('Saving global RMSE...')
-    np.savez('rmse.npz', rmse = RMSE)
+    if len(labelled_dataset) > 0:
+        logging.info('Calculating global RMSE...')
+        # compute global RMSE
+        
+        RMSE = {}
+        not_splited_list = []
+        for el in labelled_dataset:
+            if 'set' not in el:
+                not_splited_list.append(el)
+            elif el['set'] not in ['TRAINING', 'TEST', 'VALIDATION']:
+                not_splited_list.append(el)
+
+        if len(not_splited_list) > 0:
+            RMSE['NOT_SPLITTED'] = global_rmse(not_splited_list)
+        if len(not_splited_list) < len(labelled_dataset):
+            RMSE['TRAINING'] = global_rmse([el for el in labelled_dataset if el['set'] == 'TRAINING'])
+            RMSE['VALIDATION'] = global_rmse([el for el in labelled_dataset if el['set'] == 'VALIDATION'])
+            RMSE['TEST'] = global_rmse([el for el in labelled_dataset if el['set'] == 'TEST'])
+        
+        RMSE['ALL'] = global_rmse(labelled_dataset)
+
+        logging.info("Error-table:\n" + str(rmse_table(RMSE)))
+        logging.info('Saving global RMSE...')
+        np.savez('rmse.npz', rmse = RMSE)
+    else:
+        logging.info('No Labelled structures found. Skipping RMSE calculation.')
     logging.info('DONE!')
 
 

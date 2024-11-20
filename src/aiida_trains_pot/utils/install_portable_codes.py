@@ -6,7 +6,7 @@ from aiida.orm import Code
 load_profile()
 
 
-def install_committee_evaluation():
+def install_committee_evaluation(label = 'committee_evaluation_portable'):
 
     committee_evaluation_path = Path.joinpath(Path(aiida_trains_pot.__path__[0]), 'portable_codes/committee_evaluation/')
 
@@ -14,7 +14,7 @@ def install_committee_evaluation():
     append = input("Append command: ")
 
     code = PortableCode(
-        label = 'committee_evaluation_portable',
+        label = label,
         filepath_files = committee_evaluation_path,
         prepend_text = f'''{prepend}
 function launch() {{
@@ -27,15 +27,31 @@ export launch''',
 
     code.store()
 
-    print(f"Stored code '{code.label}' with pk={code.pk}")
+    print(f"Stored code '{code.label}' with pk = {code.pk}")
 
-def main():
+def check_code_exists(label):
     codes = Code.collection.find()
     for code in codes:
-        if code.label == 'committee_evaluation_portable':
-            raise ValueError(f"'committee_evaluation_portable' code already exists with pk = {code.pk}")
-        
-    install_committee_evaluation()
+        if code.label == label:
+            return code.pk
+    else:
+        return None
+            
+    
+def main():
+    print()
+    print("Creating a new portable code for committee evaluation")
+    print("-----------------------------------------------------")
+    print()
+    pk_code = 10
+    while pk_code is not None:
+        label = input("Enter code label (es. committee_evaluation_portable): ")
+        pk_code = check_code_exists(label)
+        if pk_code is not None:
+            print(f"Code '{label}' already exists with pk = {pk_code}")
+
+    install_committee_evaluation(label)
 
 if __name__ == '__main__':
+
     main()
