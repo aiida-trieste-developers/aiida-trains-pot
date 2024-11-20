@@ -191,17 +191,17 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.do_ab_initio_labelling = self.inputs.do_ab_initio_labelling
         self.ctx.do_training = self.inputs.do_training
         self.ctx.do_md_exploration = self.inputs.do_md_exploration
-        self.ctx.checkpoints = []
+        self.ctx.potential_checkpoints = []
         if not self.ctx.do_ab_initio_labelling:
             self.ctx.labelled_list = self.inputs.labelled_list.get_list()
 
         if not self.ctx.do_training:
             self.ctx.potentials_lammps = []
-            self.ctx.potentials = []
+            self.ctx.potentials_ase = []
             for _, pot in self.inputs.training_lammps_potentials.items():
                 self.ctx.potentials_lammps.append(pot)
             for _, pot in self.inputs.training_ase_potentials.items():
-                self.ctx.potentials.append(pot)
+                self.ctx.potentials_ase.append(pot)
         if 'lammps_input_structures' in self.inputs:
             self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
         else:
@@ -251,7 +251,7 @@ class TrainsPotWorkChain(WorkChain):
         inputs = self.exposed_inputs(TrainingWorkChain, namespace="training")
         inputs.dataset = dataset
         if self.ctx.iteration > 1:
-            inputs['checkpoints'] = {f"chkpt_{ii+1}": self.ctx.checkpoints[-ii] for ii in range(min(len(self.ctx.checkpoints), self.inputs.training.num_potentials.value))}
+            inputs['checkpoints'] = {f"chkpt_{ii+1}": self.ctx.potential_checkpoints[-ii] for ii in range(min(len(self.ctx.potential_checkpoints), self.inputs.training.num_potentials.value))}
       
       
         future = self.submit(TrainingWorkChain, **inputs)
@@ -285,7 +285,7 @@ class TrainsPotWorkChain(WorkChain):
 
     def run_committee_evaluation(self):
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="committee_evaluation")
-        inputs['mace_potentials'] = {f"pot_{ii}": self.ctx.potentials[ii] for ii in range(len(self.ctx.potentials))}
+        inputs['mace_potentials'] = {f"pot_{ii}": self.ctx.potentials_ase[ii] for ii in range(len(self.ctx.potentials_ase))}
         inputs['datasetlist'] = self.ctx.lammps_extracted_list
 
         future = self.submit(EvaluationCalculation, **inputs)
@@ -306,17 +306,20 @@ class TrainsPotWorkChain(WorkChain):
         if len(self.ctx.training.outputs.training) < 2:
             return self.exit_codes.LESS_THAN_2_POTENTIALS                     
 
-        self.ctx.potentials = []
+        self.ctx.potentials_ase = []
         self.ctx.potentials_lammps = []
-        self.ctx.checkpoints = []        
-        for ii, calc in enumerate(self.ctx.training.outputs.training.values()):                        
-            for key, value in calc.items():                
-                if key == 'swa_ase_model':
-                    self.ctx.potentials.append(value)                   
-                elif key == 'checkpoints':
-                    self.ctx.checkpoints.append(value)                    
-                elif key == 'swa_model_lammps':
-                    self.ctx.potentials_lammps.append(value)                   
+        self.ctx.potential_checkpoints = []        
+        for ii, calc in enumerate(self.ctx.training.outputs.training.values()):
+            if "checkpoints" in calc:
+                self.ctx.potential_checkpoints.append(calc['checkpoints'])
+            if "model_stage2_ase" in calc:
+                self.ctx.potentials_ase.append(calc['model_stage2_ase'])
+            elif "model_stage1_ase" in calc:
+                self.ctx.potentials_ase.append(calc['model_stage1_ase'])
+            if "model_stage2_lammps" in calc:
+                self.ctx.potentials_lammps.append(calc['model_stage2_lammps'])
+            elif "model_stage1_lammps" in calc:
+                self.ctx.potentials_lammps.append(calc['model_stage1_lammps'])                  
                        
         self.ctx.labelled_list = self.ctx.training.outputs.global_splitted.get_list()       
 
