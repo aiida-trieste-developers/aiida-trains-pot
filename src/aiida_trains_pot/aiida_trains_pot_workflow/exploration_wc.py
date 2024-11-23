@@ -46,50 +46,50 @@ def generate_potential(potential) -> LammpsPotentialData:
     
         return potential
     
-class MDExplorationWorkChain(WorkChain):
+class ExplorationWorkChain(WorkChain):
     """A workchain to loop over structures and submit AbInitioLabellingWorkChain."""
 
     @classmethod
     def define(cls, spec):
         super().define(spec)
-        spec.input('params_list', valid_type=List, help='List of parameters for md_exploration',)
-        spec.input('parameters', valid_type=Dict, help='List of parameters for md_exploration',)
+        spec.input('params_list', valid_type=List, help='List of parameters for md',)
+        spec.input('parameters', valid_type=Dict, help='List of parameters for md',)
         spec.input('potential_lammps', valid_type=SinglefileData, help='One of the potential for MD', )
         spec.input_namespace('lammps_input_structures',  valid_type=StructureData, help='Input structures for lammps', )        
         spec.input('sampling_time', valid_type=Float, help='Correlation time for frame extraction', )
          
-        spec.expose_inputs(LammpsWorkChain, namespace="md_exploration.lammps", exclude=('lammps.structure', 'lammps.potential','lammps.parameters'), namespace_options={'validator': None})
-        spec.output_namespace("md_exploration", dynamic=True, help="Exploration outputs")
+        spec.expose_inputs(LammpsWorkChain, namespace="md", exclude=('lammps.structure', 'lammps.potential','lammps.parameters'), namespace_options={'validator': None})
+        spec.output_namespace("md", dynamic=True, help="Exploration outputs")
           
         spec.outline(            
-            cls.run_md_exploration,
-            cls.finalize            
+            cls.run_md,
+            cls.finalize_md,          
         )        
                    
 
-    def run_md_exploration(self):
+    def run_md(self):
 
         potential = self.inputs.potential_lammps   
 
         for _, structure in self.inputs.lammps_input_structures.items():
-            inputs = self.exposed_inputs(LammpsWorkChain, namespace="md_exploration.lammps")
+            inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
             inputs.lammps.structure = structure
             inputs.lammps.potential = generate_potential(potential)
             params_list=list(self.inputs.params_list)
             parameters=AttributeDict(self.inputs.parameters)
             parameters.dump.dump_rate = int(self.inputs.sampling_time/parameters.control.timestep)
-            for params_md_exploration in params_list:            
-                parameters.md = dict(params_md_exploration)            
+            for params_md in params_list:            
+                parameters.md = dict(params_md)            
                 inputs.lammps.parameters = Dict(parameters)                
                 future = self.submit(LammpsWorkChain, **inputs)
-                self.to_context(md_exploration_wc=append_(future))
+                self.to_context(md_wc=append_(future))
 
-    def finalize(self):        
-        md_exploration_out = {}        
-        for ii, calc in enumerate(self.ctx.md_exploration_wc):            
+    def finalize_md(self):        
+        md_out = {}        
+        for ii, calc in enumerate(self.ctx.md_wc):            
             if calc.exit_status == 0:                
-                self.report(f'md_exploration_{ii} exit0')                       
-                md_exploration_out[f'md_exploration_{ii}']={el:calc.outputs[el] for el in calc.outputs}           
+                self.report(f'md_{ii} exit0')                       
+                md_out[f'md_{ii}']={el:calc.outputs[el] for el in calc.outputs}           
         
-        self.out('md_exploration', md_exploration_out)
+        self.out('md', md_out)
         
