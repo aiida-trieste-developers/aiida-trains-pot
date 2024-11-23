@@ -33,7 +33,7 @@ class MaceTrainWorkChain(BaseRestartWorkChain):
         """Specify inputs and outputs."""
         super().define(spec)
 
-        spec.expose_inputs(MaceCalculation, namespace="mace", namespace_options={'validator': None})
+        spec.expose_inputs(MaceCalculation, namespace="train", namespace_options={'validator': None})
         spec.expose_outputs(MaceCalculation)
         spec.input_namespace("checkpoints", valid_type=FolderData, required=False, help="Checkpoints file",)
         spec.outline(
@@ -94,16 +94,7 @@ class MaceTrainWorkChain(BaseRestartWorkChain):
         default namelists for the ``parameters`` are set to empty dictionaries if not specified.
         """
         super().setup()
-        self.ctx.inputs = AttributeDict(self.exposed_inputs(MaceCalculation, namespace="mace"))
-        
-        
-    @classmethod
-    def get_builder_from_protocol(
-        cls, **kwargs):
-        
-        builder = cls.get_builder()
-
-        return builder
+        self.ctx.inputs = AttributeDict(self.exposed_inputs(MaceCalculation, namespace="train"))
 
     @process_handler(
         priority=610,

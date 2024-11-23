@@ -93,13 +93,6 @@ class MaceTrainCalculation(CalcJob):
         spec.exit_code(300, "ERROR_MISSING_OUTPUT_FILES", message="Calculation did not produce all expected output files.",)
         spec.exit_code(400, "ERROR_OUT_OF_WALLTIME", message="The calculation stopped prematurely because it ran out of walltime.", )
         
-    @classmethod
-    def get_builder_from_protocol(
-        cls, **kwargs):
-
-        builder = cls.get_builder(**kwargs)
-
-        return builder
     
     def prepare_for_submission(self, folder):
         """
@@ -111,16 +104,16 @@ class MaceTrainCalculation(CalcJob):
         """
 
         mace_config_dict = self.inputs.mace_config.get_dict()
-        do_process = False
+        do_preprocess = False
         if self.inputs.do_preprocess.value:
             if 'preprocess_code' in self.inputs:
                 preprocess_code = self.inputs.preprocess_code
-                do_process = True
+                do_preprocess = True
             else:
                 raise ValueError("Preprocess code is required if do_preprocess is True")
 
         
-        if do_process:
+        if do_preprocess:
             codeinfo_preprocess = datastructures.CodeInfo()
             codeinfo_preprocess.code_uuid = preprocess_code.uuid
             codeinfo_preprocess.cmdline_params = [
@@ -169,7 +162,7 @@ class MaceTrainCalculation(CalcJob):
         
         
         mace_config_dict['seed'] = random.randint(0, 10000)
-        if do_process:
+        if do_preprocess:
             mace_config_dict['train_file'] = "processed_data/train/"   
             mace_config_dict['valid_file'] = "processed_data/val/"
             mace_config_dict['test_file'] = "processed_data/test/"    
@@ -236,7 +229,7 @@ class MaceTrainCalculation(CalcJob):
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
         calcinfo = datastructures.CalcInfo()
-        if do_process:
+        if do_preprocess:
             calcinfo.codes_info = [codeinfo_preprocess, codeinfo, codeinfo_postprocess1, codeinfo_postprocess1b, codeinfo_postprocess2]
         else:
             calcinfo.codes_info = [codeinfo, codeinfo_postprocess1, codeinfo_postprocess1b, codeinfo_postprocess2]

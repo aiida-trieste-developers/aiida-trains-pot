@@ -91,7 +91,7 @@ def SplitDataset(dataset):
 
  
 class TrainingWorkChain(WorkChain):
-    """A workchain to loop over structures and submit AbInitioLabellingWorkChain."""
+    """A workchain to loop over structures and submit MACEWorkChain."""
 
     @classmethod
     def define(cls, spec):
@@ -99,7 +99,7 @@ class TrainingWorkChain(WorkChain):
         spec.input("num_potentials", valid_type=Int, default=lambda:Int(1), required=False)   
         spec.input("dataset", valid_type=PESData, help="Training dataset list",)        
         spec.input_namespace("checkpoints", valid_type=FolderData, required=False, help="Checkpoints file",)
-        spec.expose_inputs(MaceWorkChain, namespace="mace",  exclude=('mace.training_set', 'mace.validation_set', 'mace.test_set'), namespace_options={'validator': None})     
+        spec.expose_inputs(MaceWorkChain, namespace="mace",  exclude=('train.training_set', 'train.validation_set', 'train.test_set'), namespace_options={'validator': None})     
         spec.output_namespace("training", dynamic=True, help="Training outputs")
         spec.output("global_splitted", valid_type=PESData,)        
         spec.outline(            
@@ -111,7 +111,7 @@ class TrainingWorkChain(WorkChain):
             
 
     def run_training(self):
-        """Run MMACEWorkChain for each structure."""
+        """Run MACEWorkChain for each structure."""
 
         split_datasets = SplitDataset(self.inputs.dataset)
         train_set = split_datasets["train_set"]
@@ -128,23 +128,23 @@ class TrainingWorkChain(WorkChain):
 
         inputs = self.exposed_inputs(MaceWorkChain, namespace="mace")
 
-        inputs.mace["training_set"] =  train_set
-        inputs.mace["validation_set"] =  validation_set
-        inputs.mace["test_set"] =  test_set
+        inputs.train["training_set"] =  train_set
+        inputs.train["validation_set"] =  validation_set
+        inputs.train["test_set"] =  test_set
 
         
         if 'checkpoints' in self.inputs:
             inputs['checkpoints'] = self.inputs.checkpoints
-            inputs.mace['restart'] = Bool(True)
+            inputs.train['restart'] = Bool(True)
 
         if 'checkpoints' in inputs:
             chkpts = list(dict(inputs.checkpoints).values())
         
         for ii in range(self.inputs.num_potentials.value):            
             if 'checkpoints' in self.inputs and ii < len(chkpts):
-                inputs.mace["checkpoints"] = chkpts[ii]
+                inputs.train["checkpoints"] = chkpts[ii]
             
-            inputs.mace["index_pot"] = Int(ii)
+            inputs.train["index_pot"] = Int(ii)
             future = self.submit(MaceWorkChain, **inputs)
             self.to_context(mace_wc = append_(future))        
         pass
