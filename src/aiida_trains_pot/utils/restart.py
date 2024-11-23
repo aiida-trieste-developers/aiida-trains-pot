@@ -22,7 +22,7 @@ def models_from_trainingwc(builder, identifier, get_labelled_dataset=False, get_
         builder.labelled_list = outputs['global_splitted']
     if get_config:
         inputs = load_node(identifier).inputs
-        builder.training.mace.mace.mace_config = inputs['mace']['mace']['mace_config']
+        builder.training.mace.train.mace_config = inputs['mace']['train']['mace_config']
     for trainings in outputs['training']:
         if trainings.startswith('mace'):
             if "model_stage2_ase" in outputs['training'][trainings]:

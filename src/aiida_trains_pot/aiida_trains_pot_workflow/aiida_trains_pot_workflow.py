@@ -134,12 +134,12 @@ class TrainsPotWorkChain(WorkChain):
         spec.expose_inputs(ExplorationWorkChain, namespace="exploration", exclude=('potential_lammps', 'lammps_input_structures','sampling_time'), namespace_options={'validator': None})
         spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))        
         spec.input_namespace("structures", valid_type=StructureData, required=True)
-        spec.output("ab_initio_labelling.labelled_list", valid_type=PESData, help="List of configurations labelled via ab_initio_labelling")
-        spec.output("exploration.lammps_extracted_list", valid_type=PESData, help="List of extracted frames from exploration trajectories")
-        spec.output("committee_evaluation_list", valid_type=PESData, help="List of committee evaluated configurations")                
-        spec.expose_outputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation") 
-        #spec.expose_outputs(TrainingWorkChain, namespace="training") 
-        #spec.expose_outputs(MDExplorationWorkChain, namespace="exploration") 
+        
+        spec.output("dataset", valid_type=PESData, help="Final dataset containing all structures labelled and selected to be labelled")
+        spec.output_namespace("models_ase", valid_type=SinglefileData, help="Last committee of trained potentials compiled for ASE")
+        spec.output_namespace("models_lammps", valid_type=SinglefileData, help="Last committee of trained potentials compiled for LAMMPS")
+        spec.output("RMSE", valid_type=Dict, help="RMSE on the final dataset computed with the last committee of potentials")               
+
         spec.exit_code(309, "LESS_THAN_2_POTENTIALS", message="Calculation didn't produce more tha 1 expected potentials.",)
         spec.exit_code(309, "NO_MD_CALCULATIONS", message="Calculation didn't produce any MD calculations.",)
         
@@ -163,7 +163,8 @@ class TrainsPotWorkChain(WorkChain):
                     cls.exploration_frame_extraction,
                     cls.run_committee_evaluation,
                     cls.finalize_committee_evaluation),
-            )            
+            ),
+            cls.finalize            
         )
     
     def do_dataset_augmentation(self): return bool(self.ctx.do_dataset_augmentation)
@@ -280,7 +281,7 @@ class TrainsPotWorkChain(WorkChain):
                                 thermalization_time = self.inputs.frame_extraction.thermalization_time, 
                                 **self.ctx.trajectories)['lammps_extracted_list']
         self.ctx.lammps_extracted_list = lammps_extracted_list
-        self.out('exploration.lammps_extracted_list', lammps_extracted_list)        
+      
 
     def run_committee_evaluation(self):
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="committee_evaluation")
@@ -291,13 +292,12 @@ class TrainsPotWorkChain(WorkChain):
         self.to_context(committee_evaluation = future)  
 
     def finalize_dataset_augmentation(self):
-        """Finalize."""
-
-        self.out_many(self.exposed_outputs(self.ctx.dataset_augmentation, DatasetAugmentationWorkChain, namespace="dataset_augmentation"))
+    #     """Finalize."""
+        pass
+        # self.out_many(self.exposed_outputs(self.ctx.dataset_augmentation, DatasetAugmentationWorkChain, namespace="dataset_augmentation"))
 
     def finalize_ab_initio_labelling(self):
         self.ctx.labelled_list += self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data.get_list()
-        self.out('ab_initio_labelling.labelled_list', self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data)
         self.ctx.ab_initio_labelling_calculations = []
 
     def finalize_training(self):
@@ -345,6 +345,9 @@ class TrainsPotWorkChain(WorkChain):
         self.report(f'Min energy deviation: {round(selected["min_energy_deviation"].value,2)} eV, Max energy deviation: {round(selected["max_energy_deviation"].value,2)} eV')
         self.report(f'Min forces deviation: {round(selected["min_forces_deviation"].value,2)} eV/Å, Max forces deviation: {round(selected["max_forces_deviation"].value,2)} eV/Å')
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')
-        self.out('committee_evaluation_list', calc.outputs.evaluated_list)       
 
+    def finalize(self):
+        self.out('dataset', self.ctx.committee_evaluation_list)
+        self.out('models_ase', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_ase)})
+        self.out('models_lammps', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_lammps)})
 
