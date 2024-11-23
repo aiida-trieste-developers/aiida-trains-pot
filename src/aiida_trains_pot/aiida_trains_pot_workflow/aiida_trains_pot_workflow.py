@@ -2,7 +2,7 @@
 """Equation of State WorkChain."""
 from aiida.engine import WorkChain, append_, calcfunction, workfunction, if_, while_, ExitCode
 from aiida import load_profile
-from aiida.orm import Code, Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict
+from aiida.orm import Code, Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict, load_node
 from aiida.plugins import CalculationFactory, WorkflowFactory
 from aiida.common import AttributeDict
 from ase import Atoms
@@ -114,9 +114,9 @@ class TrainsPotWorkChain(WorkChain):
         spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
         spec.input('non_labelled_list', valid_type=PESData, help='List of non labelled structures', required=False)
         spec.input('labelled_list', valid_type=PESData, help='List of labelled structures', required=False)
-        spec.input('mace_workchain_pk', valid_type=Str, help='MACE workchain pk', required=False)
-        spec.input_namespace('training_lammps_potentials', valid_type=SinglefileData, help='MACE potential for md_exploration', required=False)
-        spec.input_namespace('training_ase_potentials', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False) 
+
+        spec.input_namespace('models_lammps', valid_type=SinglefileData, help='MACE potential for md_exploration', required=False)
+        spec.input_namespace('models_ase', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False) 
         spec.input('md_exploration.parameters', valid_type=Dict, help='List of parameters for md_exploration', required=False)        
         
         spec.input('potential', valid_type=SinglefileData, help='MACE potential for md_exploration', required=False)
@@ -166,7 +166,6 @@ class TrainsPotWorkChain(WorkChain):
             )            
         )
     
-    
     def do_dataset_augmentation(self): return bool(self.ctx.do_dataset_augmentation)
     def do_ab_initio_labelling(self): return bool(self.ctx.do_ab_initio_labelling)
     def do_training(self): return bool(self.ctx.do_training)
@@ -198,9 +197,9 @@ class TrainsPotWorkChain(WorkChain):
         if not self.ctx.do_training:
             self.ctx.potentials_lammps = []
             self.ctx.potentials_ase = []
-            for _, pot in self.inputs.training_lammps_potentials.items():
+            for _, pot in self.inputs.models_lammps.items():
                 self.ctx.potentials_lammps.append(pot)
-            for _, pot in self.inputs.training_ase_potentials.items():
+            for _, pot in self.inputs.models_ase.items():
                 self.ctx.potentials_ase.append(pot)
         if 'lammps_input_structures' in self.inputs:
             self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
