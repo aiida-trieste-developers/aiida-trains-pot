@@ -186,7 +186,7 @@ class TrainsPotWorkChain(WorkChain):
         if 'dataset' in self.inputs:
             self.ctx.dataset = self.inputs.dataset
         else:
-            self.ctx.dataset = []
+            self.ctx.dataset = PESData()
         self.ctx.do_dataset_augmentation = self.inputs.do_dataset_augmentation
         self.ctx.do_ab_initio_labelling = self.inputs.do_ab_initio_labelling
         self.ctx.do_training = self.inputs.do_training
