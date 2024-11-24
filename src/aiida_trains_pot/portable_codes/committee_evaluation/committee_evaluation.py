@@ -175,14 +175,16 @@ def main(log_freq=100):
     
     logging.info(f'Loaded {len(calculators)} potentials.\n')
 
-    evaluated_dataset = []
+   
 
     for jj, dataset in enumerate(datasets):
+        dataset_name = dataset.replace('.xyz','')
         logging.info(f'Loading dataset {jj+1}/{len(datasets)}...')
         atoms = read(dataset, index=':', format='extxyz')
         logging.info(f'Loaded {len(atoms)} frames from dataset {jj+1}.\n')
         logging.info(f'Evaluating dataset {jj+1}/{len(datasets)}...')
         time_i = time.time()
+        evaluated_dataset = []
         for ii, atm in enumerate(atoms):
             evaluated_dataset.append(atm.info)
             evaluated_dataset[-1]['cell'] = np.array(atm.get_cell())
@@ -224,41 +226,42 @@ def main(log_freq=100):
                 time_f = time.time()
                 logging.info(f'Frames {ii+1:5d}/{len(atoms)} evaluated - time remaining for dataset {jj+1}: {((time_f-time_i)/(ii+1))*(len(atoms)-ii):.2f} s')
 
-    logging.info('Evaluation finished.')
-    logging.info('Saving evaluated dataset...\n')
-    np.savez('evaluated_dataset.npz', evaluated_dataset = evaluated_dataset)
+        logging.info(f'Evaluation finished for dataset {jj+1}.')
+        logging.info(f'Saving evaluated dataset {jj+1}...')
+        np.savez(f'{dataset_name}_evaluated.npz', evaluated_dataset = evaluated_dataset)
+        logging.info(f'Saved evaluated dataset {jj+1} as {dataset_name}_evaluated.npz.\n')
 
-    labelled_dataset = []
-    for el in evaluated_dataset:
-        if 'dft_energy' in el and 'dft_forces' in el:
-            labelled_dataset.append(el)
+        labelled_dataset = []
+        for el in evaluated_dataset:
+            if 'dft_energy' in el and 'dft_forces' in el:
+                labelled_dataset.append(el)
 
-    if len(labelled_dataset) > 0:
-        logging.info('Calculating global RMSE...')
-        # compute global RMSE
-        
-        RMSE = {}
-        not_splited_list = []
-        for el in labelled_dataset:
-            if 'set' not in el:
-                not_splited_list.append(el)
-            elif el['set'] not in ['TRAINING', 'TEST', 'VALIDATION']:
-                not_splited_list.append(el)
+        if len(labelled_dataset) > 0:
+            logging.info(f'Calculating global RMSE for dataset {jj+1}...')
+            # compute global RMSE
+            
+            RMSE = {}
+            not_splited_list = []
+            for el in labelled_dataset:
+                if 'set' not in el:
+                    not_splited_list.append(el)
+                elif el['set'] not in ['TRAINING', 'TEST', 'VALIDATION']:
+                    not_splited_list.append(el)
 
-        if len(not_splited_list) > 0:
-            RMSE['NOT_SPLITTED'] = global_rmse(not_splited_list)
-        if len(not_splited_list) < len(labelled_dataset):
-            RMSE['TRAINING'] = global_rmse([el for el in labelled_dataset if el['set'] == 'TRAINING'])
-            RMSE['VALIDATION'] = global_rmse([el for el in labelled_dataset if el['set'] == 'VALIDATION'])
-            RMSE['TEST'] = global_rmse([el for el in labelled_dataset if el['set'] == 'TEST'])
-        
-        RMSE['ALL'] = global_rmse(labelled_dataset)
+            if len(not_splited_list) > 0:
+                RMSE['NOT_SPLITTED'] = global_rmse(not_splited_list)
+            if len(not_splited_list) < len(labelled_dataset):
+                RMSE['TRAINING'] = global_rmse([el for el in labelled_dataset if el['set'] == 'TRAINING'])
+                RMSE['VALIDATION'] = global_rmse([el for el in labelled_dataset if el['set'] == 'VALIDATION'])
+                RMSE['TEST'] = global_rmse([el for el in labelled_dataset if el['set'] == 'TEST'])
+            
+            RMSE['ALL'] = global_rmse(labelled_dataset)
 
-        logging.info("Error-table:\n" + str(rmse_table(RMSE)))
-        logging.info('Saving global RMSE...')
-        np.savez('rmse.npz', rmse = RMSE)
-    else:
-        logging.info('No Labelled structures found. Skipping RMSE calculation.')
+            logging.info("Error-table:\n" + str(rmse_table(RMSE)))
+            logging.info(f'Saving global RMSE for dataset {jj+1}...')
+            np.savez(f'{dataset_name}_rmse.npz', rmse = RMSE)
+        else:
+            logging.info(f'No Labelled structures found in dataset {jj+1}. Skipping RMSE calculation.')
     logging.info('DONE!')
 
 

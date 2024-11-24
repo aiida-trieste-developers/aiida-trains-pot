@@ -87,7 +87,7 @@ def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
     energy_deviation = []
     forces_deviation = []
     stress_deviation = []
-    for config in evaluated_list.get_list():
+    for config in evaluated_list:
         energy_deviation.append(config['energy_deviation'])
         forces_deviation.append(config['forces_deviation'])
         stress_deviation.append(config['stress_deviation'])
@@ -117,7 +117,8 @@ class TrainsPotWorkChain(WorkChain):
 
         spec.input_namespace('models_lammps', valid_type=SinglefileData, help='MACE potential for md exploration', required=False)
         spec.input_namespace('models_ase', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False) 
-        spec.input('exploration.parameters', valid_type=Dict, help='List of parameters for md exploration', required=False)        
+        spec.input('exploration.parameters', valid_type=Dict, help='List of parameters for md exploration', required=False)
+        spec.input('explored_dataset', valid_type=PESData, help='List of structures from exploration', required=False)
         
         # spec.input('potential', valid_type=SinglefileData, help='MACE potential for exploration', required=False)
 
@@ -160,9 +161,9 @@ class TrainsPotWorkChain(WorkChain):
                 if_(cls.do_exploration)(
                     cls.exploration,
                     cls.finalize_exploration,
-                    cls.exploration_frame_extraction,
-                    cls.run_committee_evaluation,
-                    cls.finalize_committee_evaluation),
+                    cls.exploration_frame_extraction),
+                cls.run_committee_evaluation,
+                cls.finalize_committee_evaluation,
             ),
             cls.finalize            
         )
@@ -184,7 +185,7 @@ class TrainsPotWorkChain(WorkChain):
         """Initialize variables."""        
         self.ctx.iteration = 0
         if 'labelled_list' in self.inputs:
-            self.ctx.labelled_list = self.inputs.labelled_list.get_list()
+            self.ctx.labelled_list = self.inputs.labelled_list
         else:
             self.ctx.labelled_list = []
         self.ctx.do_dataset_augmentation = self.inputs.do_dataset_augmentation
@@ -193,7 +194,7 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.do_exploration = self.inputs.do_exploration
         self.ctx.potential_checkpoints = []
         if not self.ctx.do_ab_initio_labelling:
-            self.ctx.labelled_list = self.inputs.labelled_list.get_list()
+            self.ctx.labelled_list = self.inputs.labelled_list
 
         if not self.ctx.do_training:
             self.ctx.potentials_lammps = []
@@ -202,6 +203,10 @@ class TrainsPotWorkChain(WorkChain):
                 self.ctx.potentials_lammps.append(pot)
             for _, pot in self.inputs.models_ase.items():
                 self.ctx.potentials_ase.append(pot)
+        if not self.ctx.do_exploration and 'explored_dataset' in self.inputs:
+            if len(self.inputs.explored_dataset) > 0:
+                self.ctx.lammps_extracted_list = self.inputs.explored_dataset
+
         if 'lammps_input_structures' in self.inputs:
             self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
         else:
@@ -286,7 +291,7 @@ class TrainsPotWorkChain(WorkChain):
     def run_committee_evaluation(self):
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="committee_evaluation")
         inputs['mace_potentials'] = {f"pot_{ii}": self.ctx.potentials_ase[ii] for ii in range(len(self.ctx.potentials_ase))}
-        inputs['datasetlist'] = self.ctx.lammps_extracted_list
+        inputs['datasets'] = {"labelled": self.ctx.labelled_list, "exploration": self.ctx.lammps_extracted_list}
 
         future = self.submit(EvaluationCalculation, **inputs)
         self.to_context(committee_evaluation = future)  
@@ -297,7 +302,7 @@ class TrainsPotWorkChain(WorkChain):
         # self.out_many(self.exposed_outputs(self.ctx.dataset_augmentation, DatasetAugmentationWorkChain, namespace="dataset_augmentation"))
 
     def finalize_ab_initio_labelling(self):
-        self.ctx.labelled_list += self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data.get_list()
+        self.ctx.labelled_list += self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data
         self.ctx.ab_initio_labelling_calculations = []
 
     def finalize_training(self):
@@ -320,7 +325,7 @@ class TrainsPotWorkChain(WorkChain):
             elif "model_stage1_lammps" in calc:
                 self.ctx.potentials_lammps.append(calc['model_stage1_lammps'])                  
                        
-        self.ctx.labelled_list = self.ctx.training.outputs.global_splitted.get_list()       
+        self.ctx.labelled_list = self.ctx.training.outputs.global_splitted       
 
 
     def finalize_exploration(self):
@@ -339,9 +344,9 @@ class TrainsPotWorkChain(WorkChain):
     def finalize_committee_evaluation(self):
         calc = self.ctx.committee_evaluation
 
-        selected = SelectToLabel(calc.outputs.evaluated_list, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
+        selected = SelectToLabel(calc.outputs.evaluated_datasets.exploration, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
         self.ctx.committee_evaluation_list = selected['selected_list']
-        self.report(f'Structures selected for labelling: {len(self.ctx.committee_evaluation_list.get_list())}/{len(calc.outputs.evaluated_list.get_list())}')
+        self.report(f'Structures selected for labelling: {len(self.ctx.committee_evaluation_list)}/{len(calc.outputs.evaluated_datasets.exploration)}')
         self.report(f'Min energy deviation: {round(selected["min_energy_deviation"].value,2)} eV, Max energy deviation: {round(selected["max_energy_deviation"].value,2)} eV')
         self.report(f'Min forces deviation: {round(selected["min_forces_deviation"].value,2)} eV/Å, Max forces deviation: {round(selected["max_forces_deviation"].value,2)} eV/Å')
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')

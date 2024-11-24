@@ -34,9 +34,9 @@ class EvaluationCalculation(CalcJob):
 
         # new ports
         spec.input_namespace("mace_potentials", valid_type=SinglefileData, required=True, help="Mace potentials",)
-        spec.input("datasetlist", valid_type=PESData, required=True, help="Optional list on which to compute errors.")
-        spec.output("evaluated_list", valid_type=PESData, help="List of evaluated configurations.")
-        spec.output("rmse", valid_type=Dict, help="Root mean square errors between DFT and DNN quantities for the different sets and potentials.")
+        spec.input_namespace("datasets", valid_type=PESData, required=True, help="Datasets to evaluate with the potentials.",)
+        spec.output_namespace("evaluated_datasets", valid_type=PESData, help="Dataset of evaluated configurations.",)
+        spec.output_namespace("rmse", valid_type=Dict, help="Root mean square errors between DFT and DNN quantities for the different sets and potentials.")
 
         spec.exit_code(300, "ERROR_MISSING_OUTPUT_FILES", message="Calculation did not produce all expected output files.",)
 
@@ -63,13 +63,11 @@ class EvaluationCalculation(CalcJob):
             n_pot += 1
             calcinfo.local_copy_list.append((pot.uuid, pot.filename, f"potential_{n_pot}.dat"))
 
-        dataset_list = self.inputs.datasetlist
-        dataset_txt = dataset_list.get_txt()
-        with folder.open("dataset.xyz", "w") as handle:
-            handle.write(dataset_txt)
+        for key, dataset in self.inputs.datasets.items():
+            with folder.open(f"dataset_{key}.xyz", "w") as handle:
+                handle.write(dataset.get_txt())
         
         calcinfo.codes_info = [codeinfo]
-        
 
         calcinfo.retrieve_list = ['*']
 

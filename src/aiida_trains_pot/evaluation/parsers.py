@@ -42,36 +42,36 @@ class EvaluationParser(Parser):
 
         # Check that folder content is as expected
         files_retrieved = self.retrieved.list_object_names()
-        files_expected = ['evaluated_dataset.npz']
-        # Note: set(A) <= set(B) checks whether A is a subset of B
-        if not set(files_expected) <= set(files_retrieved):
-            self.logger.error(
-                f"Found files '{files_retrieved}', expected to find '{files_expected}'"
-            )
+        
+        if True not in ["evaluated.npz" in file for file in files_retrieved]:
+            self.logger.error("No evaluated dataset found")
             return self.exit_codes.ERROR_MISSING_OUTPUT_FILES
         
-
+        
+        datasets = {}
+        rmse = {}
         # add output file
         for file in files_retrieved:
             output_filename = file
-            if 'evaluated_dataset' in output_filename:
+
+            if "dataset" in output_filename and "evaluated" in output_filename:
+                output_name = output_filename.replace("dataset_", "").replace("_evaluated.npz", "")
                 with self.retrieved.open(output_filename, "rb") as handle:
                     output_node = SinglefileData(file=handle)
                 with output_node.open(mode='rb') as handle:
-                    # evaluated_list = np.load(handle, allow_pickle=True)
                     evaluated_list = list(np.load(handle, allow_pickle=True)['evaluated_dataset'])
-                
-                # self.out('evaluated_dataset', output_node)
-                pse_eavaluated_list = PESData()
-                pse_eavaluated_list.set_list(evaluated_list)
-                self.out('evaluated_list', pse_eavaluated_list)
-            if 'rmse' in output_filename:
+                    datasets[output_name] = PESData(evaluated_list)
+            
+            if "dataset" in output_filename and "rmse" in output_filename:
+                output_name = output_filename.replace("dataset_", "").replace("_rmse.npz", "")
                 with self.retrieved.open(output_filename, "rb") as handle:
                     output_node = SinglefileData(file=handle)
                 with output_node.open(mode='rb') as handle:
-                    self.out('rmse', Dict(np.load(handle, allow_pickle=True)['rmse'].tolist()))
-            #     with self.retrieved.open(output_filename, "rb") as handle:
-            #         output_node = FolderData(folder=handle)
-            #     self.out(output_filename, output_node)
-            # elif 'logs'     
+                    rmse[output_name]=Dict(np.load(handle, allow_pickle=True)['rmse'].tolist())
+
+
+                
+        self.out("evaluated_datasets", datasets)
+        self.out("rmse", rmse)
+            
         return ExitCode(0)

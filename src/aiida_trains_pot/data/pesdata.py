@@ -136,5 +136,7 @@ class PESData(Data):
                 write('-', atm, format='extxyz', write_results=True, write_info=True)
                 dataset_txt += buf.getvalue()
 
-
         return dataset_txt
+    
+    def __len__(self):
+        return len(self.get_list())
