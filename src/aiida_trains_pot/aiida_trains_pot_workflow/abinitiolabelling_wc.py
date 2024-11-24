@@ -28,7 +28,7 @@ class AbInitioLabellingWorkChain(WorkChain):
     @classmethod
     def define(cls, spec):
         super().define(spec)
-        spec.input('non_labelled_list', valid_type=PESData, help="List of structures to label.")             
+        spec.input('unlabelled_dataset', valid_type=PESData, help="List of structures to label.")             
         spec.expose_inputs(PwBaseWorkChain, namespace="quantumespresso", exclude=('pw.structure',), namespace_options={'validator': None})          
         spec.output("ab_initio_labelling_data", valid_type=PESData,)
         spec.outline(
@@ -46,7 +46,7 @@ class AbInitioLabellingWorkChain(WorkChain):
     def run_ab_initio_labelling(self):
         """Run PwBaseWorkChain for each structure."""
         
-        for _, structure in enumerate(self.inputs.non_labelled_list.get_ase_list()):   
+        for _, structure in enumerate(self.inputs.unlabelled_dataset.get_ase_list()):   
             self.ctx.config += 1    
             str_data = StructureData(ase=structure)
 
@@ -86,7 +86,7 @@ class AbInitioLabellingWorkChain(WorkChain):
                     'output_trajectory': calc.outputs.output_trajectory
                     }
                 
-        pes_dataset_out_list = WriteLabelledList(non_labelled_structures = self.inputs.non_labelled_list.get_list(), **ab_initio_labelling_data)
+        pes_dataset_out_list = WriteLabelledList(non_labelled_structures = self.inputs.unlabelled_dataset, **ab_initio_labelling_data)
                 
                 
         self.out("ab_initio_labelling_data", pes_dataset_out_list)

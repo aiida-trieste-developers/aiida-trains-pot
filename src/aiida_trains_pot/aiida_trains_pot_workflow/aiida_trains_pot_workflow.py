@@ -78,7 +78,7 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
 
     pes_extracted_frames = PESData()    
     pes_extracted_frames.set_list(extracted_frames)  
-    return {'lammps_extracted_list': pes_extracted_frames}
+    return {'explored_dataset': pes_extracted_frames}
 
 @calcfunction
 def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
@@ -94,8 +94,7 @@ def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
         if config['energy_deviation'] > thr_energy or config['forces_deviation'] > thr_forces or config['stress_deviation'] > thr_stress:
             selected_list.append(config)
 
-    pes_selected_list = PESData()    
-    pes_selected_list.set_list(selected_list)
+    pes_selected_list = PESData(data = selected_list)    
     return {'selected_list':pes_selected_list, 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
 class TrainsPotWorkChain(WorkChain):
@@ -112,8 +111,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('max_loops', valid_type=Int, default=lambda: Int(10), help='Maximum number of active learning workflow loops', required=False)
 
         spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
-        spec.input('non_labelled_list', valid_type=PESData, help='List of non labelled structures', required=False)
-        spec.input('labelled_list', valid_type=PESData, help='List of labelled structures', required=False)
+        spec.input('dataset', valid_type=PESData, help='Dataset containing labelled structures and structures to be labelled', required=False)
 
         spec.input_namespace('models_lammps', valid_type=SinglefileData, help='MACE potential for md exploration', required=False)
         spec.input_namespace('models_ase', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False) 
@@ -130,7 +128,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('thr_stress', valid_type=Float, help='Threshold for stress', required=True)
 
         spec.expose_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation", exclude=('structures'))    
-        spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('non_labelled_list'), namespace_options={'validator': None})    
+        spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('unlabelled_dataset'), namespace_options={'validator': None})    
         spec.expose_inputs(TrainingWorkChain, namespace="training", exclude=('dataset'), namespace_options={'validator': None})
         spec.expose_inputs(ExplorationWorkChain, namespace="exploration", exclude=('potential_lammps', 'lammps_input_structures','sampling_time'), namespace_options={'validator': None})
         spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))        
@@ -139,11 +137,11 @@ class TrainsPotWorkChain(WorkChain):
         spec.output("dataset", valid_type=PESData, help="Final dataset containing all structures labelled and selected to be labelled")
         spec.output_namespace("models_ase", valid_type=SinglefileData, help="Last committee of trained potentials compiled for ASE")
         spec.output_namespace("models_lammps", valid_type=SinglefileData, help="Last committee of trained potentials compiled for LAMMPS")
-        spec.output("RMSE", valid_type=Dict, help="RMSE on the final dataset computed with the last committee of potentials")               
+        spec.output("RMSE", valid_type=List, help="RMSE on the final dataset computed with the last committee of potentials")               
 
-        spec.exit_code(309, "LESS_THAN_2_POTENTIALS", message="Calculation didn't produce more tha 1 expected potentials.",)
+        spec.exit_code(308, "LESS_THAN_2_POTENTIALS", message="Calculation didn't produce more tha 1 expected potentials.",)
         spec.exit_code(309, "NO_MD_CALCULATIONS", message="Calculation didn't produce any MD calculations.",)
-        
+        spec.exit_code(200, "NO_LABELLED_STRUCTURES", message="No labelled structures in the dataset.",)
 
         
         spec.outline(
@@ -182,19 +180,24 @@ class TrainsPotWorkChain(WorkChain):
         return self.ctx.iteration < self.inputs.max_loops+1
 
     def initialization(self):
-        """Initialize variables."""        
+        """Initialize variables."""
+        self.ctx.rmse = []       
         self.ctx.iteration = 0
-        if 'labelled_list' in self.inputs:
-            self.ctx.labelled_list = self.inputs.labelled_list
+        if 'dataset' in self.inputs:
+            self.ctx.dataset = self.inputs.dataset
         else:
-            self.ctx.labelled_list = []
+            self.ctx.dataset = []
         self.ctx.do_dataset_augmentation = self.inputs.do_dataset_augmentation
         self.ctx.do_ab_initio_labelling = self.inputs.do_ab_initio_labelling
         self.ctx.do_training = self.inputs.do_training
         self.ctx.do_exploration = self.inputs.do_exploration
         self.ctx.potential_checkpoints = []
         if not self.ctx.do_ab_initio_labelling:
-            self.ctx.labelled_list = self.inputs.labelled_list
+            if self.inputs.dataset.len_labelled > 0:
+                self.ctx.dataset = self.inputs.dataset
+            else:
+                return self.exit_codes.NO_LABELLED_STRUCTURES
+                
 
         if not self.ctx.do_training:
             self.ctx.potentials_lammps = []
@@ -205,7 +208,7 @@ class TrainsPotWorkChain(WorkChain):
                 self.ctx.potentials_ase.append(pot)
         if not self.ctx.do_exploration and 'explored_dataset' in self.inputs:
             if len(self.inputs.explored_dataset) > 0:
-                self.ctx.lammps_extracted_list = self.inputs.explored_dataset
+                self.ctx.explored_dataset = self.inputs.explored_dataset
 
         if 'lammps_input_structures' in self.inputs:
             self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
@@ -226,18 +229,10 @@ class TrainsPotWorkChain(WorkChain):
     
     def ab_initio_labelling(self):
         """Run ab_initio_labelling calculations."""
-                
-        if self.ctx.iteration > 1:
-            ase_list = self.ctx.committee_evaluation_list
-        else:
-            if self.ctx.do_dataset_augmentation:
-                ase_list = self.ctx.dataset_augmentation.outputs.structure_lists.global_structure_list       
-            else:
-                ase_list = self.inputs.non_labelled_list
 
         # Set up the inputs for LoopingLabellingWorkChain
         inputs = self.exposed_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling")
-        inputs.non_labelled_list = ase_list
+        inputs.unlabelled_dataset = self.ctx.dataset.get_unlabelled()
                 
 
         # Submit LoopingLabellingWorkChain
@@ -248,13 +243,9 @@ class TrainsPotWorkChain(WorkChain):
 
     def training(self):
         """Run training calculations."""
-        dataset = PESData()
-        if self.ctx.do_ab_initio_labelling:            
-            dataset.set_list(self.ctx.labelled_list)
-        else:
-            dataset = self.inputs.labelled_list
+
         inputs = self.exposed_inputs(TrainingWorkChain, namespace="training")
-        inputs.dataset = dataset
+        inputs.dataset = self.ctx.dataset.get_labelled()
         if self.ctx.iteration > 1:
             inputs['checkpoints'] = {f"chkpt_{ii+1}": self.ctx.potential_checkpoints[-ii] for ii in range(min(len(self.ctx.potential_checkpoints), self.inputs.training.num_potentials.value))}
       
@@ -281,28 +272,27 @@ class TrainsPotWorkChain(WorkChain):
         # for _, trajectory in self.ctx.trajectories.items():        
         parameters=AttributeDict(self.inputs.exploration.parameters)
         dump_rate = int(self.inputs.frame_extraction.sampling_time/parameters.control.timestep)
-        lammps_extracted_list = LammpsFrameExtraction(self.inputs.frame_extraction.sampling_time,
+        explored_dataset = LammpsFrameExtraction(self.inputs.frame_extraction.sampling_time,
                                 dump_rate,
                                 thermalization_time = self.inputs.frame_extraction.thermalization_time, 
-                                **self.ctx.trajectories)['lammps_extracted_list']
-        self.ctx.lammps_extracted_list = lammps_extracted_list
+                                **self.ctx.trajectories)['explored_dataset']
+        self.ctx.explored_dataset = explored_dataset
       
 
     def run_committee_evaluation(self):
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="committee_evaluation")
         inputs['mace_potentials'] = {f"pot_{ii}": self.ctx.potentials_ase[ii] for ii in range(len(self.ctx.potentials_ase))}
-        inputs['datasets'] = {"labelled": self.ctx.labelled_list, "exploration": self.ctx.lammps_extracted_list}
+        inputs['datasets'] = {"labelled": self.ctx.dataset, "exploration": self.ctx.explored_dataset}
 
         future = self.submit(EvaluationCalculation, **inputs)
         self.to_context(committee_evaluation = future)  
 
     def finalize_dataset_augmentation(self):
-    #     """Finalize."""
-        pass
-        # self.out_many(self.exposed_outputs(self.ctx.dataset_augmentation, DatasetAugmentationWorkChain, namespace="dataset_augmentation"))
-
+        """Finalize dataset augmentation."""
+        self.ctx.dataset += self.ctx.dataset_augmentation.outputs.structure_lists.global_structure_list
+    
     def finalize_ab_initio_labelling(self):
-        self.ctx.labelled_list += self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data
+        self.ctx.dataset = self.ctx.dataset.get_labelled() + self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data
         self.ctx.ab_initio_labelling_calculations = []
 
     def finalize_training(self):
@@ -325,7 +315,7 @@ class TrainsPotWorkChain(WorkChain):
             elif "model_stage1_lammps" in calc:
                 self.ctx.potentials_lammps.append(calc['model_stage1_lammps'])                  
                        
-        self.ctx.labelled_list = self.ctx.training.outputs.global_splitted       
+        self.ctx.dataset = self.ctx.training.outputs.global_splitted       
 
 
     def finalize_exploration(self):
@@ -345,14 +335,17 @@ class TrainsPotWorkChain(WorkChain):
         calc = self.ctx.committee_evaluation
 
         selected = SelectToLabel(calc.outputs.evaluated_datasets.exploration, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
-        self.ctx.committee_evaluation_list = selected['selected_list']
-        self.report(f'Structures selected for labelling: {len(self.ctx.committee_evaluation_list)}/{len(calc.outputs.evaluated_datasets.exploration)}')
+        self.ctx.dataset += selected['selected_list']
+        self.ctx.rmse.append(calc.outputs.rmse)
+
+        self.report(f'Structures selected for labelling: {len(selected["selected_list"])}/{len(calc.outputs.evaluated_datasets.exploration)}')
         self.report(f'Min energy deviation: {round(selected["min_energy_deviation"].value,2)} eV, Max energy deviation: {round(selected["max_energy_deviation"].value,2)} eV')
         self.report(f'Min forces deviation: {round(selected["min_forces_deviation"].value,2)} eV/Å, Max forces deviation: {round(selected["max_forces_deviation"].value,2)} eV/Å')
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')
 
     def finalize(self):
-        self.out('dataset', self.ctx.committee_evaluation_list)
+        self.out('dataset', self.ctx.dataset)
         self.out('models_ase', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_ase)})
         self.out('models_lammps', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_lammps)})
+        self.out('RMSE', List(self.ctx.rmse))
 

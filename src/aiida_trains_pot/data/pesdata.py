@@ -32,23 +32,18 @@ class PESData(Data):
         self._data = self.get_list()  # Load the list
         return self
     
+    def __add__(self, other):
+        if not isinstance(other, PESData):
+            raise TypeError(f"Cannot add {type(other)} to PESData")
+        return self.__iadd__(other)
+
+
     def __iadd__(self, other):
         """Support the += operation for combining two PESData objects by creating a new node."""
         if not isinstance(other, PESData):
             raise TypeError(f"Cannot add {type(other)} to PESData")
 
-        # Get lists from both PESData objects
-        current_list = self.get_list()
-        other_list = other.get_list()
-
-        # Concatenate the lists
-        combined_list = current_list + other_list
-
-        # Create a new PESData node with the combined list
-        new_pes_data = PESData()
-        new_pes_data.set_list(combined_list)
-
-        return new_pes_data
+        return PESData(data = self.get_list() + other.get_list())
 
 
     def __next__(self):
@@ -59,13 +54,21 @@ class PESData(Data):
             return result
         else:
             raise StopIteration
+        
+    def __len__(self):
+        """Return the number of configurations in the dataset."""
+        if self.base.attributes.get('dataset_size'):
+            return self.base.attributes.get('dataset_size')
+        else:
+            return len(self.get_list())
+
     def get_list(self):
         """Return the contents of this node as a list."""
         try:            
             # Open the file and load its contents
             with self.base.repository.as_path(self._list_key) as f:
                 data = np.load(f, allow_pickle=True)
-                return [item for _, val in data.items() for item in (val.tolist() if isinstance(val, np.ndarray) else val)]
+            return [item for _, val in data.items() for item in (val.tolist() if isinstance(val, np.ndarray) else val)]
                 
 
         except FileNotFoundError as e:
@@ -81,18 +84,30 @@ class PESData(Data):
         # Ensure data is a list
         if not isinstance(data, list):
             raise TypeError("Input data must be a list.")
+        num_labelled_frames = 0
+        num_unlabelled_frames = 0
+        for item in data:
+            if "dft_forces" in item.keys() and "dft_energy" in item.keys():
+                num_labelled_frames += 1
+            else:
+                num_unlabelled_frames += 1
+
+        save_data = []
+        for item in data:
+            save_data.append({key: value.tolist() if isinstance(value, np.ndarray) else value for key, value in item.items()})
 
         try:
             # Create a temporary directory to save the file
             with tempfile.TemporaryDirectory() as temp_dir:
                 dataset_temp_file = os.path.join(temp_dir, self._list_key)
-
                 # Save the data using numpy
-                np.savez(dataset_temp_file, data=data)
+                np.savez(dataset_temp_file, data=save_data)
 
                 # Store the file in the AiiDA repository
                 self.base.repository.put_object_from_file(dataset_temp_file, self._list_key)
-
+            self.base.attributes.set('dataset_size', len(data))
+            self.base.attributes.set('num_labelled_frames', num_labelled_frames)
+            self.base.attributes.set('num_unlabelled_frames', num_unlabelled_frames)
         except Exception as e:
             print(f"An error occurred while saving {self._list_key}: {e}")
 
@@ -138,5 +153,29 @@ class PESData(Data):
 
         return dataset_txt
     
-    def __len__(self):
-        return len(self.get_list())
+        
+    def get_unlabelled(self):
+        """Return a PESData object with only unlabelled frames."""
+        unlabelled_data = [config for config in self.get_list() if 'dft_forces' not in config.keys() or 'dft_energy' not in config.keys()]
+        return PESData(data=unlabelled_data)
+
+    def get_labelled(self):
+        """Return a PESData object with only labelled frames."""
+        labelled_data = [config for config in self.get_list() if 'dft_forces' in config.keys() and 'dft_energy' in config.keys()]
+        return PESData(data=labelled_data)
+    
+    @property
+    def len_unlabelled(self):
+        """Return the number of unlabelled configurations in the dataset."""
+        if "num_unlabelled_frames" in self.base.attributes.keys():
+            return self.base.attributes.get('num_unlabelled_frames')
+        else:
+            return len(self.get_unlabelled())
+    
+    @property
+    def len_labelled(self):
+        """Return the number of labelled configurations in the dataset."""
+        if "num_labelled_frames" in self.base.attributes.keys():
+            return self.base.attributes.get('num_labelled_frames')
+        else:
+            return len(self.get_labelled())

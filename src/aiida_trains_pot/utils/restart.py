@@ -19,7 +19,7 @@ def models_from_trainingwc(builder, identifier, get_labelled_dataset=False, get_
     models_lammps = {}
     models_checkpoints = {}
     if get_labelled_dataset:
-        builder.labelled_list = outputs['global_splitted']
+        builder.dataset = outputs['global_splitted']
     if get_config:
         inputs = load_node(identifier).inputs
         builder.training.mace.train.mace_config = inputs['mace']['train']['mace_config']
