@@ -26,9 +26,9 @@ load_profile(Profile("docs", {"process_control": {}, "storage": {}}))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Data-Driven Interatomic Potential WorkChain'
-copyright = '2024,  Dipartamento di Fisica (Università degli Studi di Trieste) and Physics Department of Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy'
-author = 'Nataliia Manko, Davide Bidoggi, Maria Peressi, Antimo Marrazzi'
+project = 'AiiDA-TrainsPot'
+copyright = '2024, Università degli Studi di Trieste and Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy'
+author = 'Nataliia Manko, Davide Bidoggia, Maria Peressi, Antimo Marrazzo'
 release = '1.0.0'
 
 # -- General configuration ------------------------------------------------

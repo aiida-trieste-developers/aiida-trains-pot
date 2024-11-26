@@ -28,7 +28,7 @@ def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_
     :param vacancies_per_config: Int with the number of vacancies per configuration
     """
     
-    structure_list = []
+    structures = []
     for _, structure in in_structure_dict.items():
         ase_structure = structure.get_ase()
         min_interatomic_distances = get_min_interatomic_distances(ase_structure.get_positions(), np.array(ase_structure.get_cell()))
@@ -48,7 +48,7 @@ def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_
                 rnd = randint(0, len(mod_structure.get_positions())-1)
                 del mod_structure[rnd]
         
-            structure_list.append({'cell': mod_structure.get_cell().tolist(),
+            structures.append({'cell': mod_structure.get_cell().tolist(),
                     'symbols': mod_structure.get_chemical_symbols(),
                     'positions': mod_structure.get_positions().tolist(), 
                     'rattle_fraction': rattle_fraction.value,
@@ -57,9 +57,8 @@ def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_
                     'input_structure_uuid': str(structure.uuid),
                     'gen_method': 'RATTLE'
                     })
-    pes_structure_list = PESData()    
-    pes_structure_list.set_list(structure_list)
-    return {'rattle_structure_list': pes_structure_list}
+    pes_dataset = PESData(structures)       
+    return {'rattle_structures': pes_dataset}
 
 @calcfunction
 def InputStructureGenerator(**in_structure_dict):
@@ -67,18 +66,17 @@ def InputStructureGenerator(**in_structure_dict):
 
     :param in_structure_list: List of AiiDA `StructureData` nodes
     """
-    structure_list = []
+    structures = []
     for _, structure in in_structure_dict.items():
         ase_structure = structure.get_ase()
-        structure_list.append({'cell': ase_structure.get_cell().tolist(),
+        structures.append({'cell': ase_structure.get_cell().tolist(),
                     'symbols': ase_structure.get_chemical_symbols(),
                     'positions': ase_structure.get_positions().tolist(), 
                     'input_structure_uuid': str(structure.uuid),
                     'gen_method': str('INPUT_STRUCTURE')
                     })
-    pes_structure_list = PESData()    
-    pes_structure_list.set_list(structure_list)
-    return {'input_structure_list': pes_structure_list}
+    pes_dataset = PESData(structures)        
+    return {'input_structures': pes_dataset}
 
 @calcfunction
 def IsolatedStructureGenerator(**in_structure_dict):
@@ -87,7 +85,7 @@ def IsolatedStructureGenerator(**in_structure_dict):
     :param in_structure_list: List of AiiDA `StructureData` nodes
     """
         
-    structure_list = []
+    structures = []
     done_types = []
     for _, structure in in_structure_dict.items():
         for atm_type in list(structure.get_symbols_set()):
@@ -95,31 +93,26 @@ def IsolatedStructureGenerator(**in_structure_dict):
                 done_types.append(atm_type)
                 isolated_structure = Atoms(atm_type, positions=[[0.0, 0.0, 0.0]], cell=[[10.0, 0.0, 0.0], [0.0, 10.0, 0.0], [0.0, 0.0, 10.0]])
                 
-                structure_list.append({'cell': isolated_structure.get_cell().tolist(),
+                structures.append({'cell': isolated_structure.get_cell().tolist(),
                     'symbols': isolated_structure.get_chemical_symbols(),
                     'positions': isolated_structure.get_positions().tolist(), 
                     'gen_method': str('ISOLATED_ATOM')
                     })
-    pes_structure_list = PESData()    
-    pes_structure_list.set_list(structure_list)
-    return {'isolated_atoms_structure_list':  pes_structure_list}
+    pes_dataset = PESData(structures)        
+    return {'isolated_atoms_structure':  pes_dataset}
     
             
 
 
 @calcfunction
-def WriteDataset(**dataset_lists_dict):
-    """Combine datasets to single dataset_list.
+def WriteDataset(**dataset_in):
+    
 
-    :param structures: A list of AiiDA `StructureData` nodes
-    """
-
-    dataset_out_list = []
-    for _, dataset in dataset_lists_dict.items():
-        dataset_out_list.extend(dataset)
-    pes_dataset_out_list = PESData()    
-    pes_dataset_out_list.set_list(dataset_out_list)
-    return {'global_structure_list':pes_dataset_out_list}
+    dataset_out = []
+    for _, dataset in dataset_in.items():
+        dataset_out.extend(dataset)
+    pes_dataset_out = PESData(dataset_out)        
+    return {'global_structures':pes_dataset_out}
 
 
 @numba.njit(parallel=True)
@@ -203,7 +196,7 @@ class DatasetAugmentationWorkChain(WorkChain):
         spec.input("rattle.params.frac_vacancies", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RATTLE_frac_vacancies, required=False, help=f"Fraction of configurations with vacancies. Default: {cls.DEFAULT_RATTLE_frac_vacancies}")
         spec.input("rattle.params.vacancies_per_config", valid_type=Int, default=lambda:cls.DEFAULT_RATTLE_vacancies_per_config, required=False, help=f"Number of vacancies per configuration. Default: {cls.DEFAULT_RATTLE_vacancies_per_config}")
 
-        spec.output_namespace("structure_lists", valid_type=PESData, dynamic=True)
+        spec.output_namespace("structures", valid_type=PESData, dynamic=True)
 
         
         spec.outline(
@@ -248,14 +241,13 @@ class DatasetAugmentationWorkChain(WorkChain):
         """Generate datasets."""
 
         self.report(self.inputs.structures)
-        dataset_lists = {}
+        dataset = {}
         if self.inputs.do_input:
-            dataset_lists['input_structure_list'] = InputStructureGenerator(**dict(self.inputs.structures))['input_structure_list']
+            dataset['input_structures'] = InputStructureGenerator(**dict(self.inputs.structures))['input_structures']
         if self.inputs.do_isolated:
-            dataset_lists['isolated_atoms_structure_list'] = IsolatedStructureGenerator(**dict(self.inputs.structures))['isolated_atoms_structure_list']
+            dataset['isolated_atoms_structure'] = IsolatedStructureGenerator(**dict(self.inputs.structures))['isolated_atoms_structure']
         if self.inputs.do_rattle:
-            dataset_lists['rattle_structure_list'] = RattleStructureGenerator(self.inputs.rattle.params.n_configs, self.inputs.rattle.params.rattle_fraction, self.inputs.rattle.params.max_sigma_strain, self.inputs.rattle.params.frac_vacancies, self.inputs.rattle.params.vacancies_per_config,**dict(self.inputs.structures))['rattle_structure_list']
+            dataset['rattle_structures'] = RattleStructureGenerator(self.inputs.rattle.params.n_configs, self.inputs.rattle.params.rattle_fraction, self.inputs.rattle.params.max_sigma_strain, self.inputs.rattle.params.frac_vacancies, self.inputs.rattle.params.vacancies_per_config,**dict(self.inputs.structures))['rattle_structures']
 
-        dataset_lists['global_structure_list'] = WriteDataset(**dataset_lists)['global_structure_list']
-        # self.report(dataset_lists)
-        self.out("structure_lists", dataset_lists)
+        dataset['global_structures'] = WriteDataset(**dataset)['global_structures']
+        self.out("structures", dataset)

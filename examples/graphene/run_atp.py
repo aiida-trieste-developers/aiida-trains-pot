@@ -7,8 +7,11 @@ from aiida.common.extendeddicts import AttributeDict
 from ase.io import read
 import yaml
 import os
+from aiida_trains_pot.utils.restart import models_from_trainingwc
+from aiida_trains_pot.utils.generate_config import generate_lammps_md_config
 load_profile()
 
+PESData = DataFactory('pesdata')
 KpointsData = DataFactory("core.array.kpoints")
 TrainsPot   = WorkflowFactory('trains_pot.workflow')
 
@@ -18,7 +21,7 @@ TrainsPot   = WorkflowFactory('trains_pot.workflow')
 
 
 QE_code                 = load_code('qe7.2-pw@leo1_scratch_bind')
-MACE_train_code         = load_code('mace_train_037@leo1_scratch_mace')
+MACE_train_code         = load_code('mace_train@leo1_scratch_mace')
 MACE_preprocess_code    = load_code('mace_preprocess@leo1_scratch_mace')
 MACE_postprocess_code   = load_code('mace_postprocess@leo1_scratch_mace')
 LAMMPS_code             = load_code('lmp4mace@leo1_scratch')
@@ -120,12 +123,15 @@ builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(i
 # builder = TrainsPot.get_builder_from_protocol(input_structures, qe_code = QE_code)
 builder.do_dataset_augmentation = Bool(False)
 builder.do_ab_initio_labelling = Bool(False)
-builder.do_training = Bool(True)
-builder.do_md_exploration = Bool(True)
-builder.max_loops = Int(2)
-builder.labelled_list = load_node(677593)
-#builder.training_lammps_potentials = {"pot_1":load_node(77323),"pot_2":load_node(77334),"pot_3":load_node(77345),"pot_4":load_node(77356)}
-#builder.training_ase_potentials = {"pot_1":load_node(77323),"pot_2":load_node(77334),"pot_3":load_node(77345),"pot_4":load_node(77357)}
+builder.do_training = Bool(False)
+builder.do_exploration = Bool(True)
+builder.max_loops = Int(1)
+# builder.explored_dataset = load_node(748569)
+# builder.labelled_list = load_node(677593)
+builder = models_from_trainingwc(builder, 87443, get_labelled_dataset=True, get_config=True)
+#builder.dataset = load_node(85953)
+#builder.models_lammps = {"pot_1":load_node(85984), "pot_2":load_node(85995), "pot_3":load_node(86006), "pot_4":load_node(86017)}
+#builder.models_ase = {"pot_1":load_node(85985), "pot_2":load_node(85996), "pot_3":load_node(86007), "pot_4":load_node(86018)}
 
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)
@@ -144,8 +150,6 @@ builder.dataset_augmentation.rattle.params.max_sigma_strain = Float(0.1)
 builder.dataset_augmentation.rattle.params.n_configs = Int(20)
 builder.dataset_augmentation.rattle.params.frac_vacancies = Float(0.1)
 builder.dataset_augmentation.rattle.params.vacancies_per_config = Int(1)
-
-
 
 ###############################################
 # Setup Ab initio labelling
@@ -192,30 +196,31 @@ builder.ab_initio_labelling.quantumespresso.pw.parameters = Dict({'SYSTEM':
 ###############################################
 # Setup MACE
 ###############################################
+
 MACE_config = os.path.join(script_dir, 'mace_config.yml')
-builder.training.mace.mace.code = MACE_train_code
-builder.training.mace.mace.preprocess_code  = MACE_preprocess_code
-builder.training.mace.mace.postprocess_code = MACE_postprocess_code
+builder.training.mace.train.code = MACE_train_code
+builder.training.mace.train.preprocess_code  = MACE_preprocess_code
+builder.training.mace.train.postprocess_code = MACE_postprocess_code
 # builder.training.mace.do_preprocess = Bool(True)
 
 with open(MACE_config, 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
-builder.training.mace.mace.mace_config = Dict(mace_config)
+builder.training.mace.train.mace_config = Dict(mace_config)
 
 builder.training.num_potentials = Int(4)
-builder.training.mace.mace.metadata.options.withmpi=True
-builder.training.mace.mace.metadata.options.resources = {
+builder.training.mace.train.metadata.options.withmpi=True
+builder.training.mace.train.metadata.options.resources = {
     'num_machines': MACE_machine['nodes'],
     'num_mpiprocs_per_machine': MACE_machine['taskpn'],
     'num_cores_per_mpiproc': MACE_machine['cpupt'],
 }
-builder.training.mace.mace.metadata.options.max_wallclock_seconds = MACE_time
-builder.training.mace.mace.metadata.options.max_memory_kb = MACE_mem
-builder.training.mace.mace.metadata.options.import_sys_environment = False
-builder.training.mace.mace.metadata.options.account = MACE_machine['account']
-builder.training.mace.mace.metadata.options.queue_name = MACE_machine['partition']
-builder.training.mace.mace.metadata.options.qos = MACE_machine['qos']
-builder.training.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{MACE_machine['gpu']}"
+builder.training.mace.train.metadata.options.max_wallclock_seconds = MACE_time
+builder.training.mace.train.metadata.options.max_memory_kb = MACE_mem
+builder.training.mace.train.metadata.options.import_sys_environment = False
+builder.training.mace.train.metadata.options.account = MACE_machine['account']
+builder.training.mace.train.metadata.options.queue_name = MACE_machine['partition']
+builder.training.mace.train.metadata.options.qos = MACE_machine['qos']
+builder.training.mace.train.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{MACE_machine['gpu']}"
 
 
 
@@ -223,41 +228,33 @@ builder.training.mace.mace.metadata.options.custom_scheduler_commands = f"#SBATC
 # Setup LAMMPS
 ###############################################
 
-builder.md_exploration.md_exploration.lammps.lammps.code = LAMMPS_code
-lammps_params_yaml = os.path.join(script_dir, 'lammps_md_params.yml')
-with open(lammps_params_yaml, 'r') as yaml_file:
-    lammps_params_list = yaml.safe_load(yaml_file)
-builder.md_exploration.params_list = List(lammps_params_list)
-#builder.md_exploration.temperatures = List([30, 50])
-#builder.md_exploration.pressures = List([0])
-#builder.md_exploration.num_steps = Int(500)
-#builder.md_exploration.dt = Float(0.00242)
-builder.md_exploration.parent_folder = Str(Path(__file__).resolve().parent)
+builder.exploration.md.lammps.code = LAMMPS_code
+
+# Read the configuration from file
+#lammps_params_yaml = os.path.join(script_dir, 'lammps_md_params.yml')
+#with open(lammps_params_yaml, 'r') as yaml_file:
+#    lammps_params_list = yaml.safe_load(yaml_file)
+
+# Generate the simple configuration
+temperatures = [30, 35, 40, 45]
+steps = [500] * len(temperatures)
+styles =  ["npt"] * len(temperatures)  
+constraints_template = {
+    "temp": [30, 30, 0.242],
+    "x": [0.0, 0.0, 2.42],
+    "y": [0.0, 0.0, 2.42]
+}
+constraints = [constraints_template for _ in temperatures]
+lammps_params_list = generate_lammps_md_config(temperatures, steps, constraints, styles)
+
+builder.exploration.params_list = List(lammps_params_list)
+
+builder.exploration.parent_folder = Str(Path(__file__).resolve().parent)
 _parameters = AttributeDict()
 _parameters.control = AttributeDict()
 _parameters.control.units = "metal"
 _parameters.control.timestep = 0.00242
 _parameters.control.newton = "on"
-# Set of computes to be evaluated during the calculation
-#_parameters.compute = {
-#    "pe/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
-#    "ke/atom": [{"type": [{"keyword": " ", "value": " "}], "group": "all"}],
-#    "stress/atom": [{"type": ["NULL"], "group": "all"}],
-#    "pressure": [{"type": ["thermo_temp"], "group": "all"}],
-#}
-# Set of values to control the behaviour of the molecular dynamics calculation
-#_parameters.md = {
-#    "integration": {
-#        "style": "npt",
-#        "constraints": {
-#            "temp": [30, 30, 0.242],
-#            "x": [0.0, 0.0, 2.42],
-#            "y": [0.0, 0.0, 2.42],
-#        },
-#    },
-#    "max_number_steps": 100,
-#    "velocity": [{"create": {"temp": 30, "seed": 633}, "group": "all"}],
-#}
 _parameters.md = {}
 _parameters.dump = {"dump_rate": 1} ## This parameter will be updated automatically based on the value of builder.frame_extraction.sampling_time
 # Control how often the computes are printed to file
@@ -285,20 +282,20 @@ _settings.store_restart = True
 _settings.additional_cmdline_params = ["-k", "on", "g", "1", "-sf", "kk"]
 
 SETTINGS = Dict(dict=_settings)#
-builder.md_exploration.md_exploration.lammps.lammps.settings = SETTINGS
-builder.md_exploration.parameters = PARAMETERS
-builder.md_exploration.md_exploration.lammps.lammps.metadata.options.resources = {
+builder.exploration.md.lammps.settings = SETTINGS
+builder.exploration.parameters = PARAMETERS
+builder.exploration.md.lammps.metadata.options.resources = {
     'num_machines': LAMMPS_machine['nodes'],
     'num_mpiprocs_per_machine': LAMMPS_machine['taskpn'],
     'num_cores_per_mpiproc': LAMMPS_machine['cpupt']
 }
-builder.md_exploration.md_exploration.lammps.lammps.metadata.options.max_wallclock_seconds = LAMMPS_time
-builder.md_exploration.md_exploration.lammps.lammps.metadata.options.max_memory_kb = LAMMPS_mem
-builder.md_exploration.md_exploration.lammps.lammps.metadata.options.import_sys_environment = False
-builder.md_exploration.md_exploration.lammps.lammps.metadata.options.account = LAMMPS_machine['account']
-builder.md_exploration.md_exploration.lammps.lammps.metadata.options.queue_name = LAMMPS_machine['partition']
-builder.md_exploration.md_exploration.lammps.lammps.metadata.options.qos = LAMMPS_machine['qos']
-builder.md_exploration.md_exploration.lammps.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{LAMMPS_machine['gpu']}"
+builder.exploration.md.lammps.metadata.options.max_wallclock_seconds = LAMMPS_time
+builder.exploration.md.lammps.metadata.options.max_memory_kb = LAMMPS_mem
+builder.exploration.md.lammps.metadata.options.import_sys_environment = False
+builder.exploration.md.lammps.metadata.options.account = LAMMPS_machine['account']
+builder.exploration.md.lammps.metadata.options.queue_name = LAMMPS_machine['partition']
+builder.exploration.md.lammps.metadata.options.qos = LAMMPS_machine['qos']
+builder.exploration.md.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{LAMMPS_machine['gpu']}"
 
 builder.frame_extraction.sampling_time = Float(0.242)
 builder.frame_extraction.thermalization_time = Float(0)
@@ -326,6 +323,6 @@ builder.committee_evaluation.metadata.computer = load_computer('leo1_scratch')
 
 
 
-
+type(builder)
 calc = submit(builder)
 print(f"Submitted calculation with PK = {calc.pk}")

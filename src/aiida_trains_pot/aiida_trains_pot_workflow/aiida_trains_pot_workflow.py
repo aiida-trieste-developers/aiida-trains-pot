@@ -22,6 +22,18 @@ ExplorationWorkChain            = WorkflowFactory('trains_pot.exploration')
 EvaluationCalculation           = CalculationFactory('trains_pot.evaluation')
 PESData                         = DataFactory('pesdata')
 
+@calcfunction
+def SaveRMSE(rmse):
+    """
+    A calcfunction to save RMSE values stored in a list of dictionaries as an AiiDA output.
+
+    :param rmse: A list containing dictionaries or JSON-serializable data.
+    :return: A List node containing the RMSE values.
+    """
+    # Convert any AiiDA Dict nodes in the input list to raw dictionaries
+    rmse_serializable = [item.get_dict() if isinstance(item, Dict) else item for item in rmse]
+
+    return List(list=rmse_serializable)
 
 
 
@@ -65,8 +77,7 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
             extracted_frames.append({'cell': cell.tolist(),
                     'symbols': list(step_data[5]['element']),
                     'positions': [[step_data[5]['x'][jj],step_data[5]['y'][jj],step_data[5]['z'][jj]] for jj, _ in enumerate(step_data[5]['y'])],
-                    'input_structure_uuid': str(input_structure_node.uuid),
-                    # 'exploration_forces': List(list(trajectory_frames[i].get_forces())),
+                    'input_structure_uuid': str(input_structure_node.uuid),                    
                     'gen_method': str('LAMMPS')
                     })
             extracted_frames[-1]['style'] = params['md']['integration']['style']
@@ -76,26 +87,25 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
 
             i = i + int(sampling_time/params['control']['timestep']/saving_frequency)
 
-    pes_extracted_frames = PESData()    
-    pes_extracted_frames.set_list(extracted_frames)  
+    pes_extracted_frames = PESData(extracted_frames)    
     return {'explored_dataset': pes_extracted_frames}
 
 @calcfunction
-def SelectToLabel(evaluated_list, thr_energy, thr_forces, thr_stress):
+def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress):
     """Select configurations to label."""
-    selected_list = []
+    selected_dataset = []
     energy_deviation = []
     forces_deviation = []
     stress_deviation = []
-    for config in evaluated_list:
+    for config in evaluated_dataset:
         energy_deviation.append(config['energy_deviation'])
         forces_deviation.append(config['forces_deviation'])
         stress_deviation.append(config['stress_deviation'])
         if config['energy_deviation'] > thr_energy or config['forces_deviation'] > thr_forces or config['stress_deviation'] > thr_stress:
-            selected_list.append(config)
+            selected_dataset.append(config)
 
-    pes_selected_list = PESData(data = selected_list)    
-    return {'selected_list':pes_selected_list, 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
+    pes_selected_dataset = PESData(selected_dataset)    
+    return {'selected_dataset':pes_selected_dataset, 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
 class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
@@ -289,7 +299,7 @@ class TrainsPotWorkChain(WorkChain):
 
     def finalize_dataset_augmentation(self):
         """Finalize dataset augmentation."""
-        self.ctx.dataset += self.ctx.dataset_augmentation.outputs.structure_lists.global_structure_list
+        self.ctx.dataset += self.ctx.dataset_augmentation.outputs.structures.global_structures
     
     def finalize_ab_initio_labelling(self):
         self.ctx.dataset = self.ctx.dataset.get_labelled() + self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data
@@ -335,17 +345,19 @@ class TrainsPotWorkChain(WorkChain):
         calc = self.ctx.committee_evaluation
 
         selected = SelectToLabel(calc.outputs.evaluated_datasets.exploration, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
-        self.ctx.dataset += selected['selected_list']
-        self.ctx.rmse.append(calc.outputs.rmse)
+        self.ctx.dataset += selected['selected_dataset']
+        #self.ctx.rmse.append(calc.outputs.rmse)
+        self.ctx.rmse.append(calc.outputs.rmse.labelled.get_dict())
 
-        self.report(f'Structures selected for labelling: {len(selected["selected_list"])}/{len(calc.outputs.evaluated_datasets.exploration)}')
+        self.report(f'Structures selected for labelling: {len(selected["selected_dataset"])}/{len(calc.outputs.evaluated_datasets.exploration)}')
         self.report(f'Min energy deviation: {round(selected["min_energy_deviation"].value,2)} eV, Max energy deviation: {round(selected["max_energy_deviation"].value,2)} eV')
         self.report(f'Min forces deviation: {round(selected["min_forces_deviation"].value,2)} eV/Å, Max forces deviation: {round(selected["max_forces_deviation"].value,2)} eV/Å')
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')
 
     def finalize(self):
+        RMSE = SaveRMSE(self.ctx.rmse)
+        self.out('RMSE', RMSE) 
         self.out('dataset', self.ctx.dataset)
         self.out('models_ase', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_ase)})
-        self.out('models_lammps', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_lammps)})
-        self.out('RMSE', List(self.ctx.rmse))
-
+        self.out('models_lammps', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_lammps)})             
+           

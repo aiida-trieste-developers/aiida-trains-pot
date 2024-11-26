@@ -20,9 +20,8 @@ def generate_potential(potential) -> LammpsPotentialData:
         :return: potential to do the calculation
         :rtype: LammpsPotentialData
         """
-
         potential_parameters = {
-            "species": ["C"],
+            "species": [],
             "atom_style": "atomic",        
             "units": "metal",
             "extra_tags": {},                
@@ -53,7 +52,7 @@ class ExplorationWorkChain(WorkChain):
     def define(cls, spec):
         super().define(spec)
         spec.input('params_list', valid_type=List, help='List of parameters for md',)
-        spec.input('parameters', valid_type=Dict, help='List of parameters for md',)
+        spec.input('parameters', valid_type=Dict, help='Global parameters for lammps',)
         spec.input('potential_lammps', valid_type=SinglefileData, help='One of the potential for MD', )
         spec.input_namespace('lammps_input_structures',  valid_type=StructureData, help='Input structures for lammps', )        
         spec.input('sampling_time', valid_type=Float, help='Correlation time for frame extraction', )

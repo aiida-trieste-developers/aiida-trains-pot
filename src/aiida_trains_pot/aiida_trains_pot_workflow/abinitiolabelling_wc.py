@@ -9,17 +9,16 @@ PwBaseWorkChain = WorkflowFactory('quantumespresso.pw.base')
 PESData         = DataFactory('pesdata')
 
 @calcfunction
-def WriteLabelledList(non_labelled_structures, **labelled_data):
-    labelled_list = []
+def WriteLabelledDataset(non_labelled_structures, **labelled_data):
+    labelled_dataset = []
     for key, value in labelled_data.items():
-        labelled_list.append(non_labelled_structures.get_list()[int(key.split('_')[1])])
-        labelled_list[-1]['dft_energy'] = float(value['output_parameters'].dict.energy)
-        labelled_list[-1]['dft_forces'] = value['output_trajectory'].get_array('forces')[0].tolist()
-        labelled_list[-1]['dft_stress'] = value['output_trajectory'].get_array('stress')[0].tolist()
+        labelled_dataset.append(non_labelled_structures.get_list()[int(key.split('_')[1])])
+        labelled_dataset[-1]['dft_energy'] = float(value['output_parameters'].dict.energy)
+        labelled_dataset[-1]['dft_forces'] = value['output_trajectory'].get_array('forces')[0].tolist()
+        labelled_dataset[-1]['dft_stress'] = value['output_trajectory'].get_array('stress')[0].tolist()
 
-    pes_labelled_list = PESData(labelled_list)    
-    #pes_labelled_list.set_list(labelled_list)    
-    return pes_labelled_list
+    pes_labelled_dataset = PESData(labelled_dataset)        
+    return pes_labelled_dataset
 
 
 class AbInitioLabellingWorkChain(WorkChain):
@@ -28,7 +27,7 @@ class AbInitioLabellingWorkChain(WorkChain):
     @classmethod
     def define(cls, spec):
         super().define(spec)
-        spec.input('unlabelled_dataset', valid_type=PESData, help="List of structures to label.")             
+        spec.input('unlabelled_dataset', valid_type=PESData, help="Structures to label.")             
         spec.expose_inputs(PwBaseWorkChain, namespace="quantumespresso", exclude=('pw.structure',), namespace_options={'validator': None})          
         spec.output("ab_initio_labelling_data", valid_type=PESData,)
         spec.outline(
@@ -73,8 +72,7 @@ class AbInitioLabellingWorkChain(WorkChain):
             # Submit the workchain
             future = self.submit(PwBaseWorkChain, **inputs)
             self.report(f'Launched AbInitioLabellingWorkChain for configuration {self.ctx.config} <{future.pk}>')
-            self.to_context(ab_initio_labelling_calculations=append_(future))
-            #self.to_context(ab_initio_labelling_calculations=[future] + self.ctx.ab_initio_labelling_calculations)
+            self.to_context(ab_initio_labelling_calculations=append_(future))            
 
     def finalize(self):
 
@@ -86,7 +84,7 @@ class AbInitioLabellingWorkChain(WorkChain):
                     'output_trajectory': calc.outputs.output_trajectory
                     }
                 
-        pes_dataset_out_list = WriteLabelledList(non_labelled_structures = self.inputs.unlabelled_dataset, **ab_initio_labelling_data)
+        pes_dataset_out = WriteLabelledDataset(non_labelled_structures = self.inputs.unlabelled_dataset, **ab_initio_labelling_data)
                 
                 
-        self.out("ab_initio_labelling_data", pes_dataset_out_list)
+        self.out("ab_initio_labelling_data", pes_dataset_out)

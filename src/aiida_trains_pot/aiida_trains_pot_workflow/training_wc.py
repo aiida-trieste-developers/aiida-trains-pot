@@ -97,7 +97,7 @@ class TrainingWorkChain(WorkChain):
     def define(cls, spec):
         super().define(spec)
         spec.input("num_potentials", valid_type=Int, default=lambda:Int(1), required=False)   
-        spec.input("dataset", valid_type=PESData, help="Training dataset list",)        
+        spec.input("dataset", valid_type=PESData, help="Training dataset",)        
         spec.input_namespace("checkpoints", valid_type=FolderData, required=False, help="Checkpoints file",)
         spec.expose_inputs(MaceWorkChain, namespace="mace",  exclude=('train.training_set', 'train.validation_set', 'train.test_set'), namespace_options={'validator': None})     
         spec.output_namespace("training", dynamic=True, help="Training outputs")
