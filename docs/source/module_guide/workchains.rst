@@ -12,10 +12,12 @@ Below are the primary workchains available in the module:
 **Main TrainsPot WorkChain**
   .. autoclass:: aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain
      :members:
+     :exclude-members: DEFAULT_RATTLE_rattle_fraction
 
 **Dataset Augmentation WorkChain**
   .. autoclass:: aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain
      :members:
+     :exclude-members: DEFAULT_RATTLE_rattle_fraction
   
 **Ab Initio Labelling WorkChain**
   .. autoclass:: aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain

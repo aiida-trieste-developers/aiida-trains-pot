@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>API reference &#8212; Data-Driven Interatomic Potential WorkChain 1.0.0 documentation</title>
+    <title>API reference &#8212; AiiDA-TrainsPot 1.0.0 documentation</title>
   
   
   
@@ -16,17 +16,19 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
@@ -34,20 +36,21 @@
     <link rel="stylesheet" type="text/css" href="../_static/aiida-custom.css?v=6068527c" />
     <link rel="stylesheet" type="text/css" href="../_static/aiida-qe-custom.css?v=22becb0f" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
     <script src="../_static/documentation_options.js?v=f9c1cefe"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=4398fdc2"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'module_guide/index';</script>
     <link rel="search" type="application/opensearchdescription+xml"
-          title="Search within Data-Driven Interatomic Potential WorkChain 1.0.0 documentation"
+          title="Search within AiiDA-TrainsPot 1.0.0 documentation"
           href="../_static/opensearch.xml"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -55,6 +58,7 @@
     <link rel="prev" title="Get Started with aiida-trains-pot" href="../user_guide/get_started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -70,19 +74,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../search.html"
       method="get">
@@ -90,7 +83,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -98,8 +90,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -115,7 +107,8 @@
       
       
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -144,22 +137,18 @@
       
     
     
-    <img src="../_static/logo.png" class="logo__image only-light" alt="Data-Driven Interatomic Potential WorkChain 1.0.0 documentation - Home"/>
-    <script>document.write(`<img src="../_static/logo.png" class="logo__image only-dark" alt="Data-Driven Interatomic Potential WorkChain 1.0.0 documentation - Home"/>`);</script>
+    <img src="../_static/logo.png" class="logo__image only-light" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -171,27 +160,27 @@
             </li>
         </ul>
         <ul class="current nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../user_guide/index.html">User’s guide</a><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../user_guide/index.html">User’s guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../user_guide/get_started/index.html">Get Started with aiida-trains-pot</a></li>
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</ul>
 </details></li>
-<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">API reference</a><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workchains.html">Workchains</a><ul class="simple">
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">API reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workchains.html">Workchains</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="calculations.html">Calculations</a><ul class="simple">
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+<li class="toctree-l2 has-children"><a class="reference internal" href="calculations.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="parsers.html">Parsers</a><ul class="simple">
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+<li class="toctree-l2 has-children"><a class="reference internal" href="parsers.html">Parsers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="datatypes.html">Data Types</a><ul class="simple">
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+<li class="toctree-l2 has-children"><a class="reference internal" href="datatypes.html">Data Types</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="scripts.html">Scripts</a><ul class="simple">
-</ul><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+<li class="toctree-l2 has-children"><a class="reference internal" href="scripts.html">Scripts</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
 </details></li>
-</ul><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary>
+</ul>
 </details></li>
 </ul>
 
@@ -348,24 +337,16 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
+</button>
 
 </div></div>
       
@@ -397,28 +378,82 @@ document.write(`
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="workchains.html">Workchains</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.mdexploration_wc.MDExplorationWorkChain"><code class="docutils literal notranslate"><span class="pre">MDExplorationWorkChain</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.ab_initio_labelling"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.ab_initio_labelling()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.dataset_augmentation"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.dataset_augmentation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.define"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration_frame_extraction"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration_frame_extraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.finalize_dataset_augmentation"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.finalize_dataset_augmentation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.initialization"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.initialization()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.training"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.training()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.check_inputs"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.check_inputs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.define"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.get_builder_with_structures"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.get_builder_with_structures()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.run_dataset_generation"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.run_dataset_generation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.define"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.run_ab_initio_labelling"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain.run_ab_initio_labelling()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.setup"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain.setup()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain.define"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain.run_training"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain.run_training()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.exploration_wc.ExplorationWorkChain"><code class="docutils literal notranslate"><span class="pre">ExplorationWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.exploration_wc.ExplorationWorkChain.define"><code class="docutils literal notranslate"><span class="pre">ExplorationWorkChain.define()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.define"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.handle_out_of_walltime"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.handle_out_of_walltime()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.report_error_handled"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.report_error_handled()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.set_restart"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.set_restart()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.setup"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.setup()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="calculations.html">Calculations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="calculations.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="calculations.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="calculations.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation.define"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="calculations.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation.prepare_for_submission"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation.prepare_for_submission()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.define"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.prepare_for_submission"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation.prepare_for_submission()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="parsers.html#aiida_trains_pot.mace.mace_train_plugin.parsers.MaceBaseParser"><code class="docutils literal notranslate"><span class="pre">MaceBaseParser</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="parsers.html#aiida_trains_pot.evaluation.parsers.EvaluationParser"><code class="docutils literal notranslate"><span class="pre">EvaluationParser</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="parsers.html#aiida_trains_pot.mace.mace_train_plugin.parsers.MaceBaseParser"><code class="docutils literal notranslate"><span class="pre">MaceBaseParser</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parsers.html#aiida_trains_pot.mace.mace_train_plugin.parsers.MaceBaseParser.parse"><code class="docutils literal notranslate"><span class="pre">MaceBaseParser.parse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parsers.html#aiida_trains_pot.evaluation.parsers.EvaluationParser"><code class="docutils literal notranslate"><span class="pre">EvaluationParser</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parsers.html#aiida_trains_pot.evaluation.parsers.EvaluationParser.parse"><code class="docutils literal notranslate"><span class="pre">EvaluationParser.parse()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="datatypes.html">Data Types</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData"><code class="docutils literal notranslate"><span class="pre">PESData</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.dataset_list_to_ase_list"><code class="docutils literal notranslate"><span class="pre">PESData.dataset_list_to_ase_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_ase_list"><code class="docutils literal notranslate"><span class="pre">PESData.get_ase_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_labelled"><code class="docutils literal notranslate"><span class="pre">PESData.get_labelled()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_list"><code class="docutils literal notranslate"><span class="pre">PESData.get_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_txt"><code class="docutils literal notranslate"><span class="pre">PESData.get_txt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_unlabelled"><code class="docutils literal notranslate"><span class="pre">PESData.get_unlabelled()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.len_labelled"><code class="docutils literal notranslate"><span class="pre">PESData.len_labelled</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.len_unlabelled"><code class="docutils literal notranslate"><span class="pre">PESData.len_unlabelled</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="datatypes.html#aiida_trains_pot.data.pesdata.PESData.set_list"><code class="docutils literal notranslate"><span class="pre">PESData.set_list()</span></code></a></li>
 </ul>
 </li>
@@ -477,7 +512,7 @@ document.write(`
   <div class="footer-item">
     
 <p class="component-author">
-By Nataliia Manko, Davide Bidoggi, Maria Peressi, Antimo Marrazzi
+By Nataliia Manko, Davide Bidoggia, Maria Peressi, Antimo Marrazzo
 </p>
 
   </div>
@@ -487,7 +522,7 @@ By Nataliia Manko, Davide Bidoggi, Maria Peressi, Antimo Marrazzi
 
   <p class="copyright">
     
-      © Copyright 2024,  Dipartamento di Fisica (Università degli Studi di Trieste) and Physics Department of Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
+      © Copyright 2024, Università degli Studi di Trieste and Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
       <br/>
     
   </p>
@@ -511,8 +546,8 @@ By Nataliia Manko, Davide Bidoggi, Maria Peressi, Antimo Marrazzi
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
 
   <footer class="bd-footer">
   </footer>

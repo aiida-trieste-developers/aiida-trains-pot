@@ -15,3 +15,4 @@ The module includes parsers to interpret outputs from the training and evaluatio
 
 **Evaluation Parser**
   .. autoclass:: aiida_trains_pot.evaluation.parsers.EvaluationParser
+     :members:

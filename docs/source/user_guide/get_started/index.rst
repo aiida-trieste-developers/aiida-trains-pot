@@ -29,9 +29,12 @@ Before starting, ensure you load your AiiDA profile and import necessary depende
     from aiida.engine import submit
     from aiida.plugins import WorkflowFactory, DataFactory
     from pathlib import Path
+    from aiida.common.extendeddicts import AttributeDict
     from ase.io import read
     import yaml
     import os
+    from aiida_trains_pot.utils.restart import models_from_trainingwc
+    from aiida_trains_pot.utils.generate_config import generate_lammps_md_config
 
     load_profile()
 
@@ -68,7 +71,7 @@ Customize machine parameters for each code (time, nodes, GPUs, memory, etc.). He
         'qos': "boost_qos_dbg"
     }
 
-Repeat this process for each code (MACE, LAMMPS, and committee evaluation), adapting the parameters as needed.
+Repeat this process for each code (MACE, LAMMPS and committee evaluation), adapting the parameters as needed.
 
 Step 4: Load the Graphene Structure
 -----------------------------------
@@ -89,13 +92,12 @@ The `TrainsPot` workflow combines several tasks. Use `get_builder()` to set up t
 
     TrainsPot = WorkflowFactory('trains_pot.workflow')
     builder = TrainsPot.get_builder()
-
-    builder.structures = {f'structure_{i}': input_structures[i] for i in range(len(input_structures))}
+    builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(input_structures))}
     builder.do_dataset_augmentation = Bool(True)
     builder.do_ab_initio_labelling = Bool(True)
     builder.do_training = Bool(True)
-    builder.do_md_exploration = Bool(True)
-    builder.max_loops = Int(2)
+    builder.do_exploration = Bool(True)
+    builder.max_loops = Int(1)
 
 Step 6: Configure Dataset Augmentation
 --------------------------------------
@@ -108,7 +110,10 @@ Set up parameters for data augmentation. You can adjust options like `do_rattle`
     builder.dataset_augmentation.do_input = Bool(True)
     builder.dataset_augmentation.do_isolated = Bool(True)
     builder.dataset_augmentation.rattle.params.rattle_fraction = Float(0.1)
+    builder.dataset_augmentation.rattle.params.max_sigma_strain = Float(0.1)
     builder.dataset_augmentation.rattle.params.n_configs = Int(20)
+    builder.dataset_augmentation.rattle.params.frac_vacancies = Float(0.1)
+    builder.dataset_augmentation.rattle.params.vacancies_per_config = Int(1)
 
 Step 7: Configure Ab Initio Labelling (QuantumESPRESSO)
 -------------------------------------------------------
@@ -117,14 +122,14 @@ Load QE settings, k-points, and pseudopotentials for labelling:
 
 .. code-block:: python
 
-    kpoints = DataFactory("core.array.kpoints")()
+    kpoints = KpointsData()
     kpoints.set_kpoints_mesh([1, 1, 1])
     pseudo_family = load_group('SSSP/1.3/PBE/precision')
+    cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=input_structures[0], unit='Ry')
 
-    builder.ab_initio_labelling.pw.code = QE_code
-    builder.ab_initio_labelling.pw.parameters = Dict({'SYSTEM': {'ecutwfc': 10, 'ecutrho': 40}})
-    builder.ab_initio_labelling.kpoints = kpoints
-    builder.ab_initio_labelling.pw.pseudos = pseudo_family.get_pseudos(structure=input_structures[0])
+    builder.ab_initio_labelling.quantumespresso.pw.code = QE_code
+    builder.ab_initio_labelling.quantumespresso.pw.pseudos = pseudo_family.get_pseudos(structure=input_structures[0])
+    builder.ab_initio_labelling.quantumespresso.kpoints = kpoints
 
 Step 8: Configure MACE and LAMMPS for Training and Exploration
 --------------------------------------------------------------
@@ -137,7 +142,7 @@ Use a YAML configuration for MACE. The additonal information about the MACE para
     with open(MACE_config, 'r') as yaml_file:
         mace_config = yaml.safe_load(yaml_file)
 
-    builder.training.mace.mace_config = Dict(mace_config)
+    builder.training.mace.train.mace_config = Dict(mace_config)
     builder.training.num_potentials = Int(4)
 
 For LAMMPS, load additional parameters from `lammps_md_params.yml <https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/examples/graphene/lammps_md_params.yml>`_. The additonal information about the LAMMPS parameters can be found in the `LAMMPS documentation <https://aiida-lammps.readthedocs.io/en/latest/topics/data/parameters.html>`_:
@@ -147,7 +152,7 @@ For LAMMPS, load additional parameters from `lammps_md_params.yml <https://githu
     lammps_params_yaml = os.path.join(script_dir, 'lammps_md_params.yml')
     with open(lammps_params_yaml, 'r') as yaml_file:
         lammps_params_list = yaml.safe_load(yaml_file)
-    builder.md_exploration.lammps_params_list = List(lammps_params_list)
+    builder.exploration.params_list = List(lammps_params_list)
 
 Step 9: Setup Committee Evaluation
 ----------------------------------
@@ -156,8 +161,7 @@ Define resources and SLURM options for the committee evaluation stage:
 
 .. code-block:: python
 
-    builder.committee_evaluation.code = EVALUATION_code
-    builder.committee_evaluation.metadata.options.queue_name = EVALUATION_machine['partition']
+    builder.committee_evaluation.code = EVALUATION_code    
 
 Step 10: Submit the Workflow
 ----------------------------
