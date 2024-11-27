@@ -164,10 +164,25 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../module_guide/index.html">API reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/workchains.html">Workchains</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/workchains/index.html">Workchains</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/trains_pot_wc.html">Main TrainsPot WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/calculations.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/augmentation_wc.html">Dataset Augmentation WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/abinitio_labelling_wc.html">Ab Initio Labelling WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/training_wc.html">Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/mace_wc.html">MACE Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/parsers.html">Parsers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
@@ -331,12 +346,12 @@
 
 
 <div class="viewcode-block" id="AbInitioLabellingWorkChain">
-<a class="viewcode-back" href="../../../module_guide/workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain">[docs]</a>
+<a class="viewcode-back" href="../../../module_guide/workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain">[docs]</a>
 <span class="k">class</span> <span class="nc">AbInitioLabellingWorkChain</span><span class="p">(</span><span class="n">WorkChain</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A workchain to loop over structures and submit AbInitioLabellingWorkChain.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AbInitioLabellingWorkChain.define">
-<a class="viewcode-back" href="../../../module_guide/workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.define">[docs]</a>
+<a class="viewcode-back" href="../../../module_guide/workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.define">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">define</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
@@ -352,7 +367,7 @@
         
 
 <div class="viewcode-block" id="AbInitioLabellingWorkChain.setup">
-<a class="viewcode-back" href="../../../module_guide/workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.setup">[docs]</a>
+<a class="viewcode-back" href="../../../module_guide/workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.setup">[docs]</a>
     <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize context and input parameters.&quot;&quot;&quot;</span>                
         <span class="c1"># Initialize the list of structures</span>
@@ -360,7 +375,7 @@
 
 
 <div class="viewcode-block" id="AbInitioLabellingWorkChain.run_ab_initio_labelling">
-<a class="viewcode-back" href="../../../module_guide/workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.run_ab_initio_labelling">[docs]</a>
+<a class="viewcode-back" href="../../../module_guide/workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.run_ab_initio_labelling">[docs]</a>
     <span class="k">def</span> <span class="nf">run_ab_initio_labelling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run PwBaseWorkChain for each structure.&quot;&quot;&quot;</span>
         

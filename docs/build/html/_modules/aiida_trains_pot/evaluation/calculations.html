@@ -164,10 +164,25 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../module_guide/index.html">API reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/workchains.html">Workchains</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/workchains/index.html">Workchains</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/trains_pot_wc.html">Main TrainsPot WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/calculations.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/augmentation_wc.html">Dataset Augmentation WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/abinitio_labelling_wc.html">Ab Initio Labelling WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/training_wc.html">Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/mace_wc.html">MACE Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/parsers.html">Parsers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
@@ -326,7 +341,7 @@
 
 
 <div class="viewcode-block" id="EvaluationCalculation">
-<a class="viewcode-back" href="../../../module_guide/calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation">[docs]</a>
+<a class="viewcode-back" href="../../../module_guide/calculations/index.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation">[docs]</a>
 <span class="k">class</span> <span class="nc">EvaluationCalculation</span><span class="p">(</span><span class="n">CalcJob</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    AiiDA calculation plugin wrapping the diff executable.</span>
@@ -335,7 +350,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="EvaluationCalculation.define">
-<a class="viewcode-back" href="../../../module_guide/calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.define">[docs]</a>
+<a class="viewcode-back" href="../../../module_guide/calculations/index.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.define">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">define</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define inputs and outputs of the calculation.&quot;&quot;&quot;</span>
@@ -356,7 +371,7 @@
 
     
 <div class="viewcode-block" id="EvaluationCalculation.prepare_for_submission">
-<a class="viewcode-back" href="../../../module_guide/calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.prepare_for_submission">[docs]</a>
+<a class="viewcode-back" href="../../../module_guide/calculations/index.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.prepare_for_submission">[docs]</a>
     <span class="k">def</span> <span class="nf">prepare_for_submission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create input files.</span>

@@ -164,10 +164,25 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../../module_guide/index.html">API reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../module_guide/workchains.html">Workchains</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../module_guide/workchains/index.html">Workchains</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../module_guide/workchains/trains_pot_wc.html">Main TrainsPot WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../module_guide/calculations.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../module_guide/workchains/augmentation_wc.html">Dataset Augmentation WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../module_guide/workchains/abinitio_labelling_wc.html">Ab Initio Labelling WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../module_guide/workchains/training_wc.html">Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../module_guide/workchains/mace_wc.html">MACE Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../module_guide/calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../../module_guide/parsers.html">Parsers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
@@ -333,14 +348,14 @@
 
 
 <div class="viewcode-block" id="MaceTrainWorkChain">
-<a class="viewcode-back" href="../../../../module_guide/workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain">[docs]</a>
+<a class="viewcode-back" href="../../../../module_guide/workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain">[docs]</a>
 <span class="k">class</span> <span class="nc">MaceTrainWorkChain</span><span class="p">(</span><span class="n">BaseRestartWorkChain</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;WorkChain to launch MACE training.&quot;&quot;&quot;</span>
 
     <span class="n">_process_class</span> <span class="o">=</span> <span class="n">MaceCalculation</span>
 
 <div class="viewcode-block" id="MaceTrainWorkChain.define">
-<a class="viewcode-back" href="../../../../module_guide/workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.define">[docs]</a>
+<a class="viewcode-back" href="../../../../module_guide/workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.define">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">define</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Specify inputs and outputs.&quot;&quot;&quot;</span>
@@ -360,7 +375,7 @@
 
         
 <div class="viewcode-block" id="MaceTrainWorkChain.report_error_handled">
-<a class="viewcode-back" href="../../../../module_guide/workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.report_error_handled">[docs]</a>
+<a class="viewcode-back" href="../../../../module_guide/workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.report_error_handled">[docs]</a>
     <span class="k">def</span> <span class="nf">report_error_handled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculation</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Report an action taken for a calculation that has failed.</span>
 
@@ -377,7 +392,7 @@
 
 
 <div class="viewcode-block" id="MaceTrainWorkChain.set_restart">
-<a class="viewcode-back" href="../../../../module_guide/workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.set_restart">[docs]</a>
+<a class="viewcode-back" href="../../../../module_guide/workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.set_restart">[docs]</a>
     <span class="k">def</span> <span class="nf">set_restart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">calculation</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the parameters to run the restart calculation</span>
@@ -405,7 +420,7 @@
 
             
 <div class="viewcode-block" id="MaceTrainWorkChain.setup">
-<a class="viewcode-back" href="../../../../module_guide/workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.setup">[docs]</a>
+<a class="viewcode-back" href="../../../../module_guide/workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.setup">[docs]</a>
     <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Call the ``setup`` of the ``BaseRestartWorkChain`` and create the inputs dictionary in ``self.ctx.inputs``.</span>
 
@@ -420,7 +435,7 @@
 
 
 <div class="viewcode-block" id="MaceTrainWorkChain.handle_out_of_walltime">
-<a class="viewcode-back" href="../../../../module_guide/workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.handle_out_of_walltime">[docs]</a>
+<a class="viewcode-back" href="../../../../module_guide/workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.handle_out_of_walltime">[docs]</a>
     <span class="nd">@process_handler</span><span class="p">(</span>
         <span class="n">priority</span><span class="o">=</span><span class="mi">610</span><span class="p">,</span>
         <span class="n">exit_codes</span><span class="o">=</span><span class="p">[</span>

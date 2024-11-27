@@ -54,7 +54,7 @@
           href="../_static/opensearch.xml"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Workchains" href="workchains.html" />
+    <link rel="next" title="Workchains" href="workchains/index.html" />
     <link rel="prev" title="Get Started with aiida-trains-pot" href="../user_guide/get_started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -165,10 +165,28 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">API reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workchains.html">Workchains</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="workchains/index.html">Workchains</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="workchains/trains_pot_wc.html">Main TrainsPot WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="calculations.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l3 has-children"><a class="reference internal" href="workchains/augmentation_wc.html">Dataset Augmentation WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="workchains/abinitio_labelling_wc.html">Ab Initio Labelling WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="workchains/training_wc.html">Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="workchains/exploration_wc.html">Exploration WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="workchains/mace_wc.html">MACE Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="parsers.html">Parsers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
@@ -377,59 +395,77 @@
 <p>This section describes the various workchains, calculations, parsers, and data types provided by the AiiDA-TrainsPot module for training and evaluating interatomic potentials.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="workchains.html">Workchains</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.ab_initio_labelling"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.ab_initio_labelling()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.dataset_augmentation"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.dataset_augmentation()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.define"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.define()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration_frame_extraction"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration_frame_extraction()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.finalize_dataset_augmentation"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.finalize_dataset_augmentation()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.initialization"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.initialization()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.training"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.training()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="workchains/index.html">Workchains</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workchains/trains_pot_wc.html">Main TrainsPot WorkChain</a><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.check_inputs"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.check_inputs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.define"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.define()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.get_builder_with_structures"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.get_builder_with_structures()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.run_dataset_generation"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.run_dataset_generation()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/augmentation_wc.html">Dataset Augmentation WorkChain</a><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.define"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain.define()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.run_ab_initio_labelling"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain.run_ab_initio_labelling()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.setup"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain.setup()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/abinitio_labelling_wc.html">Ab Initio Labelling WorkChain</a><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain.define"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain.define()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain.run_training"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain.run_training()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/training_wc.html">Training WorkChain</a><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.exploration_wc.ExplorationWorkChain"><code class="docutils literal notranslate"><span class="pre">ExplorationWorkChain</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.aiida_trains_pot_workflow.exploration_wc.ExplorationWorkChain.define"><code class="docutils literal notranslate"><span class="pre">ExplorationWorkChain.define()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/exploration_wc.html">Exploration WorkChain</a><ul class="simple">
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.define"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.define()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.handle_out_of_walltime"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.handle_out_of_walltime()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.report_error_handled"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.report_error_handled()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.set_restart"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.set_restart()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="workchains.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.setup"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.setup()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/mace_wc.html">MACE Training WorkChain</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.ab_initio_labelling"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.ab_initio_labelling()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.dataset_augmentation"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.dataset_augmentation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.define"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration_frame_extraction"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration_frame_extraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.finalize_dataset_augmentation"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.finalize_dataset_augmentation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.initialization"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.initialization()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.training"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.training()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.check_inputs"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.check_inputs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.define"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.get_builder_with_structures"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.get_builder_with_structures()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain.run_dataset_generation"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain.run_dataset_generation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.define"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.run_ab_initio_labelling"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain.run_ab_initio_labelling()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.setup"><code class="docutils literal notranslate"><span class="pre">AbInitioLabellingWorkChain.setup()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain.define"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.training_wc.TrainingWorkChain.run_training"><code class="docutils literal notranslate"><span class="pre">TrainingWorkChain.run_training()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.exploration_wc.ExplorationWorkChain"><code class="docutils literal notranslate"><span class="pre">ExplorationWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.exploration_wc.ExplorationWorkChain.define"><code class="docutils literal notranslate"><span class="pre">ExplorationWorkChain.define()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.define"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.handle_out_of_walltime"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.handle_out_of_walltime()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.report_error_handled"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.report_error_handled()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.set_restart"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.set_restart()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="workchains/index.html#aiida_trains_pot.mace.mace_train_wc.mace_train_wc.MaceTrainWorkChain.setup"><code class="docutils literal notranslate"><span class="pre">MaceTrainWorkChain.setup()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="calculations.html">Calculations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="calculations.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="calculations.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation.define"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation.define()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="calculations.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation.prepare_for_submission"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation.prepare_for_submission()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="calculations/index.html">Calculations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="calculations/index.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="calculations/index.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation.define"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="calculations/index.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation.prepare_for_submission"><code class="docutils literal notranslate"><span class="pre">MaceTrainCalculation.prepare_for_submission()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.define"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation.define()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="calculations.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.prepare_for_submission"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation.prepare_for_submission()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="calculations/index.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="calculations/index.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.define"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation.define()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="calculations/index.html#aiida_trains_pot.evaluation.calculations.EvaluationCalculation.prepare_for_submission"><code class="docutils literal notranslate"><span class="pre">EvaluationCalculation.prepare_for_submission()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -488,7 +524,7 @@
       </div>
     </a>
     <a class="right-next"
-       href="workchains.html"
+       href="workchains/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>

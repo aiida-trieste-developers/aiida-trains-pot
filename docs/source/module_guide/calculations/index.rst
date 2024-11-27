@@ -15,4 +15,3 @@ These calculations are utilized in training and evaluation processes:
 **Evaluation Calculation**
   .. autoclass:: aiida_trains_pot.evaluation.calculations.EvaluationCalculation
      :members:
-
