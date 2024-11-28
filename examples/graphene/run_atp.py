@@ -125,7 +125,7 @@ builder.do_dataset_augmentation = Bool(True)
 builder.do_ab_initio_labelling = Bool(True)
 builder.do_training = Bool(True)
 builder.do_exploration = Bool(True)
-builder.max_loops = Int(2)
+builder.max_loops = Int(1)
 # builder.explored_dataset = load_node(748569)
 # builder.labelled_list = load_node(677593)
 #builder = models_from_trainingwc(builder, 87443, get_labelled_dataset=True, get_config=True)
@@ -159,7 +159,7 @@ kpoints = KpointsData()
 kpoints.set_kpoints_mesh([1, 1, 1])
 pseudo_family = load_group('SSSP/1.3/PBE/precision')
 cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=input_structures[0], unit='Ry')
-
+builder.ab_initio_labelling.group_label = Str("graphene")
 builder.ab_initio_labelling.quantumespresso.pw.code = QE_code
 builder.ab_initio_labelling.quantumespresso.pw.metadata.options.withmpi=True
 builder.ab_initio_labelling.quantumespresso.pw.metadata.options.max_wallclock_seconds = QE_time

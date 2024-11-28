@@ -1,5 +1,5 @@
 from aiida.engine import WorkChain, ToContext, append_, calcfunction
-from aiida.orm import StructureData, Dict, List, Int
+from aiida.orm import StructureData, Dict, Str, Group, load_group
 from aiida.plugins import WorkflowFactory, DataFactory
 from aiida.common import AttributeDict
 from aiida_quantumespresso.utils.mapping import prepare_process_inputs
@@ -27,7 +27,8 @@ class AbInitioLabellingWorkChain(WorkChain):
     @classmethod
     def define(cls, spec):
         super().define(spec)
-        spec.input('unlabelled_dataset', valid_type=PESData, help="Structures to label.")             
+        spec.input('unlabelled_dataset', valid_type=PESData, help="Structures to label.")     
+        spec.input('group_label', valid_type=Str, help="Label for group.", required=False)        
         spec.expose_inputs(PwBaseWorkChain, namespace="quantumespresso", exclude=('pw.structure',), namespace_options={'validator': None})          
         spec.output("ab_initio_labelling_data", valid_type=PESData,)
         spec.outline(
@@ -44,6 +45,20 @@ class AbInitioLabellingWorkChain(WorkChain):
 
     def run_ab_initio_labelling(self):
         """Run PwBaseWorkChain for each structure."""
+
+        # Create or load a group to track the calculations
+        self.report(f'self.inputs.group_label {self.inputs.group_label}')
+        if hasattr(self.inputs, 'group_label'):
+            group_label = self.inputs.group_label.value
+        else:
+            group_label = f'ab_initio_labelling_{self.uuid}'
+        
+        try:
+            group = load_group(group_label)
+            self.report(f'Using existing group: {group_label}')
+        except:
+            group = Group(label=group_label).store()
+            self.report(f'Created new group: {group_label}')
         
         for _, structure in enumerate(self.inputs.unlabelled_dataset.get_ase_list()):   
             self.ctx.config += 1    
@@ -72,6 +87,9 @@ class AbInitioLabellingWorkChain(WorkChain):
             # Submit the workchain
             future = self.submit(PwBaseWorkChain, **inputs)
             self.report(f'Launched AbInitioLabellingWorkChain for configuration {self.ctx.config} <{future.pk}>')
+
+            # Add the calculation to the group
+            group.add_nodes(future)
             self.to_context(ab_initio_labelling_calculations=append_(future))            
 
     def finalize(self):
