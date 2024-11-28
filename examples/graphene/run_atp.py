@@ -121,14 +121,14 @@ input_structures = [StructureData(ase=read(os.path.join(script_dir, 'gr8x8.xyz')
 builder = TrainsPot.get_builder()
 builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(input_structures))}
 # builder = TrainsPot.get_builder_from_protocol(input_structures, qe_code = QE_code)
-builder.do_dataset_augmentation = Bool(False)
-builder.do_ab_initio_labelling = Bool(False)
-builder.do_training = Bool(False)
+builder.do_dataset_augmentation = Bool(True)
+builder.do_ab_initio_labelling = Bool(True)
+builder.do_training = Bool(True)
 builder.do_exploration = Bool(True)
-builder.max_loops = Int(1)
+builder.max_loops = Int(2)
 # builder.explored_dataset = load_node(748569)
 # builder.labelled_list = load_node(677593)
-builder = models_from_trainingwc(builder, 87443, get_labelled_dataset=True, get_config=True)
+#builder = models_from_trainingwc(builder, 87443, get_labelled_dataset=True, get_config=True)
 #builder.dataset = load_node(85953)
 #builder.models_lammps = {"pot_1":load_node(85984), "pot_2":load_node(85995), "pot_3":load_node(86006), "pot_4":load_node(86017)}
 #builder.models_ase = {"pot_1":load_node(85985), "pot_2":load_node(85996), "pot_3":load_node(86007), "pot_4":load_node(86018)}
@@ -235,20 +235,6 @@ builder.exploration.md.lammps.code = LAMMPS_code
 #with open(lammps_params_yaml, 'r') as yaml_file:
 #    lammps_params_list = yaml.safe_load(yaml_file)
 
-# Generate the simple configuration
-temperatures = [30, 35, 40, 45]
-steps = [500] * len(temperatures)
-styles =  ["npt"] * len(temperatures)  
-constraints_template = {
-    "temp": [30, 30, 0.242],
-    "x": [0.0, 0.0, 2.42],
-    "y": [0.0, 0.0, 2.42]
-}
-constraints = [constraints_template for _ in temperatures]
-lammps_params_list = generate_lammps_md_config(temperatures, steps, constraints, styles)
-
-builder.exploration.params_list = List(lammps_params_list)
-
 builder.exploration.parent_folder = Str(Path(__file__).resolve().parent)
 _parameters = AttributeDict()
 _parameters.control = AttributeDict()
@@ -276,6 +262,16 @@ _parameters.thermo = {
 # Tell lammps to print the final restartfile
 _parameters.restart = {"print_final": True}
 PARAMETERS = Dict(dict=_parameters)
+
+# Generate the simple configuration of md parameters for LAMMPS 
+temperatures = [30, 35, 40, 45]
+pressures = [0] * len(temperatures)
+steps = [500] * len(temperatures)
+styles =  ["npt"] * len(temperatures)  
+lammps_params_list = generate_lammps_md_config(temperatures, pressures, steps, styles, _parameters.control.timestep)
+
+builder.exploration.params_list = List(lammps_params_list)
+
 
 _settings = AttributeDict()
 _settings.store_restart = True
