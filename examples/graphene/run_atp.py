@@ -7,7 +7,7 @@ from aiida.common.extendeddicts import AttributeDict
 from ase.io import read
 import yaml
 import os
-from aiida_trains_pot.utils.restart import models_from_trainingwc
+from aiida_trains_pot.utils.restart import models_from_trainingwc,  models_from_aiidatrainspotwc
 from aiida_trains_pot.utils.generate_config import generate_lammps_md_config
 load_profile()
 
@@ -132,6 +132,7 @@ builder.max_loops = Int(1)
 #builder.dataset = load_node(85953)
 #builder.models_lammps = {"pot_1":load_node(85984), "pot_2":load_node(85995), "pot_3":load_node(86006), "pot_4":load_node(86017)}
 #builder.models_ase = {"pot_1":load_node(85985), "pot_2":load_node(85996), "pot_3":load_node(86007), "pot_4":load_node(86018)}
+#builder = models_from_aiidatrainspotwc(builder, 91258)
 
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)

@@ -2,7 +2,7 @@
 """Equation of State WorkChain."""
 from aiida.engine import WorkChain, append_, calcfunction, workfunction, if_, while_, ExitCode
 from aiida import load_profile
-from aiida.orm import Code, Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict, load_node
+from aiida.orm import Code, Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict, load_node, FolderData
 from aiida.plugins import CalculationFactory, WorkflowFactory
 from aiida.common import AttributeDict
 from ase import Atoms
@@ -147,6 +147,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.output("dataset", valid_type=PESData, help="Final dataset containing all structures labelled and selected to be labelled")
         spec.output_namespace("models_ase", valid_type=SinglefileData, help="Last committee of trained potentials compiled for ASE")
         spec.output_namespace("models_lammps", valid_type=SinglefileData, help="Last committee of trained potentials compiled for LAMMPS")
+        spec.output_namespace("checkpoints", valid_type=FolderData, help="Last checkpoints of trained potentials")
         spec.output("RMSE", valid_type=List, help="RMSE on the final dataset computed with the last committee of potentials")               
 
         spec.exit_code(308, "LESS_THAN_2_POTENTIALS", message="Calculation didn't produce more tha 1 expected potentials.",)
@@ -359,5 +360,6 @@ class TrainsPotWorkChain(WorkChain):
         self.out('RMSE', RMSE) 
         self.out('dataset', self.ctx.dataset)
         self.out('models_ase', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_ase)})
-        self.out('models_lammps', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_lammps)})             
+        self.out('models_lammps', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_lammps)}) 
+        self.out('checkpoints', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potential_checkpoints)})            
            

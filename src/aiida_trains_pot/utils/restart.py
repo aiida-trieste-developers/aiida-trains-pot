@@ -1,4 +1,5 @@
-from aiida.orm import load_node
+from aiida.orm import load_node, Dict
+from aiida.common.extendeddicts import AttributeDict
 
 def models_from_trainingwc(builder, identifier, get_labelled_dataset=False, get_config=False):
     """Return a builder populated with potentials and checkpoints from previous training.
@@ -39,5 +40,37 @@ def models_from_trainingwc(builder, identifier, get_labelled_dataset=False, get_
     builder.models_ase = models_ase
     builder.models_lammps = models_lammps
     builder.training.checkpoints = models_checkpoints
+
+    return builder
+
+def models_from_aiidatrainspotwc(builder, identifier):
+    """Return a builder populated with potentials and checkpoints from previous training.
+    
+    Args:
+        builder: Builder to be populated.
+        identifier: Identifier of the training workchain (pk or uuid).        
+        
+    Returns:
+        builder: Builder populated with dataset, models_ase, models_lammps configuration parameters.
+        """
+
+    
+    outputs = load_node(identifier).outputs
+    models_ase = {}
+    models_lammps = {}
+    checkpoints = {}
+
+        
+    for model_ase in outputs['models_ase']:        
+        models_ase[model_ase] = outputs['models_ase'][model_ase]
+    for model_lammps in outputs['models_lammps']:
+        models_lammps[model_lammps] = outputs['models_lammps'][model_lammps]
+    for checkpoint in outputs['checkpoints']:
+        checkpoints[checkpoint] = outputs['checkpoints'][checkpoint]
+
+    builder.dataset = outputs['dataset']
+    builder.models_ase = models_ase
+    builder.models_lammps = models_lammps
+    builder.training.checkpoints = checkpoints
 
     return builder
