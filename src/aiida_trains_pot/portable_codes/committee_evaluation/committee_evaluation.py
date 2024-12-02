@@ -190,6 +190,7 @@ def main(log_freq=100):
             evaluated_dataset[-1]['cell'] = np.array(atm.get_cell())
             evaluated_dataset[-1]['positions'] = np.array(atm.get_positions())
             evaluated_dataset[-1]['symbols'] = atm.get_chemical_symbols()
+            evaluated_dataset[-1]['pbc'] = atm.get_pbc()
             try:
                 evaluated_dataset[-1]['dft_forces'] = np.array(atm.get_forces())
             except:

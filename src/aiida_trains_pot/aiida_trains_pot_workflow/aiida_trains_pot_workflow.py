@@ -78,7 +78,8 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
                     'symbols': list(step_data[5]['element']),
                     'positions': [[step_data[5]['x'][jj],step_data[5]['y'][jj],step_data[5]['z'][jj]] for jj, _ in enumerate(step_data[5]['y'])],
                     'input_structure_uuid': str(input_structure_node.uuid),                    
-                    'gen_method': str('LAMMPS')
+                    'gen_method': str('LAMMPS'),
+                    'pbc':trajectory.get_step_structure(i).pbc
                     })
             extracted_frames[-1]['style'] = params['md']['integration']['style']
             extracted_frames[-1]['temp'] = params['md']['integration']['constraints']['temp']
@@ -202,7 +203,6 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.do_ab_initio_labelling = self.inputs.do_ab_initio_labelling
         self.ctx.do_training = self.inputs.do_training
         self.ctx.do_exploration = self.inputs.do_exploration
-        self.ctx.potential_checkpoints = []
         if not self.ctx.do_ab_initio_labelling:
             if self.inputs.dataset.len_labelled > 0:
                 self.ctx.dataset = self.inputs.dataset
@@ -213,10 +213,13 @@ class TrainsPotWorkChain(WorkChain):
         if not self.ctx.do_training:
             self.ctx.potentials_lammps = []
             self.ctx.potentials_ase = []
+            self.ctx.potential_checkpoints = []
             for _, pot in self.inputs.models_lammps.items():
                 self.ctx.potentials_lammps.append(pot)
             for _, pot in self.inputs.models_ase.items():
                 self.ctx.potentials_ase.append(pot)
+            for _, pot in self.inputs.checkpoints.items():
+                self.ctx.potential_checkpoints.append(pot)
         if not self.ctx.do_exploration and 'explored_dataset' in self.inputs:
             if len(self.inputs.explored_dataset) > 0:
                 self.ctx.explored_dataset = self.inputs.explored_dataset

@@ -117,7 +117,7 @@ class PESData(Data):
         ase_list = []
         dataset_list = self.get_list()
         for config in dataset_list:
-            ase_list.append(Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell']))
+            ase_list.append(Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'], pbc=config['pbc']))
             if 'dft_stress' in config.keys():
                 s = config['dft_stress']
                 stress = [s[0][0] ,s[1][1], s[2][2], s[1][2], s[0][2], s[0][1]]
@@ -131,10 +131,10 @@ class PESData(Data):
 
         dataset_txt = ''
 
-        exclude_params = ['cell', 'symbols', 'positions', 'forces', 'stress', 'energy', 'dft_forces', 'dft_stress', 'dft_energy', 'md_forces', 'md_stress', 'md_energy']
+        exclude_params = ['cell', 'symbols', 'positions', 'pbc', 'forces', 'stress', 'energy', 'dft_forces', 'dft_stress', 'dft_energy', 'md_forces', 'md_stress', 'md_energy']
         for config in self.get_list():
             params = [key for key in config.keys() if key not in exclude_params]
-            atm = Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'])
+            atm = Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'], pbc=config['pbc'])
             atm.info = {}
             for key in params:
                 atm.info[key] = config[key]

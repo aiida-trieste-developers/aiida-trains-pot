@@ -55,7 +55,8 @@ def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_
                     'max_sigma_strain': max_sigma_strain.value,
                     'n_vacancies': n_vacancies,
                     'input_structure_uuid': str(structure.uuid),
-                    'gen_method': 'RATTLE'
+                    'gen_method': 'RATTLE',
+                    'pbc': mod_structure.get_pbc(),
                     })
     pes_dataset = PESData(structures)       
     return {'rattle_structures': pes_dataset}
@@ -73,7 +74,8 @@ def InputStructureGenerator(**in_structure_dict):
                     'symbols': ase_structure.get_chemical_symbols(),
                     'positions': ase_structure.get_positions().tolist(), 
                     'input_structure_uuid': str(structure.uuid),
-                    'gen_method': str('INPUT_STRUCTURE')
+                    'gen_method': str('INPUT_STRUCTURE'),
+                    'pbc': ase_structure.get_pbc(),
                     })
     pes_dataset = PESData(structures)        
     return {'input_structures': pes_dataset}
@@ -96,7 +98,8 @@ def IsolatedStructureGenerator(**in_structure_dict):
                 structures.append({'cell': isolated_structure.get_cell().tolist(),
                     'symbols': isolated_structure.get_chemical_symbols(),
                     'positions': isolated_structure.get_positions().tolist(), 
-                    'gen_method': str('ISOLATED_ATOM')
+                    'gen_method': str('ISOLATED_ATOM'),
+                    'pbc': isolated_structure.get_pbc(),
                     })
     pes_dataset = PESData(structures)        
     return {'isolated_atoms_structure':  pes_dataset}
