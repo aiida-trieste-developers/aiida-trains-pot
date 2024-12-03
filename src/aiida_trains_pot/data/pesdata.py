@@ -7,6 +7,7 @@ from ase import Atoms
 import io
 from contextlib import redirect_stdout
 from ase.io import write
+import h5py
 
 class PESData(Data):
     
@@ -64,23 +65,40 @@ class PESData(Data):
 
     def get_list(self):
         """Return the contents of this node as a list."""
-        try:            
-            # Open the file and load its contents
-            with self.base.repository.as_path(self._list_key) as f:
-                data = np.load(f, allow_pickle=True)
-            return [item for _, val in data.items() for item in (val.tolist() if isinstance(val, np.ndarray) else val)]
-                
+        try:
+            # Open the HDF5 file and load its contents
+            with self.base.repository.open(self._list_key, 'rb') as hdf_file:
+                with h5py.File(hdf_file, 'r') as hdf:
+                    data = []
+                    for group in hdf.values():
+                        config = {}
+                        for key, value in group.items():
+                            # Convert datasets to lists or native Python types
+                            if isinstance(value, h5py.Dataset):
+                                config[key] = value[()].tolist() if hasattr(value[()], 'tolist') else value[()]
+                            else:
+                                config[key] = value[()]
+                        # Add attributes to the config
+                        for attr_key, attr_value in group.attrs.items():
+                            config[attr_key] = attr_value
+                        data.append(config)
+
+            # Ensure symbols are decoded properly (if they were byte strings)
+            for config in data:
+                if 'symbols' in config:
+                    config['symbols'] = [str(symbol, 'utf-8') if isinstance(symbol, bytes) else str(symbol) for symbol in config['symbols']]
+
+            return data
 
         except FileNotFoundError as e:
-            print(f"Error: {e}")
+            print(f"File '{self._list_key}' not found: {e}")
             return []
-
         except Exception as e:
-            print(f"An error occurred while reading {self._list_key}: {e}")
+            print(f"An error occurred while reading '{self._list_key}': {e}")
             return []
 
     def set_list(self, data):
-        """Set the contents of this node by saving a list as a file."""
+        """Set the contents of this node by saving a list as an HDF5 file."""
         # Ensure data is a list
         if not isinstance(data, list):
             raise TypeError("Input data must be a list.")
@@ -94,22 +112,32 @@ class PESData(Data):
 
         save_data = []
         for item in data:
+            # Ensure that symbols are a list of strings
+            item['symbols'] = [str(symbol) for symbol in item['symbols']]
             save_data.append({key: value.tolist() if isinstance(value, np.ndarray) else value for key, value in item.items()})
 
         try:
             # Create a temporary directory to save the file
             with tempfile.TemporaryDirectory() as temp_dir:
-                dataset_temp_file = os.path.join(temp_dir, self._list_key)
-                # Save the data using numpy
-                np.savez(dataset_temp_file, data=save_data)
+                dataset_temp_file = os.path.join(temp_dir, f"{self._list_key}.h5")
+                # Save the data using h5py
+                with h5py.File(dataset_temp_file, 'w') as hdf:
+                    for idx, item in enumerate(save_data):
+                        group = hdf.create_group(f"item_{idx}")
+                        for key, value in item.items():
+                            if isinstance(value, list) or isinstance(value, np.ndarray):
+                                group.create_dataset(key, data=value)
+                            else:
+                                group.attrs[key] = value
 
                 # Store the file in the AiiDA repository
                 self.base.repository.put_object_from_file(dataset_temp_file, self._list_key)
+            # Store metadata as attributes
             self.base.attributes.set('dataset_size', len(data))
             self.base.attributes.set('num_labelled_frames', num_labelled_frames)
             self.base.attributes.set('num_unlabelled_frames', num_unlabelled_frames)
         except Exception as e:
-            print(f"An error occurred while saving {self._list_key}: {e}")
+            print(f"An error occurred while saving '{self._list_key}': {e}")
 
     def get_ase_list(self):
         """Convert dataset list to an ASE list."""
