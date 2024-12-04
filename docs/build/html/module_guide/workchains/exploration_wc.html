@@ -186,7 +186,13 @@
 </details></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../calculations/mace.html">MACE Training Calculation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../calculations/evaluation.html">Evaluation Calculation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../parsers.html">Parsers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
@@ -398,7 +404,7 @@
 <dt><strong>Exploration WorkChain</strong></dt><dd><dl>
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">workchain</span></em><span class="sig-prename descclassname"><span class="pre">aiida_trains_pot.aiida_trains_pot_workflow.exploration_wc.</span></span><span class="sig-name descname"><span class="pre">ExplorationWorkChain</span></span></dt>
-<dd><p>A workchain to loop over structures and submit AbInitioLabellingWorkChain.</p>
+<dd><p>A workchain to loop over structures and submit LammpsWorkChain with retries.</p>
 <p><strong>Inputs:</strong><ul>
 <li><strong>lammps_input_structures</strong>, <em>Namespace</em> – Input structures for lammps</li>
 <li><strong>md</strong>, <em>Namespace</em><ul>
@@ -490,8 +496,10 @@
 <li><strong>md</strong>, <em>Namespace</em> – Exploration outputs</li>
 </ul>
 </p>
-<p><strong>Outline:</strong><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">run_md</span>
-<span class="n">finalize_md</span>
+<p><strong>Outline:</strong><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">run_md</span><span class="p">(</span><span class="n">Run</span> <span class="n">MD</span> <span class="n">simulations</span> <span class="k">for</span> <span class="n">each</span> <span class="n">structure</span> <span class="ow">and</span> <span class="n">MD</span> <span class="n">parameter</span> <span class="nb">set</span><span class="p">,</span> <span class="k">with</span> <span class="n">retries</span> <span class="n">on</span> <span class="n">failure</span><span class="o">.</span><span class="p">)</span>
+<span class="k">while</span><span class="p">(</span><span class="n">not_converged</span><span class="p">)</span>
+    <span class="n">run_restart</span>
+<span class="n">finalize_md</span><span class="p">(</span><span class="n">Collect</span> <span class="n">the</span> <span class="n">results</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">completed</span> <span class="n">LAMMPS</span> <span class="n">calculations</span><span class="o">.</span><span class="p">)</span>
 </pre></div>
 </div>
 </p>

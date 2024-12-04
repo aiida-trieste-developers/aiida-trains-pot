@@ -4,6 +4,9 @@ Calculations
 .. toctree::
    :maxdepth: 3
 
+   mace
+   evaluation   
+
 .. currentmodule:: aiida_trains_pot
 
 These calculations are utilized in training and evaluation processes:
@@ -15,3 +18,4 @@ These calculations are utilized in training and evaluation processes:
 **Evaluation Calculation**
   .. autoclass:: aiida_trains_pot.evaluation.calculations.EvaluationCalculation
      :members:
+

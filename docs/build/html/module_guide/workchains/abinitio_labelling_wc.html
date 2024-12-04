@@ -178,12 +178,21 @@
 <li class="toctree-l3 has-children"><a class="reference internal" href="training_wc.html">Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="exploration_wc.html">Exploration WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="mace_wc.html">MACE Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../calculations/mace.html">MACE Training Calculation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../calculations/evaluation.html">Evaluation Calculation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../parsers.html">Parsers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
@@ -397,6 +406,7 @@
 <em class="property"><span class="pre">workchain</span></em><span class="sig-prename descclassname"><span class="pre">aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.</span></span><span class="sig-name descname"><span class="pre">AbInitioLabellingWorkChain</span></span></dt>
 <dd><p>A workchain to loop over structures and submit AbInitioLabellingWorkChain.</p>
 <p><strong>Inputs:</strong><ul>
+<li><strong>group_label</strong>, <em>(Str, NoneType)</em>, optional – Label for group.</li>
 <li><strong>metadata</strong>, <em>Namespace</em><ul>
 <li><strong>call_link_label</strong>, <em>str</em>, optional, <em>is_metadata</em> – The label to use for the <cite>CALL</cite> link if the process is called by another process.</li>
 <li><strong>description</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Description to set on the process node.</li>

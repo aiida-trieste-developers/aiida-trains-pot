@@ -177,12 +177,21 @@
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/training_wc.html">Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/exploration_wc.html">Exploration WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/workchains/mace_wc.html">MACE Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
 </ul>
 </details></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/calculations/mace.html">MACE Training Calculation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../module_guide/calculations/evaluation.html">Evaluation Calculation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../../module_guide/parsers.html">Parsers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
@@ -323,7 +332,7 @@
                   
   <h1>Source code for aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">aiida.engine</span> <span class="kn">import</span> <span class="n">WorkChain</span><span class="p">,</span> <span class="n">ToContext</span><span class="p">,</span> <span class="n">append_</span><span class="p">,</span> <span class="n">calcfunction</span>
-<span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="n">StructureData</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Int</span>
+<span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="n">StructureData</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Str</span><span class="p">,</span> <span class="n">Group</span><span class="p">,</span> <span class="n">load_group</span>
 <span class="kn">from</span> <span class="nn">aiida.plugins</span> <span class="kn">import</span> <span class="n">WorkflowFactory</span><span class="p">,</span> <span class="n">DataFactory</span>
 <span class="kn">from</span> <span class="nn">aiida.common</span> <span class="kn">import</span> <span class="n">AttributeDict</span>
 <span class="kn">from</span> <span class="nn">aiida_quantumespresso.utils.mapping</span> <span class="kn">import</span> <span class="n">prepare_process_inputs</span>
@@ -355,7 +364,8 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">define</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s1">&#39;unlabelled_dataset&#39;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">PESData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Structures to label.&quot;</span><span class="p">)</span>             
+        <span class="n">spec</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s1">&#39;unlabelled_dataset&#39;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">PESData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Structures to label.&quot;</span><span class="p">)</span>     
+        <span class="n">spec</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s1">&#39;group_label&#39;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">Str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Label for group.&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>        
         <span class="n">spec</span><span class="o">.</span><span class="n">expose_inputs</span><span class="p">(</span><span class="n">PwBaseWorkChain</span><span class="p">,</span> <span class="n">namespace</span><span class="o">=</span><span class="s2">&quot;quantumespresso&quot;</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;pw.structure&#39;</span><span class="p">,),</span> <span class="n">namespace_options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;validator&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">})</span>          
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;ab_initio_labelling_data&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">PESData</span><span class="p">,)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">outline</span><span class="p">(</span>
@@ -378,6 +388,20 @@
 <a class="viewcode-back" href="../../../module_guide/workchains/index.html#aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc.AbInitioLabellingWorkChain.run_ab_initio_labelling">[docs]</a>
     <span class="k">def</span> <span class="nf">run_ab_initio_labelling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run PwBaseWorkChain for each structure.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Create or load a group to track the calculations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;self.inputs.group_label </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">group_label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="s1">&#39;group_label&#39;</span><span class="p">):</span>
+            <span class="n">group_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">group_label</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">group_label</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;ab_initio_labelling_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="si">}</span><span class="s1">&#39;</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="n">load_group</span><span class="p">(</span><span class="n">group_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Using existing group: </span><span class="si">{</span><span class="n">group_label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">group_label</span><span class="p">)</span><span class="o">.</span><span class="n">store</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Created new group: </span><span class="si">{</span><span class="n">group_label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">structure</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">unlabelled_dataset</span><span class="o">.</span><span class="n">get_ase_list</span><span class="p">()):</span>   
             <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">config</span> <span class="o">+=</span> <span class="mi">1</span>    
@@ -406,6 +430,9 @@
             <span class="c1"># Submit the workchain</span>
             <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">PwBaseWorkChain</span><span class="p">,</span> <span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Launched AbInitioLabellingWorkChain for configuration </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">config</span><span class="si">}</span><span class="s1"> &lt;</span><span class="si">{</span><span class="n">future</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s1">&gt;&#39;</span><span class="p">)</span>
+
+            <span class="c1"># Add the calculation to the group</span>
+            <span class="n">group</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">to_context</span><span class="p">(</span><span class="n">ab_initio_labelling_calculations</span><span class="o">=</span><span class="n">append_</span><span class="p">(</span><span class="n">future</span><span class="p">))</span>            </div>
 
 

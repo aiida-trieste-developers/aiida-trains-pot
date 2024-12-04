@@ -19,9 +19,14 @@ import aiida_trains_pot
 from aiida.manage.configuration import Profile, load_profile
 
 sys.path.insert(0, os.path.abspath("../"))  # Adjust as necessary
-aiida.load_profile()
+from aiida import load_profile
+try:
+    load_profile()
+except Exception as e:
+    print(f"Error loading AiiDA profile: {e}")
+#aiida.load_profile()
 
-load_profile(Profile("docs", {"process_control": {}, "storage": {}}))
+#load_profile(Profile("docs", {"process_control": {}, "storage": {}}))
 
 
 # -- Project information -----------------------------------------------------
