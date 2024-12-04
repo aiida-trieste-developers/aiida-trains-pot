@@ -143,7 +143,7 @@ builder.thr_stress = Float(1e-1)
 # Setup dataset augmentation
 ###############################################
 
-builder.dataset_augmentation.do_rattle = Bool(True)
+builder.dataset_augmentation.do_rattle_strain_defects = Bool(True)
 builder.dataset_augmentation.do_input = Bool(True)
 builder.dataset_augmentation.do_isolated = Bool(True)
 builder.dataset_augmentation.rattle.params.rattle_fraction = Float(0.1)

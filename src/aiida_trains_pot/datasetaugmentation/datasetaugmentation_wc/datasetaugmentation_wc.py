@@ -175,7 +175,7 @@ class DatasetAugmentationWorkChain(WorkChain):
     DEFAULT_RATTLE_frac_vacancies           = Float(0.4)
     DEFAULT_RATTLE_vacancies_per_config     = Int(2)
 
-    DEFAULT_do_rattle                       = Bool(True)
+    DEFAULT_do_rattle_strain_defects        = Bool(True)
     DEFAULT_do_input                        = Bool(True)
     DEFAULT_do_isolated                     = Bool(True)
    ######################################################
@@ -188,7 +188,7 @@ class DatasetAugmentationWorkChain(WorkChain):
         super().define(spec)
         spec.input_namespace("structures", valid_type=StructureData, required=True)
 
-        spec.input("do_rattle", valid_type=Bool, default=lambda:cls.DEFAULT_do_rattle, required=False, help=f"Perform rattle calculations (random atomic displacements, cell stretch/compression, vacancies. Permutations and replacements are not yet implemented). Default: {cls.DEFAULT_do_rattle}")
+        spec.input("do_rattle_strain_defects", valid_type=Bool, default=lambda:cls.DEFAULT_do_rattle_strain_defects, required=False, help=f"Perform rattle calculations (random atomic displacements, cell stretch/compression, vacancies. Permutations and replacements are not yet implemented). Default: {cls.DEFAULT_do_rattle_strain_defects}")
         spec.input("do_input", valid_type=Bool, default=lambda:cls.DEFAULT_do_input, required=False, help=f"Add input structures to the dataset. Default: {cls.DEFAULT_do_input}")
         spec.input("do_isolated", valid_type=Bool, default=lambda:cls.DEFAULT_do_isolated, required=False, help=f"Add isolated atoms configurations to the dataset. Default: {cls.DEFAULT_do_isolated}")
 
@@ -218,7 +218,7 @@ class DatasetAugmentationWorkChain(WorkChain):
     def check_inputs(self):
         """Check inputs."""
         
-        if self.inputs.do_rattle:
+        if self.inputs.do_rattle_strain_defects:
             # ERRORS
             if self.inputs.rattle.params.rattle_fraction < 0.0 or self.inputs.rattle.params.rattle_fraction > 1.0:
                 raise ValueError('rattle_fraction must be between 0 and 1')
@@ -249,7 +249,7 @@ class DatasetAugmentationWorkChain(WorkChain):
             dataset['input_structures'] = InputStructureGenerator(**dict(self.inputs.structures))['input_structures']
         if self.inputs.do_isolated:
             dataset['isolated_atoms_structure'] = IsolatedStructureGenerator(**dict(self.inputs.structures))['isolated_atoms_structure']
-        if self.inputs.do_rattle:
+        if self.inputs.do_rattle_strain_defects:
             dataset['rattle_structures'] = RattleStructureGenerator(self.inputs.rattle.params.n_configs, self.inputs.rattle.params.rattle_fraction, self.inputs.rattle.params.max_sigma_strain, self.inputs.rattle.params.frac_vacancies, self.inputs.rattle.params.vacancies_per_config,**dict(self.inputs.structures))['rattle_structures']
 
         dataset['global_structures'] = WriteDataset(**dataset)['global_structures']
