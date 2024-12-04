@@ -218,7 +218,7 @@ class TrainsPotWorkChain(WorkChain):
                 self.ctx.potentials_lammps.append(pot)
             for _, pot in self.inputs.models_ase.items():
                 self.ctx.potentials_ase.append(pot)
-            for _, pot in self.inputs.checkpoints.items():
+            for _, pot in self.inputs.training.checkpoints.items():
                 self.ctx.potential_checkpoints.append(pot)
         if not self.ctx.do_exploration and 'explored_dataset' in self.inputs:
             if len(self.inputs.explored_dataset) > 0:

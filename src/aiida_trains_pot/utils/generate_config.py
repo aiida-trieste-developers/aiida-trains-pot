@@ -35,14 +35,14 @@ def generate_lammps_md_config(temperatures, pressures, steps, styles, dt):
             "x": [press, press, 1000*dt],
             "y": [press, press, 1000*dt]           
         }
-        integration_block = {
+        md_block = {
+            "max_number_steps": step,
+            "velocity": [{"create": {"temp": temp}}],
             "integration": {
                 "style": style,
-                "constraints": constraint,
-                "max_number_steps": step,
-                "velocity": [{"create": {"temp": temp}}]
+                "constraints": constraint                
             }
         }
-        config.append(integration_block)
-    
+        config.append(md_block)
+
     return config
