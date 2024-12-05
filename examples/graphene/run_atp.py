@@ -146,11 +146,11 @@ builder.thr_stress = Float(1e-1)
 builder.dataset_augmentation.do_rattle_strain_defects = Bool(True)
 builder.dataset_augmentation.do_input = Bool(True)
 builder.dataset_augmentation.do_isolated = Bool(True)
-builder.dataset_augmentation.rattle.params.rattle_fraction = Float(0.1)
-builder.dataset_augmentation.rattle.params.max_sigma_strain = Float(0.1)
-builder.dataset_augmentation.rattle.params.n_configs = Int(20)
-builder.dataset_augmentation.rattle.params.frac_vacancies = Float(0.1)
-builder.dataset_augmentation.rattle.params.vacancies_per_config = Int(1)
+builder.dataset_augmentation.rsd.params.rattle_fraction = Float(0.1)
+builder.dataset_augmentation.rsd.params.max_sigma_strain = Float(0.1)
+builder.dataset_augmentation.rsd.params.n_configs = Int(20)
+builder.dataset_augmentation.rsd.params.frac_vacancies = Float(0.1)
+builder.dataset_augmentation.rsd.params.vacancies_per_config = Int(1)
 
 ###############################################
 # Setup Ab initio labelling

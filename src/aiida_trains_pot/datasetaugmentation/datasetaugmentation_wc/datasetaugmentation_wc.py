@@ -17,7 +17,7 @@ SinglefileData = DataFactory('core.singlefile')
 PESData        = DataFactory('pesdata')
 
 @calcfunction
-def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_vacancies, vacancies_per_config, **in_structure_dict):
+def RattleStrainDefectsStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_vacancies, vacancies_per_config, **in_structure_dict):
     """Generate structures.
     
     :param in_structure_list: A list of AiiDA `StructureData` nodes
@@ -55,11 +55,11 @@ def RattleStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_
                     'max_sigma_strain': max_sigma_strain.value,
                     'n_vacancies': n_vacancies,
                     'input_structure_uuid': str(structure.uuid),
-                    'gen_method': 'RATTLE',
+                    'gen_method': 'RATTLE_STRAIN_DEFECTS',
                     'pbc': mod_structure.get_pbc(),
                     })
     pes_dataset = PESData(structures)       
-    return {'rattle_structures': pes_dataset}
+    return {'rattle_strain_defects_structures': pes_dataset}
 
 @calcfunction
 def InputStructureGenerator(**in_structure_dict):
@@ -169,11 +169,11 @@ class DatasetAugmentationWorkChain(WorkChain):
    ######################################################
    ##                 DEFAULT VALUES                   ##
    ######################################################
-    DEFAULT_RATTLE_rattle_fraction          = Float(0.1)
-    DEFAULT_RATTLE_max_sigma_strain         = Float(0.1)
-    DEFAULT_RATTLE_n_configs                = Int(50)
-    DEFAULT_RATTLE_frac_vacancies           = Float(0.4)
-    DEFAULT_RATTLE_vacancies_per_config     = Int(2)
+    DEFAULT_RSD_rattle_fraction          = Float(0.1)
+    DEFAULT_RSD_max_sigma_strain         = Float(0.1)
+    DEFAULT_RSD_n_configs                = Int(50)
+    DEFAULT_RSD_frac_vacancies           = Float(0.4)
+    DEFAULT_RSD_vacancies_per_config     = Int(2)
 
     DEFAULT_do_rattle_strain_defects        = Bool(True)
     DEFAULT_do_input                        = Bool(True)
@@ -193,11 +193,11 @@ class DatasetAugmentationWorkChain(WorkChain):
         spec.input("do_isolated", valid_type=Bool, default=lambda:cls.DEFAULT_do_isolated, required=False, help=f"Add isolated atoms configurations to the dataset. Default: {cls.DEFAULT_do_isolated}")
 
 
-        spec.input("rattle.params.rattle_fraction", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RATTLE_rattle_fraction, required=False, help=f"Atoms are displaced by a rattle_fraction of the minimum interatomic distance. Default: {cls.DEFAULT_RATTLE_rattle_fraction}")
-        spec.input("rattle.params.max_sigma_strain", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RATTLE_max_sigma_strain, required=False, help=f"Maximum strain factor. Cell is stretched or compressed up to this fraction of cell parameters. Default: {cls.DEFAULT_RATTLE_max_sigma_strain}")
-        spec.input("rattle.params.n_configs", valid_type=Int, default=lambda:cls.DEFAULT_RATTLE_n_configs, required=False, help=f"Number of configurations to generate per each input structure. Default: {cls.DEFAULT_RATTLE_n_configs}")
-        spec.input("rattle.params.frac_vacancies", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RATTLE_frac_vacancies, required=False, help=f"Fraction of configurations with vacancies. Default: {cls.DEFAULT_RATTLE_frac_vacancies}")
-        spec.input("rattle.params.vacancies_per_config", valid_type=Int, default=lambda:cls.DEFAULT_RATTLE_vacancies_per_config, required=False, help=f"Number of vacancies per configuration. Default: {cls.DEFAULT_RATTLE_vacancies_per_config}")
+        spec.input("rsd.params.rattle_fraction", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_rattle_fraction, required=False, help=f"Atoms are displaced by a rattle_fraction of the minimum interatomic distance. Default: {cls.DEFAULT_RSD_rattle_fraction}")
+        spec.input("rsd.params.max_sigma_strain", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_max_sigma_strain, required=False, help=f"Maximum strain factor. Cell is stretched or compressed up to this fraction of cell parameters. Default: {cls.DEFAULT_RSD_max_sigma_strain}")
+        spec.input("rsd.params.n_configs", valid_type=Int, default=lambda:cls.DEFAULT_RSD_n_configs, required=False, help=f"Number of configurations to generate per each input structure. Default: {cls.DEFAULT_RSD_n_configs}")
+        spec.input("rsd.params.frac_vacancies", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_frac_vacancies, required=False, help=f"Fraction of configurations with vacancies. Default: {cls.DEFAULT_RSD_frac_vacancies}")
+        spec.input("rsd.params.vacancies_per_config", valid_type=Int, default=lambda:cls.DEFAULT_RSD_vacancies_per_config, required=False, help=f"Number of vacancies per configuration. Default: {cls.DEFAULT_RSD_vacancies_per_config}")
 
         spec.output_namespace("structures", valid_type=PESData, dynamic=True, help="Augmented datasets.")
 
@@ -220,23 +220,23 @@ class DatasetAugmentationWorkChain(WorkChain):
         
         if self.inputs.do_rattle_strain_defects:
             # ERRORS
-            if self.inputs.rattle.params.rattle_fraction < 0.0 or self.inputs.rattle.params.rattle_fraction > 1.0:
+            if self.inputs.rsd.params.rattle_fraction < 0.0 or self.inputs.rsd.params.rattle_fraction > 1.0:
                 raise ValueError('rattle_fraction must be between 0 and 1')
-            if self.inputs.rattle.params.max_sigma_strain < 0.0 or self.inputs.rattle.params.max_sigma_strain > 1.0:
+            if self.inputs.rsd.params.max_sigma_strain < 0.0 or self.inputs.rsd.params.max_sigma_strain > 1.0:
                 raise ValueError('max_sigma_strain must be between 0 and 1')
-            if self.inputs.rattle.params.n_configs < 1:
+            if self.inputs.rsd.params.n_configs < 1:
                 raise ValueError('n_configs must be at least 1')
-            if self.inputs.rattle.params.frac_vacancies < 0.0 or self.inputs.rattle.params.frac_vacancies > 1.0:
+            if self.inputs.rsd.params.frac_vacancies < 0.0 or self.inputs.rsd.params.frac_vacancies > 1.0:
                 raise ValueError('frac_vacancies must be between 0 and 1')
-            if self.inputs.rattle.params.vacancies_per_config < 0:
+            if self.inputs.rsd.params.vacancies_per_config < 0:
                 raise ValueError('vacancies_per_config must be non-negative')
             for structure in self.inputs.structures.values():
-                if self.inputs.rattle.params.vacancies_per_config > len(structure.get_ase().get_chemical_symbols()):
+                if self.inputs.rsd.params.vacancies_per_config > len(structure.get_ase().get_chemical_symbols()):
                     raise ValueError(f'Number of vacancies per configuration is greater than the number of atoms in the structure <{structure.uuid}>.')
             # WARNINGS
-            if self.inputs.rattle.params.rattle_fraction > 0.15:
+            if self.inputs.rsd.params.rattle_fraction > 0.15:
                 raise Warning('rattle_fraction is greater than 0.15 (15%), can lead to atoms too close to each other.')
-            if self.inputs.rattle.params.max_sigma_strain > 0.15:
+            if self.inputs.rsd.params.max_sigma_strain > 0.15:
                 raise Warning('max_sigma_strain is greater than 0.15 (15%), can lead to atoms too close to each other.')
             
        
@@ -250,7 +250,7 @@ class DatasetAugmentationWorkChain(WorkChain):
         if self.inputs.do_isolated:
             dataset['isolated_atoms_structure'] = IsolatedStructureGenerator(**dict(self.inputs.structures))['isolated_atoms_structure']
         if self.inputs.do_rattle_strain_defects:
-            dataset['rattle_structures'] = RattleStructureGenerator(self.inputs.rattle.params.n_configs, self.inputs.rattle.params.rattle_fraction, self.inputs.rattle.params.max_sigma_strain, self.inputs.rattle.params.frac_vacancies, self.inputs.rattle.params.vacancies_per_config,**dict(self.inputs.structures))['rattle_structures']
+            dataset['rattle_strain_defects_structures'] = RattleStrainDefectsStructureGenerator(self.inputs.rsd.params.n_configs, self.inputs.rsd.params.rattle_fraction, self.inputs.rsd.params.max_sigma_strain, self.inputs.rsd.params.frac_vacancies, self.inputs.rsd.params.vacancies_per_config,**dict(self.inputs.structures))['rattle_strain_defects_structures']
 
         dataset['global_structures'] = WriteDataset(**dataset)['global_structures']
         self.out("structures", dataset)
