@@ -546,9 +546,9 @@ ndiag  : The number of ‘linear algebra groups’ used when parallelizing the s
 </li>
 <li><strong>dataset</strong>, <em>(PESData, NoneType)</em>, optional – Dataset containing labelled structures and structures to be labelled</li>
 <li><strong>dataset_augmentation</strong>, <em>Namespace</em><ul>
-<li><strong>do_input</strong>, <em>(Bool, NoneType)</em>, optional – Add input structures to the dataset. Default: uuid: 8bbf22d6-9658-45b5-bab9-41ac4ce8db5b (unstored) value: True</li>
-<li><strong>do_isolated</strong>, <em>(Bool, NoneType)</em>, optional – Add isolated atoms configurations to the dataset. Default: uuid: 22bb880b-de18-4b39-bbec-6660260a1d68 (unstored) value: True</li>
-<li><strong>do_rattle_strain_defects</strong>, <em>(Bool, NoneType)</em>, optional – Perform rattle calculations (random atomic displacements, cell stretch/compression, vacancies. Permutations and replacements are not yet implemented). Default: uuid: 66f92786-2a0f-43fb-8ed6-95a509ee3779 (unstored) value: True</li>
+<li><strong>do_input</strong>, <em>(Bool, NoneType)</em>, optional – Add input structures to the dataset. Default: uuid: e8fad854-0946-48f7-8297-c3fb71e717cb (unstored) value: True</li>
+<li><strong>do_isolated</strong>, <em>(Bool, NoneType)</em>, optional – Add isolated atoms configurations to the dataset. Default: uuid: d93dfcdd-7a6c-42ab-9800-cbf1301846f1 (unstored) value: True</li>
+<li><strong>do_rattle_strain_defects</strong>, <em>(Bool, NoneType)</em>, optional – Perform rattle calculations (random atomic displacements, cell stretch/compression, vacancies. Permutations and replacements are not yet implemented). Default: uuid: 4257461f-f845-4f5a-8795-2040a0c2d26b (unstored) value: True</li>
 <li><strong>metadata</strong>, <em>Namespace</em><ul>
 <li><strong>call_link_label</strong>, <em>str</em>, optional, <em>is_metadata</em> – The label to use for the <cite>CALL</cite> link if the process is called by another process.</li>
 <li><strong>description</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Description to set on the process node.</li>
@@ -559,11 +559,11 @@ ndiag  : The number of ‘linear algebra groups’ used when parallelizing the s
 </li>
 <li><strong>rattle</strong>, <em>Namespace</em><ul>
 <li><strong>params</strong>, <em>Namespace</em><ul>
-<li><strong>frac_vacancies</strong>, <em>(Int, Float, NoneType)</em>, optional – Fraction of configurations with vacancies. Default: uuid: 6b9c923a-390a-4108-832c-f56ea4442707 (unstored) value: 0.4</li>
-<li><strong>max_sigma_strain</strong>, <em>(Int, Float, NoneType)</em>, optional – Maximum strain factor. Default: uuid: e70bd914-0e29-4bc0-bcf8-451c745d04d6 (unstored) value: 0.1</li>
-<li><strong>n_configs</strong>, <em>(Int, NoneType)</em>, optional – Number of configurations to generate. Default: uuid: 40911e9e-6863-40a0-bce6-e1a3614d45dd (unstored) value: 50</li>
-<li><strong>rattle_fraction</strong>, <em>(Int, Float, NoneType)</em>, optional – Atoms are displaced by a rattle_fraction of the minimum interatomic distance. Default: uuid: 26238224-80e8-423f-bad1-a331a6b01a6a (unstored) value: 0.1</li>
-<li><strong>vacancies_per_config</strong>, <em>(Int, NoneType)</em>, optional – Number of vacancies per configuration. Default: uuid: b0901eef-2465-4581-9498-85842ebbc37e (unstored) value: 2</li>
+<li><strong>frac_vacancies</strong>, <em>(Int, Float, NoneType)</em>, optional – Fraction of configurations with vacancies. Default: uuid: 20ab52d0-766f-4545-b604-6d835b15592c (unstored) value: 0.4</li>
+<li><strong>max_sigma_strain</strong>, <em>(Int, Float, NoneType)</em>, optional – Maximum strain factor. Cell is stretched or compressed up to this fraction of cell parameters. Default: uuid: a70b5540-4f2f-420a-b063-12721c63784c (unstored) value: 0.1</li>
+<li><strong>n_configs</strong>, <em>(Int, NoneType)</em>, optional – Number of configurations to generate per each input structure. Default: uuid: 96a326b7-c86b-42b2-907e-0a49c8a97795 (unstored) value: 50</li>
+<li><strong>rattle_fraction</strong>, <em>(Int, Float, NoneType)</em>, optional – Atoms are displaced by a rattle_fraction of the minimum interatomic distance. Default: uuid: 98a214c3-3ebb-4db3-9d6e-25e0ea176fb1 (unstored) value: 0.1</li>
+<li><strong>vacancies_per_config</strong>, <em>(Int, NoneType)</em>, optional – Number of vacancies per configuration. Default: uuid: eaa7ae8b-081d-4c10-871c-aaa182543127 (unstored) value: 2</li>
 </ul>
 </li>
 </ul>

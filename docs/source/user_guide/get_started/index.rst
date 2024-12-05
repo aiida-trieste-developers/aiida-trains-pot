@@ -13,7 +13,7 @@ To use `aiida-trains-pot <https://github.com/aiida-trieste-developers/aiida-trai
 
 - `AiiDA <https://aiida.net>`_
 - `QuantumESPRESSO <https://www.quantum-espresso.org>`_, `MACE <https://github.com/ACEsuit/mace>`_, and `LAMMPS <https://mace-docs.readthedocs.io/en/latest/guide/lammps.html>`_ codes installed on your computing environment and configured in AiiDA
-- Access to a GPU-enabled HPC cluster with SLURM support (e.g., Cineca Leonardo)
+- Access to a GPU-enabled HPC cluster with SLURM support (e.g., Leonardo cluster at CINECA)
 
 **Note**: The example in this guide uses QuantumESPRESSO, MACE, and LAMMPS workflows configured with the appropriate GPU parameters.
 
@@ -41,7 +41,7 @@ Before starting, ensure you load your AiiDA profile and import necessary depende
 Step 2: Define and Load the Codes
 ---------------------------------
 
-In this example, we use QuantumESPRESSO (QE), MACE, LAMMPS, and committee evaluation codes. Make sure these are installed and available as AiiDA codes. Examples of configuration YAML files can be found in `examples/setup_codes <https://github.com/aiida-trieste-developers/aiida-trains-pot/tree/main/examples/setup_codes>`_:
+In this example, we use Quantum ESPRESSO (QE), MACE, LAMMPS, and committee evaluation codes. Make sure these are installed and available as AiiDA codes. Examples of configuration YAML files can be found in `examples/setup_codes <https://github.com/aiida-trieste-developers/aiida-trains-pot/tree/main/examples/setup_codes>`_:
 
 .. code-block:: python
 
@@ -55,7 +55,7 @@ In this example, we use QuantumESPRESSO (QE), MACE, LAMMPS, and committee evalua
 Step 3: Set Machine Parameters
 ------------------------------
 
-Customize machine parameters for each code (time, nodes, GPUs, memory, etc.). Here’s an example for configuring QuantumESPRESSO:
+Customize machine parameters for each code (time, nodes, GPUs, memory, etc.). Here’s an example for configuring Quantum ESPRESSO:
 
 .. code-block:: python
 
@@ -86,13 +86,18 @@ Load the graphene structure `gr8x8.xyz <https://github.com/aiida-trieste-develop
 Step 5: Setup the TrainsPot Workflow
 ------------------------------------
 
-The `TrainsPot` workflow combines several tasks. Use `get_builder()` to set up the workflow:
+The `TrainsPot` workflow combines several tasks. Use `get_builder()` to get the workflow's builder and give the input structures:
 
 .. code-block:: python
 
     TrainsPot = WorkflowFactory('trains_pot.workflow')
     builder = TrainsPot.get_builder()
     builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(input_structures))}
+
+The workflow has several steps, each of them can be enabled or disabled by setting the corresponding flags. Can be also specified a maximum number of active learning loops:
+
+.. code-block:: python
+
     builder.do_dataset_augmentation = Bool(True)
     builder.do_ab_initio_labelling = Bool(True)
     builder.do_training = Bool(True)
@@ -102,7 +107,8 @@ The `TrainsPot` workflow combines several tasks. Use `get_builder()` to set up t
 Step 6: Configure Dataset Augmentation
 --------------------------------------
 
-Set up parameters for data augmentation. You can adjust options like `do_rattle`, `do_input`, and `do_isolated` for custom configurations:
+Data augmentation starts from few input configuration (just one graphene structure in this example) and increases the size of the dataset generating new configurations. The augmented dataset con contain the input structures, isolated atoms (one per each atomic species present in the input structures), and distorted configurations.
+Various parameters for data augmentation can be adjusted:
 
 .. code-block:: python
 
@@ -115,10 +121,12 @@ Set up parameters for data augmentation. You can adjust options like `do_rattle`
     builder.dataset_augmentation.rattle.params.frac_vacancies = Float(0.1)
     builder.dataset_augmentation.rattle.params.vacancies_per_config = Int(1)
 
-Step 7: Configure Ab Initio Labelling (QuantumESPRESSO)
--------------------------------------------------------
+Step 7: Configure Ab Initio Labelling (Quantum ESPRESSO)
+--------------------------------------------------------
 
-Load QE settings, k-points, and pseudopotentials for labelling:
+Load Quantum ESPRESSO settings, k-points, cutoffs, pseudopotentials,... for labelling.
+
+**Note**: Passing pseudopotentials pay attention to give one per each atomic species present in the dataset. Hence in getting the pseudos from SSSP library you should pass to the `get_pseudos` method a structure containing all the atomic species present in the dataset.
 
 .. code-block:: python
 
@@ -134,7 +142,11 @@ Load QE settings, k-points, and pseudopotentials for labelling:
 Step 8: Configure MACE and LAMMPS for Training and Exploration
 --------------------------------------------------------------
 
-Use a YAML configuration for MACE. The additonal information about the MACE parameters can be found in the `MACE documentation <https://mace-docs.readthedocs.io/en/latest/guide/training.html>`_:
+MACE parameters can be written in a yaml file as in `mace_config.yml <https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/examples/graphene/mace_config.yml>`_ Additonal information about the MACE parameters can be found in the `MACE documentation <https://mace-docs.readthedocs.io/en/latest/guide/training.html>`_.
+
+**Note**: In latest release of MACE (v0.3.8) the training can fail if using multiple GPUs and the training stops earlier following `patience` criteria. To avoid this issue, when using multiple GPUs, set `patience` parameter to a large value (e.g., 1000).
+
+Here we load the MACE configuration file and set the number of potentials in the committee:
 
 .. code-block:: python
 
@@ -145,7 +157,7 @@ Use a YAML configuration for MACE. The additonal information about the MACE para
     builder.training.mace.train.mace_config = Dict(mace_config)
     builder.training.num_potentials = Int(4)
 
-For LAMMPS, load additional parameters from `lammps_md_params.yml <https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/examples/graphene/lammps_md_params.yml>`_. The additonal information about the LAMMPS parameters can be found in the `LAMMPS documentation <https://aiida-lammps.readthedocs.io/en/latest/topics/data/parameters.html>`_:
+As for MACE, also for LAMMPS, simulation parameters can be loaded from file, i.e. `lammps_md_params.yml <https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/examples/graphene/lammps_md_params.yml>`_. The additonal information about the LAMMPS parameters can be found in the `LAMMPS documentation <https://aiida-lammps.readthedocs.io/en/latest/topics/data/parameters.html>`_:
 
 .. code-block:: python
 
@@ -154,14 +166,28 @@ For LAMMPS, load additional parameters from `lammps_md_params.yml <https://githu
         lammps_params_list = yaml.safe_load(yaml_file)
     builder.exploration.params_list = List(lammps_params_list)
 
-Step 9: Setup Committee Evaluation
-----------------------------------
-
-Define resources and SLURM options for the committee evaluation stage:
+Otherwise `generate_lammps_md_config` can be used to generate simple LAMMPS parameter either for NVT or NPT simulations:
 
 .. code-block:: python
 
-    builder.committee_evaluation.code = EVALUATION_code    
+    timestep = 0.001
+    temperatures = [30, 35, 40, 45]
+    pressures = [0] * len(temperatures)
+    steps = [500] * len(temperatures)
+    styles =  ["npt"] * len(temperatures)  
+    lammps_params_list = generate_lammps_md_config(temperatures, pressures, steps, styles, timestep)
+
+    builder.exploration.params_list = List(lammps_params_list)
+
+Step 9: Setup Committee Evaluation
+----------------------------------
+
+Since committee evaluation uses a portable code, the computer should be explicitly set:
+
+.. code-block:: python
+
+    builder.committee_evaluation.code = EVALUATION_code
+    builder.committee_evaluation.metadata.computer = load_computer('leo1_scratch')
 
 Step 10: Submit the Workflow
 ----------------------------
@@ -171,9 +197,6 @@ Once everything is set up, submit the workflow:
 .. code-block:: python
 
     calc = submit(builder)
-    print(f"Submitted calculation with PK = {calc.pk}")
-
-This will submit the workflow to AiiDA, where you can track its progress and analyze results.
 
 ---
 
