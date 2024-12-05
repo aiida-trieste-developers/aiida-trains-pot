@@ -120,20 +120,24 @@ input_structures = [StructureData(ase=read(os.path.join(script_dir, 'gr8x8.xyz')
 
 builder = TrainsPot.get_builder()
 builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(input_structures))}
-# builder = TrainsPot.get_builder_from_protocol(input_structures, qe_code = QE_code)
 builder.do_dataset_augmentation = Bool(True)
 builder.do_ab_initio_labelling = Bool(True)
 builder.do_training = Bool(True)
 builder.do_exploration = Bool(True)
 builder.max_loops = Int(1)
-# builder.explored_dataset = load_node(748569)
-# builder.labelled_list = load_node(677593)
-#builder = models_from_trainingwc(builder, 87443, get_labelled_dataset=True, get_config=True)
-#builder.dataset = load_node(85953)
-#builder.models_lammps = {"pot_1":load_node(85984), "pot_2":load_node(85995), "pot_3":load_node(86006), "pot_4":load_node(86017)}
-#builder.models_ase = {"pot_1":load_node(85985), "pot_2":load_node(85996), "pot_3":load_node(86007), "pot_4":load_node(86018)}
-#builder = models_from_aiidatrainspotwc(builder, 91258)
 
+## Additional inputs for restart from previous runs or to start with a previous dataset and/or previous MACE potentials ##
+
+#builder.explored_dataset = load_node(748569) ## Dataset to be passed to the committe evaluation
+#builder.dataset = load_node(85953) ## Dataset selected to be labelled or already labelled (both labelled and unlabelled datasets are accepted in the same dataset)
+#builder = models_from_trainingwc(builder, 87443, get_labelled_dataset=True, get_config=True) ## populates builder with models (and eventually dataset and MACE parameters) from a previous training workflow
+#builder.models_lammps = {"pot_1":load_node(85984), "pot_2":load_node(85995), "pot_3":load_node(86006), "pot_4":load_node(86017)} ## MACE potentials compiled for LAMMPS
+#builder.models_ase = {"pot_1":load_node(85985), "pot_2":load_node(85996), "pot_3":load_node(86007), "pot_4":load_node(86018)} ## MACE potentials compiled for ASE
+
+###############################################
+# Thresholds on committe evaluation to select
+# structures to be labelled
+###############################################
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)
 builder.thr_stress = Float(1e-1)
@@ -231,7 +235,8 @@ builder.training.mace.train.metadata.options.custom_scheduler_commands = f"#SBAT
 
 builder.exploration.md.lammps.code = LAMMPS_code
 
-# Read the configuration from file
+## Read the configuration from file ##
+
 #lammps_params_yaml = os.path.join(script_dir, 'lammps_md_params.yml')
 #with open(lammps_params_yaml, 'r') as yaml_file:
 #    lammps_params_list = yaml.safe_load(yaml_file)
@@ -244,7 +249,7 @@ _parameters.control.timestep = 0.00242
 _parameters.control.newton = "on"
 _parameters.md = {}
 _parameters.dump = {"dump_rate": 1} ## This parameter will be updated automatically based on the value of builder.frame_extraction.sampling_time
-# Control how often the computes are printed to file
+
 # Parameters used to pass special information about the structure
 _parameters.structure = {"atom_style": "atomic", "atom_modify": "map yes"}
 # Parameters controlling the global values written directly to the output
@@ -278,7 +283,7 @@ _settings = AttributeDict()
 _settings.store_restart = True
 _settings.additional_cmdline_params = ["-k", "on", "g", "1", "-sf", "kk"]
 
-SETTINGS = Dict(dict=_settings)#
+SETTINGS = Dict(dict=_settings)
 builder.exploration.md.lammps.settings = SETTINGS
 builder.exploration.parameters = PARAMETERS
 builder.exploration.md.lammps.metadata.options.resources = {
@@ -294,8 +299,8 @@ builder.exploration.md.lammps.metadata.options.queue_name = LAMMPS_machine['part
 builder.exploration.md.lammps.metadata.options.qos = LAMMPS_machine['qos']
 builder.exploration.md.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{LAMMPS_machine['gpu']}"
 
-builder.frame_extraction.sampling_time = Float(0.242)
-builder.frame_extraction.thermalization_time = Float(0)
+builder.frame_extraction.sampling_time = Float(0.242) # in ps how often frames are written to the trajectory file
+builder.frame_extraction.thermalization_time = Float(0) # in ps how long the thermalization time is. Frames in that time are not considered
 
 
 
@@ -319,7 +324,5 @@ builder.committee_evaluation.metadata.options.account = EVALUATION_machine['acco
 builder.committee_evaluation.metadata.computer = load_computer('leo1_scratch')
 
 
-
-type(builder)
 calc = submit(builder)
 print(f"Submitted calculation with PK = {calc.pk}")
