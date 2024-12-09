@@ -95,7 +95,6 @@ class ExplorationWorkChain(WorkChain):
                 
                 parameters.md = dict(params_md)
                 inputs.lammps.parameters = Dict(parameters)
-                self.report(f'inputrs of run_md <{inputs}>')
                 future = self.submit(LammpsWorkChain, **inputs)
                 self.to_context(md_wc=append_(future))                 
                 self.ctx.dict_wc[f'{self.ctx.iteration}'] = self.ctx.iteration 
@@ -114,10 +113,8 @@ class ExplorationWorkChain(WorkChain):
                 for key, node in incoming.items():
                     if key == 'lammps':
                         inputs[key].update(node)  # Merge nested inputs
-                    #elif key not in ['CALL']:  # Exclude invalid keys like 'CALL'
-                    #    inputs[key] = node
+                    
                 
-                self.report(f'inputrs of run_restart <{inputs}>')
                 future = self.submit(LammpsWorkChain, **inputs)
                 self.to_context(md_wc=append_(future))
                 self.ctx.dict_wc[f'{self.ctx.iteration}'] = self.ctx.dict_wc[f'{ii}']
@@ -134,18 +131,12 @@ class ExplorationWorkChain(WorkChain):
         for ii, calc in enumerate(self.ctx.md_wc):
             if (ii in self.ctx.last_wc) and calc.exit_status != 0:
                 # Count how many times the current calculation has been retried
-                retry_count = sum(1 for value in self.ctx.dict_wc.values() if value == self.ctx.dict_wc[f'{ii}'])
-                self.report(f'retry_count for {ii} <{retry_count}>')
+                retry_count = sum(1 for value in self.ctx.dict_wc.values() if value == self.ctx.dict_wc[f'{ii}'])                
                 
                 # Check if the calculation failed and has been retried less than 5 times
                 if retry_count < 3 and (ii not in self.ctx.rerun_wc_old):
                     self.ctx.rerun_wc.append(ii)
 
-        self.report(f'Shoud repeat <{self.ctx.rerun_wc}>')
-        self.report(f'All repeat <{self.ctx.rerun_wc_old}>')
-        self.report(f'self.ctx.last_wc <{self.ctx.last_wc}>')
-        self.report(f'self.ctx.dict_wc <{self.ctx.dict_wc}>')
-        # Return True if there are calculations to retry
         return len(self.ctx.rerun_wc) > 0      
 
     def finalize_md(self):
