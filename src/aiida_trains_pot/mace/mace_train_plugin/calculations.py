@@ -17,35 +17,6 @@ import random
 
 PESData = DataFactory('pesdata')
 
-def dataset_list_to_txt(dataset_list):
-    """Convert dataset list to xyz file."""
-
-    dataset_txt = ''
-
-    for config in dataset_list.get_list():
-        atm = Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'])
-        if 'stress' in config.keys():
-            s = config['stress']
-        else:
-            s = config['dft_stress']
-        stress = [s[0][0] , s[1][1], s[2][2], s[1][2], s[0][2], s[0][1]]
-        if 'energy' in config.keys() and 'forces' in config.keys():
-            atm.set_calculator(SinglePointCalculator(atm, energy=config['energy'], forces=config['forces'], stress=stress))
-        else:
-            atm.set_calculator(SinglePointCalculator(atm, energy=config['dft_energy'], forces=config['dft_forces'], stress=stress))
-
-        with io.StringIO() as buf, redirect_stdout(buf):
-            write('-', atm, format='extxyz')
-            txt_mod = buf.getvalue().replace('energy', 'dft_energy').replace('stress', 'dft_stress').replace('forces', 'dft_forces')
-        if len(atm.get_chemical_symbols()) == 1:
-            txt_mod = txt_mod.replace("pbc=", "config_type=IsolatedAtom pbc=")
-        dataset_txt += txt_mod
-
-    # return SinglefileData(file=io.BytesIO(dataset_txt.encode()), filename="dataset.xyz")
-    return dataset_txt
-
-
-
 class MaceTrainCalculation(CalcJob):
     """
     AiiDA calculation plugin wrapping the diff executable.
@@ -148,9 +119,9 @@ class MaceTrainCalculation(CalcJob):
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = "mace.out"
         
-        training_txt = dataset_list_to_txt(self.inputs.training_set)
-        validation_txt = dataset_list_to_txt(self.inputs.validation_set)
-        test_txt = dataset_list_to_txt(self.inputs.test_set)
+        training_txt = self.inputs.training_set.get_txt()
+        validation_txt = self.inputs.validation_set.get_txt()
+        test_txt = self.inputs.test_set.get_txt()
 
         with folder.open('training.xyz', "w") as handle:
             handle.write(training_txt)
