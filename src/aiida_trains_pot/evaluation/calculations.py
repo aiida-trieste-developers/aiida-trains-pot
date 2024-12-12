@@ -65,7 +65,7 @@ class EvaluationCalculation(CalcJob):
 
         for key, dataset in self.inputs.datasets.items():
             with folder.open(f"dataset_{key}.xyz", "w") as handle:
-                handle.write(dataset.get_txt())
+                handle.write(dataset.get_txt(write_params=True, key_prefix=""))
         
         calcinfo.codes_info = [codeinfo]
 

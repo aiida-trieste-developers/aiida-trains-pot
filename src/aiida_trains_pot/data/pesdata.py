@@ -7,6 +7,7 @@ from ase import Atoms
 import io
 from contextlib import redirect_stdout
 from ase.io import write
+import warnings
 import h5py
 
 class PESData(Data):
@@ -112,6 +113,16 @@ class PESData(Data):
 
         save_data = []
         for item in data:
+            if 'pbc' not in item:
+                item['pbc'] = [True, True, True]
+                warnings.warn("Periodic boundary conditions not found in the dataset. Assuming PBC = [True, True, True].", UserWarning)
+            if 'cell' not in item:
+                raise ValueError("Cell vectors not found in the dataset.")
+            if 'symbols' not in item:
+                raise ValueError("Atomic symbols not found in the dataset.")
+            if 'positions' not in item:
+                raise ValueError("Atomic positions not found in the dataset.")
+        for item in data:
             # Ensure that symbols are a list of strings
             item['symbols'] = [str(symbol) for symbol in item['symbols']]
             save_data.append({key: value.tolist() if isinstance(value, np.ndarray) else value for key, value in item.items()})
@@ -154,31 +165,37 @@ class PESData(Data):
         
         return ase_list
     
-    def get_txt(self):
+    def get_txt(self, write_params=False, key_prefix=''):
         """Convert dataset list to xyz file."""
 
         dataset_txt = ''
-
+        if not key_prefix.endswith('_') and key_prefix != '':
+            key_prefix += '_'
         exclude_params = ['cell', 'symbols', 'positions', 'pbc', 'forces', 'stress', 'energy', 'dft_forces', 'dft_stress', 'dft_energy', 'md_forces', 'md_stress', 'md_energy']
         for config in self.get_list():
             params = [key for key in config.keys() if key not in exclude_params]
             atm = Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'], pbc=config['pbc'])
             atm.info = {}
-            for key in params:
-                atm.info[key] = config[key]
+            if write_params:
+                for key in params:
+                    atm.info[key] = config[key]
+            if len(atm.get_chemical_symbols()) == 1:
+                atm.info["config_type"] = "IsolatedAtom"
             if 'dft_stress' in config.keys():
                 s = config['dft_stress']
-                atm.info['dft_stress'] = f"{s[0][0]:.6f} {s[1][1]:.6f} {s[2][2]:.6f} {s[1][2]:.6f} {s[0][2]:.6f} {s[0][1]:.6f}"
+                atm.info[f'{key_prefix}stress'] = f"{s[0][0]:.6f} {s[0][1]:.6f} {s[0][2]:.6f} {s[1][0]:.6f} {s[1][1]:.6f} {s[1][2]:.6f} {s[2][0]:.6f} {s[2][1]:.6f} {s[2][2]:.6f}"
+                # atm.info['dft_stress'] = f"{s[0][0]:.6f} {s[1][1]:.6f} {s[2][2]:.6f} {s[1][2]:.6f} {s[0][2]:.6f} {s[0][1]:.6f}"
 
             if 'dft_energy' in config.keys():
-                atm.info['dft_energy'] = config['dft_energy']
+                atm.info[f'{key_prefix}energy'] = config['dft_energy']
             if 'dft_forces' in config.keys():
                 atm.set_calculator(SinglePointCalculator(atm, forces=config['dft_forces']))
             
             with io.StringIO() as buf, redirect_stdout(buf):
                 write('-', atm, format='extxyz', write_results=True, write_info=True)
                 dataset_txt += buf.getvalue()
-
+        if key_prefix != '':
+            dataset_txt = dataset_txt.replace(':forces', f':{key_prefix}forces')
         return dataset_txt
     
         

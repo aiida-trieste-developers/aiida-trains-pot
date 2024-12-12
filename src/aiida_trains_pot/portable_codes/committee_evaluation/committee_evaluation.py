@@ -186,12 +186,14 @@ def main(log_freq=100):
         time_i = time.time()
         evaluated_dataset = []
         for ii, atm in enumerate(atoms):
-            evaluated_dataset.append(atm.info)
+            evaluated_dataset.append({k:v for k, v in atm.info.items() if k != 'energy' and k != 'stress'})
             evaluated_dataset[-1]['cell'] = np.array(atm.get_cell())
             evaluated_dataset[-1]['positions'] = np.array(atm.get_positions())
             evaluated_dataset[-1]['symbols'] = atm.get_chemical_symbols()
             evaluated_dataset[-1]['pbc'] = atm.get_pbc()
             try:
+                evaluated_dataset[-1]['dft_energy'] = atm.get_potential_energy()
+                evaluated_dataset[-1]['dft_stress'] = np.array(atm.get_stress(voigt=False).ravel())
                 evaluated_dataset[-1]['dft_forces'] = np.array(atm.get_forces())
             except:
                 pass
@@ -210,13 +212,13 @@ def main(log_freq=100):
                 
                 evaluated_dataset[-1][f'pot_{n_pot}_energy'] = atm.get_potential_energy()
                 evaluated_dataset[-1][f'pot_{n_pot}_forces'] = np.array(atm.get_forces())
-                evaluated_dataset[-1][f'pot_{n_pot}_stress'] = np.array(atm.get_stress(voigt=True))
+                evaluated_dataset[-1][f'pot_{n_pot}_stress'] = np.array(atm.get_stress(voigt=False))
                 if 'dft_energy' in evaluated_dataset[-1]:
                     evaluated_dataset[-1][f'pot_{n_pot}_energy_rmse'] = calc_rmse([evaluated_dataset[-1]['dft_energy']], [evaluated_dataset[-1][f'pot_{n_pot}_energy']])
                 if 'dft_forces' in evaluated_dataset[-1]:
                     evaluated_dataset[-1][f'pot_{n_pot}_forces_rmse'] = calc_rmse(evaluated_dataset[-1]['dft_forces'], evaluated_dataset[-1][f'pot_{n_pot}_forces'])
                 if 'dft_stress' in evaluated_dataset[-1]:
-                    evaluated_dataset[-1][f'pot_{n_pot}_stress_rmse'] = calc_rmse(evaluated_dataset[-1]['dft_stress'], np.array(atm.get_stress(voigt=True)))
+                    evaluated_dataset[-1][f'pot_{n_pot}_stress_rmse'] = calc_rmse(evaluated_dataset[-1]['dft_stress'], np.array(atm.get_stress(voigt=False)).ravel())
             evaluated_dataset[-1][f'energy_deviation'] = maximum_deviation(np.array(energy))
             evaluated_dataset[-1][f'forces_deviation'] = maximum_deviation(np.array(forces))
             evaluated_dataset[-1][f'stress_deviation'] = maximum_deviation(np.array(stress))

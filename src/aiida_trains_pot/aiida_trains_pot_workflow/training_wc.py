@@ -89,7 +89,7 @@ def SplitDataset(dataset):
     
     return {"train_set":pes_training_set, "validation_set":pes_validation_set, "test_set":pes_test_set, "global_splitted":pes_global_splitted}
 
- 
+
 class TrainingWorkChain(WorkChain):
     """A workchain to loop over structures and submit MACEWorkChain."""
 

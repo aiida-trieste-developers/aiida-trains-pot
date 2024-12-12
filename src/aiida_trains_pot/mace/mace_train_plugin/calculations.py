@@ -75,13 +75,12 @@ class MaceTrainCalculation(CalcJob):
         """
 
         mace_config_dict = self.inputs.mace_config.get_dict()
-        do_preprocess = False
-        if self.inputs.do_preprocess.value:
-            if 'preprocess_code' in self.inputs:
-                preprocess_code = self.inputs.preprocess_code
-                do_preprocess = True
-            else:
+        do_preprocess = self.inputs.do_preprocess.value
+        if do_preprocess:
+            if 'preprocess_code' not in self.inputs:
                 raise ValueError("Preprocess code is required if do_preprocess is True")
+            preprocess_code = self.inputs.preprocess_code
+        
 
         
         if do_preprocess:
@@ -119,9 +118,9 @@ class MaceTrainCalculation(CalcJob):
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = "mace.out"
         
-        training_txt = self.inputs.training_set.get_txt()
-        validation_txt = self.inputs.validation_set.get_txt()
-        test_txt = self.inputs.test_set.get_txt()
+        training_txt = self.inputs.training_set.get_txt(write_params=False, key_prefix='dft')
+        validation_txt = self.inputs.validation_set.get_txt(write_params=False, key_prefix='dft')
+        test_txt = self.inputs.test_set.get_txt(write_params=False, key_prefix='dft')
 
         with folder.open('training.xyz', "w") as handle:
             handle.write(training_txt)

@@ -55,7 +55,7 @@ class EvaluationParser(Parser):
             output_filename = file
 
             if "dataset" in output_filename and "evaluated" in output_filename:
-                output_name = output_filename.replace("dataset_", "").replace("_evaluated.npz", "")
+                output_name = output_filename.replace("_evaluated.npz", "").replace("dataset_", "")
                 with self.retrieved.open(output_filename, "rb") as handle:
                     output_node = SinglefileData(file=handle)
                 with output_node.open(mode='rb') as handle:
@@ -63,7 +63,7 @@ class EvaluationParser(Parser):
                     datasets[output_name] = PESData(evaluated_list)
             
             if "dataset" in output_filename and "rmse" in output_filename:
-                output_name = output_filename.replace("dataset_", "").replace("_rmse.npz", "")
+                output_name = output_filename.replace("_rmse.npz", "").replace("dataset_", "")
                 with self.retrieved.open(output_filename, "rb") as handle:
                     output_node = SinglefileData(file=handle)
                 with output_node.open(mode='rb') as handle:
