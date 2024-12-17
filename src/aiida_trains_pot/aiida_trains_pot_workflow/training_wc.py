@@ -85,7 +85,7 @@ def SplitDataset(dataset):
     pes_test_set.set_list(test_set)  
 
     pes_global_splitted = PESData()    
-    pes_global_splitted.set_list(training_set+validation_set+test_set)  
+    pes_global_splitted.set_list(validation_set+test_set+training_set)  
     
     return {"train_set":pes_training_set, "validation_set":pes_validation_set, "test_set":pes_test_set, "global_splitted":pes_global_splitted}
 
