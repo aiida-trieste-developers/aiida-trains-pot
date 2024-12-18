@@ -9,6 +9,7 @@ from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 from aiida.plugins import DataFactory
 from ase.io.lammpsrun import read_lammps_dump_text
+from scipy.optimize import curve_fit
 from io import StringIO
 import numpy as np
 import io
@@ -35,7 +36,31 @@ def SaveRMSE(rmse):
 
     return List(list=rmse_serializable)
 
+def error_calibration(dataset, thr_energy, thr_forces, thr_stress):
 
+    def line(x, a): return a * x
+
+    dataset = dataset.get_list()
+    RMSE_e = [np.mean([el['pot_4_energy_rmse'], el['pot_3_energy_rmse'], el['pot_2_energy_rmse'], el['pot_1_energy_rmse']])/len(el['positions']) for el in dataset]
+    RMSE_f = [np.mean([el['pot_4_forces_rmse'], el['pot_3_forces_rmse'], el['pot_2_forces_rmse'], el['pot_1_forces_rmse']]) for el in dataset]
+    RMSE_s = [np.mean([el['pot_4_stress_rmse'], el['pot_3_stress_rmse'], el['pot_2_stress_rmse'], el['pot_1_stress_rmse']]) for el in dataset]
+    # CD_e = [el['energy_deviation_model'] for el in dataset]
+    # CD_f = [el['forces_deviation_model'] for el in dataset]
+    # CD_s = [el['stress_deviation_model'] for el in dataset]
+
+    CD2_e = [el['energy_deviation'] for el in dataset]
+    CD2_f = [el['forces_deviation'] for el in dataset]
+    CD2_s = [el['stress_deviation'] for el in dataset]
+
+    fit_par_e = curve_fit(line, RMSE_e, CD2_e)[0]
+    fit_par_f = curve_fit(line, RMSE_f, CD2_f)[0]
+    fit_par_s = curve_fit(line, RMSE_s, CD2_s)[0]
+
+    thr_energy = fit_par_e[0] * thr_energy
+    thr_forces = fit_par_f[0] * thr_forces
+    thr_stress = fit_par_s[0] * thr_stress
+
+    return thr_energy, thr_forces, thr_stress
 
 @calcfunction
 def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0, **trajectories):
@@ -193,6 +218,10 @@ class TrainsPotWorkChain(WorkChain):
 
     def initialization(self):
         """Initialize variables."""
+        self.ctx.thr_energy = self.inputs.thr_energy
+        self.ctx.thr_forces = self.inputs.thr_forces
+        self.ctx.thr_stress = self.inputs.thr_stress
+
         self.ctx.rmse = []       
         self.ctx.iteration = 0
         if 'dataset' in self.inputs:
@@ -347,8 +376,8 @@ class TrainsPotWorkChain(WorkChain):
     
     def finalize_committee_evaluation(self):
         calc = self.ctx.committee_evaluation
-
-        selected = SelectToLabel(calc.outputs.evaluated_datasets.exploration, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
+        self.ctx.thr_energy, self.ctx.thr_forces, self.ctx.thr_stress = error_calibration(calc.outputs.evaluated_datasets.labelled, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
+        selected = SelectToLabel(calc.outputs.evaluated_datasets.exploration, self.ctx.thr_energy, self.ctx.thr_forces, self.ctx.thr_stress)
         self.ctx.dataset += selected['selected_dataset']
         #self.ctx.rmse.append(calc.outputs.rmse)
         self.ctx.rmse.append(calc.outputs.rmse.labelled.get_dict())
