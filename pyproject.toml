@@ -22,7 +22,7 @@ requires-python = ">=3.7"
 dependencies = [
     "aiida-core>=2.6.2,<3",
     "voluptuous",
-    "ase",
+    "ase==3.22.1",
     "numba",
     "aiida-quantumespresso"
 ]
