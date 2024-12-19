@@ -13,6 +13,7 @@ import numpy as np
 
 EvaluationCalculation = CalculationFactory("trains_pot.evaluation")
 PESData = DataFactory('pesdata')
+ArrayData = DataFactory('core.array')
 
 class EvaluationParser(Parser):
     """
@@ -50,6 +51,7 @@ class EvaluationParser(Parser):
         
         datasets = {}
         rmse = {}
+        parity = {}
         # add output file
         for file in files_retrieved:
             output_filename = file
@@ -68,10 +70,18 @@ class EvaluationParser(Parser):
                     output_node = SinglefileData(file=handle)
                 with output_node.open(mode='rb') as handle:
                     rmse[output_name]=Dict(np.load(handle, allow_pickle=True)['rmse'].tolist())
+            
+            if "dataset" in output_filename and "parity" in output_filename:
+                output_name = output_filename.replace("_parity.npz", "").replace("dataset_", "")
+                with self.retrieved.open(output_filename, "rb") as handle:
+                    output_node = SinglefileData(file=handle)
+                with output_node.open(mode='rb') as handle:
+                    parity[output_name]=ArrayData(np.load(handle, allow_pickle=True)['parity'].tolist())
 
 
                 
         self.out("evaluated_datasets", datasets)
         self.out("rmse", rmse)
+        self.out("parity_data", parity)
             
         return ExitCode(0)

@@ -11,6 +11,78 @@ import logging
 import sys
 import time
 
+def get_parity_data(dataset):
+    """Get data for parity plots from dataset
+    
+    Parameters
+    ----------
+    dataset : list
+        List of dictionaries containing the information of the
+        evaluated dataset.
+
+    Returns
+    -------
+    dict
+        Dictionary containing the DFT and DNN quantities for
+        energy, forces and stress.
+    """
+    if len(dataset) == 0:
+        return {
+            'dft_e': np.array([]),
+            'pot_e': np.array([]),
+            'std_pot_e': np.array([]),
+            'dft_f': np.array([[],[],[]]).T,
+            'pot_f': np.array([[],[],[]]).T,
+            'std_pot_f': np.array([[],[],[]]).T,
+            'dft_s': np.array([]),
+            'pot_s': np.array([]),
+            'std_pot_s': np.array([]),
+        }
+    pot_e = []
+    dft_e = []
+    std_pot_e = []
+    pot_f = []
+    dft_f = []
+    std_pot_f = []
+    pot_s = []
+    dft_s = []
+    std_pot_s = []
+
+    for frame in dataset:
+        pot_e.append([frame[key]/len(frame['positions']) for key in frame.keys() if 'pot' in key and 'energy' in key and not 'rmse' in key])
+        std_pot_e.append(np.std(pot_e[-1]))
+        pot_e[-1] = np.mean(pot_e[-1])
+        dft_e.append(frame['dft_energy']/len(frame['positions']))
+        
+        pot_f.append([frame[key] for key in frame.keys() if 'pot' in key and 'forces' in key and not 'rmse' in key])
+        std_pot_f.append(np.std(pot_f[-1], axis=0))
+        pot_f[-1] = np.mean(pot_f[-1], axis=0)
+        dft_f.append(frame['dft_forces'])
+
+        pot_s.append([frame[key] for key in frame.keys() if 'pot' in key and 'stress' in key and not 'rmse' in key])
+        std_pot_s.append(np.std(pot_s[-1], axis=0))
+        pot_s[-1] = np.mean(pot_s[-1], axis=0)
+        dft_s.append(frame['dft_stress'])
+
+    dft_f = np.concatenate(dft_f)
+    pot_f = np.concatenate(pot_f)
+    std_pot_f = np.concatenate(std_pot_f)
+    dft_s = np.concatenate(dft_s)
+    pot_s = np.concatenate(pot_s).ravel()
+    std_pot_s = np.concatenate(std_pot_s).ravel()
+    
+    return {
+        'dft_e': np.array(dft_e),
+        'pot_e': np.array(pot_e),
+        'std_pot_e': np.array(std_pot_e),
+        'dft_f': np.array(dft_f),
+        'pot_f': np.array(pot_f),
+        'std_pot_f': np.array(std_pot_f),
+        'dft_s': np.array(dft_s),
+        'pot_s': np.array(pot_s),
+        'std_pot_s': np.array(std_pot_s),
+    }
+
 def rmse_table(RMSE) -> PrettyTable:
     table = PrettyTable()
     table.field_names = ['SET', 'POTENTIAL', 'RMSE Energy (meV/atom)', 'RMSE Forces (meV/Å)', 'RMSE Stress (meV/Å^3/atom)']
@@ -62,7 +134,9 @@ def global_rmse(dataset):
         Dictionary containing the mean and standard deviation of
         the root mean square error for energy, forces and stress.
     """
-
+    RMSE = {}
+    if len(dataset) == 0:
+        return RMSE
     dnn_f = []
     dnn_e = []
     dnn_s = []
@@ -96,7 +170,7 @@ def global_rmse(dataset):
     rmse_f = np.array([calc_rmse(dft_f, dnn) for dnn in dnn_f])
     rmse_s = np.array([calc_rmse(dft_s, dnn) for dnn in dnn_s])
 
-    RMSE = {}
+    
     for ii, _ in enumerate(dnn_e):
         RMSE[f'pot_{ii+1}'] = {
             'rmse_e': rmse_e[ii],
@@ -165,7 +239,7 @@ def main(log_freq=100):
 
 
     potential_files = glob.glob('potential*')
-    datasets = glob.glob('dataset*')
+    datasets = glob.glob('dataset*xyz')
 
     logging.info('Loading potentials...')
     if torch.cuda.is_available():
@@ -244,6 +318,7 @@ def main(log_freq=100):
             # compute global RMSE
             
             RMSE = {}
+            PARITY = {}
             not_splited_list = []
             for el in labelled_dataset:
                 if 'set' not in el:
@@ -253,16 +328,25 @@ def main(log_freq=100):
 
             if len(not_splited_list) > 0:
                 RMSE['NOT_SPLITTED'] = global_rmse(not_splited_list)
+                PARITY.update({f'not_splitted_{k}':v for k, v in get_parity_data(not_splited_list).items()})
             if len(not_splited_list) < len(labelled_dataset):
-                RMSE['TRAINING'] = global_rmse([el for el in labelled_dataset if el['set'] == 'TRAINING'])
-                RMSE['VALIDATION'] = global_rmse([el for el in labelled_dataset if el['set'] == 'VALIDATION'])
-                RMSE['TEST'] = global_rmse([el for el in labelled_dataset if el['set'] == 'TEST'])
+                training_dataset = [el for el in labelled_dataset if el['set'] == 'TRAINING']
+                validation_dataset = [el for el in labelled_dataset if el['set'] == 'VALIDATION']
+                test_dataset = [el for el in labelled_dataset if el['set'] == 'TEST']
+                RMSE['TRAINING'] = global_rmse(training_dataset)
+                RMSE['VALIDATION'] = global_rmse(validation_dataset)
+                RMSE['TEST'] = global_rmse(test_dataset)
+                PARITY.update({f'training_{k}':v for k, v in get_parity_data(training_dataset).items()})
+                PARITY.update({f'validation_{k}':v for k, v in get_parity_data(validation_dataset).items()})
+                PARITY.update({f'test_{k}':v for k, v in get_parity_data(test_dataset).items()})
             
             RMSE['ALL'] = global_rmse(labelled_dataset)
 
             logging.info("Error-table:\n" + str(rmse_table(RMSE)))
             logging.info(f'Saving global RMSE for dataset {jj+1}...')
             np.savez(f'{dataset_name}_rmse.npz', rmse = RMSE)
+            logging.info(f'Saving data for parity plots for dataset {jj+1}...')
+            np.savez(f'{dataset_name}_parity.npz', parity = PARITY)
         else:
             logging.info(f'No Labelled structures found in dataset {jj+1}. Skipping RMSE calculation.')
     logging.info('DONE!')
