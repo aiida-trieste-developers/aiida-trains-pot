@@ -105,11 +105,13 @@ class PESData(Data):
             raise TypeError("Input data must be a list.")
         num_labelled_frames = 0
         num_unlabelled_frames = 0
+        symb = set()
         for item in data:
             if "dft_forces" in item.keys() and "dft_energy" in item.keys():
                 num_labelled_frames += 1
             else:
                 num_unlabelled_frames += 1
+            symb = symb.union(set(item['symbols']))
 
         save_data = []
         for item in data:
@@ -122,7 +124,6 @@ class PESData(Data):
                 raise ValueError("Atomic symbols not found in the dataset.")
             if 'positions' not in item:
                 raise ValueError("Atomic positions not found in the dataset.")
-        for item in data:
             # Ensure that symbols are a list of strings
             item['symbols'] = [str(symbol) for symbol in item['symbols']]
             save_data.append({key: value.tolist() if isinstance(value, np.ndarray) else value for key, value in item.items()})
@@ -147,6 +148,7 @@ class PESData(Data):
             self.base.attributes.set('dataset_size', len(data))
             self.base.attributes.set('num_labelled_frames', num_labelled_frames)
             self.base.attributes.set('num_unlabelled_frames', num_unlabelled_frames)
+            self.base.attributes.set('atomic_species', list(symb))
         except Exception as e:
             print(f"An error occurred while saving '{self._list_key}': {e}")
 
