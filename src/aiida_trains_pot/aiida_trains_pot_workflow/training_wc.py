@@ -56,8 +56,7 @@ def SplitDataset(dataset):
                 continue
         total_elements = len(group_list)
         training_size = int(0.8 * total_elements)
-        test_size = int(0.1 * total_elements)
-        validation_size = total_elements - training_size - test_size
+        
         
         random.seed(int(time.time()))
         _ = random.shuffle(group_list)
@@ -65,8 +64,8 @@ def SplitDataset(dataset):
 
         # Split the data into sets
         training_set += group_list[:training_size]
-        validation_set += group_list[training_size:training_size+validation_size]
-        test_set += group_list[training_size+validation_size:]
+        validation_set += group_list[training_size:][::2]
+        test_set +=group_list[training_size:][1::2]
 
     for ii in range(len(training_set)):
         training_set[ii]['set'] = 'TRAINING'
