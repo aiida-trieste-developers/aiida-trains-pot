@@ -26,7 +26,10 @@ class PESData(Data):
         """
         super().__init__(**kwargs)  # Initialize the parent class
         if data:
-            self.set_list(data)
+            if isinstance(data[0], Atoms):
+                self.set_ase(data)
+            else:
+                self.set_list(data)
 
     def __iter__(self):
         """Return an iterator over the dataset list."""
@@ -97,6 +100,70 @@ class PESData(Data):
         except Exception as e:
             print(f"An error occurred while reading '{self._list_key}': {e}")
             return []
+
+
+    def set_ase(self, data):
+        """
+        Set the contents of this node by saving a list of ASE Atoms objects as an HDF5 file.
+
+        :param data: A list of ASE Atoms objects to save.
+        """
+        from ase.calculators.singlepoint import SinglePointDFTCalculator as dft_calc
+        # Ensure data is a list of Atoms objects
+        if not isinstance(data, list):
+            raise TypeError("Input data must be a list of ase.atoms.Atoms.")
+        else:
+            for item in data:
+                if not isinstance(item, Atoms):
+                    raise TypeError("Input data must be a list of ase.atoms.Atoms.")
+        
+        num_labelled_frames = 0
+        num_unlabelled_frames = 0
+        symb = set()
+        
+        save_data = []
+        for atm in data:
+            if isinstance(atm.calc, dft_calc):
+                num_labelled_frames += 1
+                
+                save_data.append({'cell': atm.cell, 'symbols': atm.get_chemical_symbols(), 'positions': atm.get_positions(), 'pbc': atm.pbc, 'dft_energy': atm.calc.results['energy'], 'dft_forces': atm.calc.results['forces']})
+                try:
+                    stress = atm.get_stress(voigt=False)
+                    save_data[-1]['dft_stress'] = stress
+                except:
+                    continue
+            else:
+                num_unlabelled_frames += 1
+                save_data.append({'cell': atm.cell, 'symbols': atm.get_chemical_symbols(), 'positions': atm.get_positions(), 'pbc': atm.pbc})
+
+            symb = symb.union(set(save_data[-1]['symbols']))
+
+        try:
+            # Create a temporary directory to save the file
+            with tempfile.TemporaryDirectory() as temp_dir:
+                dataset_temp_file = os.path.join(temp_dir, f"{self._list_key}.h5")
+                # Save the data using h5py
+                with h5py.File(dataset_temp_file, 'w') as hdf:
+                    for idx, item in enumerate(save_data):
+                        group = hdf.create_group(f"item_{idx}")
+                        for key, value in item.items():
+                            if isinstance(value, list) or isinstance(value, np.ndarray):
+                                group.create_dataset(key, data=value)
+                            else:
+                                group.attrs[key] = value
+
+                # Store the file in the AiiDA repository
+                self.base.repository.put_object_from_file(dataset_temp_file, self._list_key)
+            # Store metadata as attributes
+            self.base.attributes.set('dataset_size', len(data))
+            self.base.attributes.set('num_labelled_frames', num_labelled_frames)
+            self.base.attributes.set('num_unlabelled_frames', num_unlabelled_frames)
+            self.base.attributes.set('atomic_species', list(symb))
+        except Exception as e:
+            print(f"An error occurred while saving '{self._list_key}': {e}")          
+
+
+
 
     def set_list(self, data):
         """Set the contents of this node by saving a list as an HDF5 file."""
