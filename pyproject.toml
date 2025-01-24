@@ -24,7 +24,8 @@ dependencies = [
     "voluptuous",
     "ase==3.22.1",
     "numba",
-    "aiida-quantumespresso"
+    "aiida-quantumespresso",
+    "h5py"
 ]
 
 [project.urls]
