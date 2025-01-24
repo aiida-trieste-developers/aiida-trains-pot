@@ -47,12 +47,13 @@ class AbInitioLabellingWorkChain(WorkChain):
         """Run PwBaseWorkChain for each structure."""
 
         # Create or load a group to track the calculations
-        self.report(f'self.inputs.group_label {self.inputs.group_label}')
         if hasattr(self.inputs, 'group_label'):
             group_label = self.inputs.group_label.value
+            
         else:
             group_label = f'ab_initio_labelling_{self.uuid}'
-        
+            self.report(f'Saving configurations in group {group_label}')
+
         try:
             group = load_group(group_label)
             self.report(f'Using existing group: {group_label}')

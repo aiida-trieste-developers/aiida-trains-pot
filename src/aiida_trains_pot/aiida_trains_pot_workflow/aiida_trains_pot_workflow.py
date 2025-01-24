@@ -117,20 +117,29 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
     return {'explored_dataset': pes_extracted_frames}
 
 @calcfunction
-def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress):
+def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_frames=None):
     """Select configurations to label."""
+    if max_frames:
+        max_frames = max_frames.value
     selected_dataset = []
     energy_deviation = []
     forces_deviation = []
     stress_deviation = []
+    loss = []
     for config in evaluated_dataset:
         energy_deviation.append(config['energy_deviation'])
         forces_deviation.append(config['forces_deviation'])
         stress_deviation.append(config['stress_deviation'])
         if config['energy_deviation'] > thr_energy or config['forces_deviation'] > thr_forces or config['stress_deviation'] > thr_stress:
             selected_dataset.append(config)
+            if max_frames:
+                loss.append(config['energy_deviation']/thr_energy + config['forces_deviation']/thr_forces + config['stress_deviation']/thr_stress)
+    if max_frames:
+        if len(selected_dataset) > max_frames:
+            thr_loss = np.sort(loss)[-max_frames]
+            selected_dataset = [selected_dataset[ii] for ii, el in enumerate(loss) if el >= thr_loss]
 
-    pes_selected_dataset = PESData(selected_dataset)    
+    pes_selected_dataset = PESData(selected_dataset)
     return {'selected_dataset':pes_selected_dataset, 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
 class TrainsPotWorkChain(WorkChain):
@@ -162,6 +171,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('thr_energy', valid_type=Float, help='Threshold for energy', required=True)
         spec.input('thr_forces', valid_type=Float, help='Threshold for forces', required=True)
         spec.input('thr_stress', valid_type=Float, help='Threshold for stress', required=True)
+        spec.input('max_selected_frames', valid_type=Int, help='Maximum number of frames to be selected for labelling per iteration', required=False) 
 
         spec.expose_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation", exclude=('structures'))    
         spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('unlabelled_dataset'), namespace_options={'validator': None})    
@@ -221,6 +231,10 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.thr_energy = self.inputs.thr_energy
         self.ctx.thr_forces = self.inputs.thr_forces
         self.ctx.thr_stress = self.inputs.thr_stress
+        if 'max_selected_frames' in self.inputs:
+            self.ctx.max_frames = self.inputs.max_selected_frames
+        else:
+            self.ctx.max_frames = None
 
         self.ctx.rmse = []       
         self.ctx.iteration = 0
@@ -377,7 +391,7 @@ class TrainsPotWorkChain(WorkChain):
     def finalize_committee_evaluation(self):
         calc = self.ctx.committee_evaluation
         self.ctx.thr_energy, self.ctx.thr_forces, self.ctx.thr_stress = error_calibration(calc.outputs.evaluated_datasets.labelled, self.inputs.thr_energy, self.inputs.thr_forces, self.inputs.thr_stress)
-        selected = SelectToLabel(calc.outputs.evaluated_datasets.exploration, self.ctx.thr_energy, self.ctx.thr_forces, self.ctx.thr_stress)
+        selected = SelectToLabel(calc.outputs.evaluated_datasets.exploration, self.ctx.thr_energy, self.ctx.thr_forces, self.ctx.thr_stress, self.ctx.max_frames)
         self.ctx.dataset += selected['selected_dataset']
         #self.ctx.rmse.append(calc.outputs.rmse)
         self.ctx.rmse.append(calc.outputs.rmse.labelled.get_dict())
