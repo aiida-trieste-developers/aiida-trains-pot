@@ -11,11 +11,13 @@ PESData         = DataFactory('pesdata')
 @calcfunction
 def WriteLabelledDataset(non_labelled_structures, **labelled_data):
     labelled_dataset = []
+    elem_charge = 1.60217653e-19
+    gpa_to_eV_per_ang3 = 1.0e9/elem_charge/1.0e30
     for key, value in labelled_data.items():
         labelled_dataset.append(non_labelled_structures.get_list()[int(key.split('_')[1])])
         labelled_dataset[-1]['dft_energy'] = float(value['output_parameters'].dict.energy)
         labelled_dataset[-1]['dft_forces'] = value['output_trajectory'].get_array('forces')[0].tolist()
-        labelled_dataset[-1]['dft_stress'] = value['output_trajectory'].get_array('stress')[0].tolist()
+        labelled_dataset[-1]['dft_stress'] = value['output_trajectory'].get_array('stress')[0]*gpa_to_eV_per_ang3.tolist()
 
     pes_labelled_dataset = PESData(labelled_dataset)        
     return pes_labelled_dataset
