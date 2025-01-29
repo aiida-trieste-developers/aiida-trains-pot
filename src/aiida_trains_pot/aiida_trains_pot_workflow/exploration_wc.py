@@ -1,5 +1,5 @@
 from aiida.engine import WorkChain, ToContext, append_, calcfunction, while_
-from aiida.orm import Float, Dict, List, Int, Bool, FolderData, SinglefileData, StructureData
+from aiida.orm import Float, Dict, List, Str, SinglefileData, StructureData
 from aiida.plugins import WorkflowFactory, DataFactory
 from aiida.common import AttributeDict
 import os
@@ -11,7 +11,7 @@ import random  # to change seed for each retry
 LammpsWorkChain = WorkflowFactory('lammps.base')
 PESData         = DataFactory('pesdata')
 
-def generate_potential(potential) -> LammpsPotentialData:
+def generate_potential(potential, pair_style) -> LammpsPotentialData:
     """
     Generate the potential to be used in the calculation.
 
@@ -36,7 +36,7 @@ def generate_potential(potential) -> LammpsPotentialData:
 
     potential = LammpsPotentialData.get_or_create(
         source = Path(tmp_file_path),
-        pair_style="mace no_domain_decomposition",
+        pair_style = pair_style,
         **potential_parameters,
     )
 
@@ -48,12 +48,21 @@ def generate_potential(potential) -> LammpsPotentialData:
 class ExplorationWorkChain(WorkChain):
     """A workchain to loop over structures and submit LammpsWorkChain with retries."""
 
+
+    ###################################################################
+    ##                       DEFAULT VALUES                          ##
+    ###################################################################
+
+    DEFAULT_potential_pair_style = Str('mace no_domain_decomposition')
+    ###################################################################
+
     @classmethod
     def define(cls, spec):
         super().define(spec)
         spec.input('params_list', valid_type=List, help='List of parameters for md')
         spec.input('parameters', valid_type=Dict, help='Global parameters for lammps')
-        spec.input('potential_lammps', valid_type=SinglefileData, help='One of the potential for MD')
+        spec.input('potential_lammps', valid_type=SinglefileData, required=False, help='One of the potential for MD')
+        spec.input('potential_pair_style', valid_type=Str, default=lambda:cls.DEFAULT_potential_pair_style, required=False, help=f"General potential pair style. Default: {cls.DEFAULT_potential_pair_style}")
         spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps')
         spec.input('sampling_time', valid_type=Float, help='Correlation time for frame extraction')
 
@@ -84,7 +93,7 @@ class ExplorationWorkChain(WorkChain):
         for _, structure in self.inputs.lammps_input_structures.items():
             inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
             inputs.lammps.structure = structure
-            inputs.lammps.potential = generate_potential(potential)
+            inputs.lammps.potential = generate_potential(potential, str(self.inputs.potential_pair_style.value))
             
             params_list = list(self.inputs.params_list)
             parameters = AttributeDict(self.inputs.parameters)
