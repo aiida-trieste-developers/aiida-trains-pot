@@ -1,4 +1,4 @@
-from aiida.orm import load_code, load_node, load_group, load_computer, Str, Dict, List, Int, Bool, Float, StructureData
+from aiida.orm import load_code, load_node, load_group, load_computer, Str, Dict, List, Int, Bool, Float, StructureData, SinglefileData
 from aiida import load_profile
 from aiida.engine import submit
 from aiida.plugins import WorkflowFactory, DataFactory
@@ -119,7 +119,7 @@ input_structures = [StructureData(ase=read(os.path.join(script_dir, 'gr8x8.xyz')
 ###############################################
 
 builder = TrainsPot.get_builder()
-builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(input_structures))}
+builder.structures =  PESData([frame.get_ase() for frame in input_structures])
 builder.do_dataset_augmentation = Bool(True)
 builder.do_ab_initio_labelling = Bool(True)
 builder.do_training = Bool(True)
@@ -141,20 +141,35 @@ builder.max_loops = Int(1)
 builder.thr_energy = Float(1e-3)
 builder.thr_forces = Float(1e-1)
 builder.thr_stress = Float(1e-1)
+builder.max_selected_frames = Int(20)
 
 
 ###############################################
 # Setup dataset augmentation
 ###############################################
 
-builder.dataset_augmentation.do_rattle_strain_defects = Bool(True)
-builder.dataset_augmentation.do_input = Bool(True)
-builder.dataset_augmentation.do_isolated = Bool(True)
-builder.dataset_augmentation.rsd.params.rattle_fraction = Float(0.1)
-builder.dataset_augmentation.rsd.params.max_sigma_strain = Float(0.1)
-builder.dataset_augmentation.rsd.params.n_configs = Int(20)
-builder.dataset_augmentation.rsd.params.frac_vacancies = Float(0.1)
-builder.dataset_augmentation.rsd.params.vacancies_per_config = Int(1)
+builder.dataset_augmentation.do_rattle_strain_defects           = Bool(True)
+builder.dataset_augmentation.do_input                           = Bool(True)
+builder.dataset_augmentation.do_isolated                        = Bool(True)
+builder.dataset_augmentation.do_clusters                        = Bool(True)
+builder.dataset_augmentation.do_slabs                           = Bool(True)
+builder.dataset_augmentation.do_replication                     = Bool(True)
+builder.dataset_augmentation.do_check_vacuum                    = Bool(True)
+
+builder.dataset_augmentation.rsd.params.rattle_fraction         = Float(0.4)
+builder.dataset_augmentation.rsd.params.max_sigma_strain        = Float(0.1)
+builder.dataset_augmentation.rsd.params.n_configs               = Int(20)
+builder.dataset_augmentation.rsd.params.frac_vacancies          = Float(0.1)
+builder.dataset_augmentation.rsd.params.vacancies_per_config    = Int(1)
+builder.dataset_augmentation.clusters.n_clusters                = Int(10)
+builder.dataset_augmentation.clusters.max_atoms                 = Int(30)
+builder.dataset_augmentation.clusters.interatomic_distance      = Float(1.5)
+builder.dataset_augmentation.slabs.miller_indices               = List([[1, 0, 0], [1, 1, 0], [1, 1, 1], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 0, 1]])
+builder.dataset_augmentation.slabs.min_thickness                = Float(10)
+builder.dataset_augmentation.slabs.max_atoms                    = Int(600)
+builder.dataset_augmentation.replicate.min_dist                 = Float(16)
+builder.dataset_augmentation.replicate.max_atoms                = Int(600)
+builder.dataset_augmentation.vacuum                             = Float(15)
 
 ###############################################
 # Setup Ab initio labelling
@@ -162,7 +177,7 @@ builder.dataset_augmentation.rsd.params.vacancies_per_config = Int(1)
 
 kpoints = KpointsData()
 kpoints.set_kpoints_mesh([1, 1, 1])
-pseudo_family = load_group('SSSP/1.3/PBE/precision')
+pseudo_family = load_group('SSSP/1.3/PBE/efficiency')
 cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=input_structures[0], unit='Ry')
 builder.ab_initio_labelling.group_label = Str("graphene")
 builder.ab_initio_labelling.quantumespresso.pw.code = QE_code
@@ -232,7 +247,8 @@ builder.training.mace.train.metadata.options.custom_scheduler_commands = f"#SBAT
 ###############################################
 # Setup LAMMPS
 ###############################################
-
+builder.random_input_structures_lammps = Bool(True)
+builder.num_random_structures_lammps = Int(2)
 builder.exploration.md.lammps.code = LAMMPS_code
 
 ## Read the configuration from file ##

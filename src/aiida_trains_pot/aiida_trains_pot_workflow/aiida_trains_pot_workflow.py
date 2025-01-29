@@ -155,6 +155,8 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('do_exploration', valid_type=Bool, default=lambda: Bool(True), help='Do exploration calculations', required=False)
         spec.input('max_loops', valid_type=Int, default=lambda: Int(10), help='Maximum number of active learning workflow loops', required=False)
 
+        spec.input('random_input_structures_lammps', valid_type=Bool, help='If true, input structures for LAMMPS are randomly selected from the dataset', required=False)
+        spec.input('num_random_structures_lammps', valid_type=Int, help='Number of random structures for LAMMPS', required=False)
         spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
         spec.input('dataset', valid_type=PESData, help='Dataset containing labelled structures and structures to be labelled', required=False)
 
@@ -178,7 +180,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.expose_inputs(TrainingWorkChain, namespace="training", exclude=('dataset'), namespace_options={'validator': None})
         spec.expose_inputs(ExplorationWorkChain, namespace="exploration", exclude=('potential_lammps', 'lammps_input_structures','sampling_time'), namespace_options={'validator': None})
         spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))        
-        spec.input_namespace("structures", valid_type=StructureData, required=True)
+        spec.input('structures', valid_type=PESData, help='Initial structures for dataset augmentation', required=True)
         
         spec.output("dataset", valid_type=PESData, help="Final dataset containing all structures labelled and selected to be labelled")
         spec.output_namespace("models_ase", valid_type=SinglefileData, help="Last committee of trained potentials compiled for ASE")
@@ -247,22 +249,26 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.do_training = self.inputs.do_training
         self.ctx.do_exploration = self.inputs.do_exploration
         if not self.ctx.do_ab_initio_labelling:
-            if self.inputs.dataset.len_labelled > 0:
-                self.ctx.dataset = self.inputs.dataset
-            else:
-                return self.exit_codes.NO_LABELLED_STRUCTURES
+            if "dataset" in self.inputs:
+                if self.inputs.dataset.len_labelled > 0:
+                    self.ctx.dataset = self.inputs.dataset
+                else:
+                    return self.exit_codes.NO_LABELLED_STRUCTURES
                 
 
         if not self.ctx.do_training:
             self.ctx.potentials_lammps = []
             self.ctx.potentials_ase = []
             self.ctx.potential_checkpoints = []
-            for _, pot in self.inputs.models_lammps.items():
-                self.ctx.potentials_lammps.append(pot)
-            for _, pot in self.inputs.models_ase.items():
-                self.ctx.potentials_ase.append(pot)
-            for _, pot in self.inputs.training.checkpoints.items():
-                self.ctx.potential_checkpoints.append(pot)
+            if "models_lammps" in self.inputs:
+                for _, pot in self.inputs.models_lammps.items():
+                    self.ctx.potentials_lammps.append(pot)
+            if "models_ase" in self.inputs:
+                for _, pot in self.inputs.models_ase.items():
+                    self.ctx.potentials_ase.append(pot)
+            if "checkpoints" in self.inputs:
+                for _, pot in self.inputs.training.checkpoints.items():
+                    self.ctx.potential_checkpoints.append(pot)
         if not self.ctx.do_exploration and 'explored_dataset' in self.inputs:
             if len(self.inputs.explored_dataset) > 0:
                 self.ctx.explored_dataset = self.inputs.explored_dataset
@@ -270,7 +276,7 @@ class TrainsPotWorkChain(WorkChain):
         if 'lammps_input_structures' in self.inputs:
             self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
         else:
-            self.ctx.lammps_input_structures = self.inputs.structures
+            self.ctx.lammps_input_structures = {f'structure_{ii}': StructureData(ase=atm) for ii, atm in enumerate(self.inputs.structures.get_ase_list())}
             
 
 
@@ -316,6 +322,13 @@ class TrainsPotWorkChain(WorkChain):
         """Run exploration."""
         inputs = self.exposed_inputs(ExplorationWorkChain, namespace="exploration")
         inputs.potential_lammps = self.ctx.potentials_lammps[-1]
+        
+        if "random_input_structures_lammps" in self.inputs and "num_random_structures_lammps" in self.inputs:
+            if self.inputs.random_input_structures_lammps:
+                ase_list = self.ctx.dataset.get_ase_list()
+                id_selected = np.random.choice(range(len(ase_list)), self.inputs.num_random_structures_lammps.value, replace=False)
+                self.ctx.lammps_input_structures = {f'structure_{key}': StructureData(ase=ase_list[key]) for key in id_selected} 
+            
         inputs.lammps_input_structures = self.ctx.lammps_input_structures
         inputs.sampling_time = self.inputs.frame_extraction.sampling_time
 
