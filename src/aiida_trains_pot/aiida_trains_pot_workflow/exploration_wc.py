@@ -100,9 +100,26 @@ class ExplorationWorkChain(WorkChain):
             parameters.dump.dump_rate = int(self.inputs.sampling_time / parameters.control.timestep)
             
             # Loop over the MD parameter sets
-            for params_md in params_list:
+            for params_md in params_list:           
                 
+                if not any(inputs.lammps.structure.pbc):
+                    params_md["integration"]["style"] = "nvt"
+
+                constraint = params_md["integration"]["constraints"]
+
+                # Map dimensions to constraints
+                axes = ["x", "y", "z"]
+
+                # Remove constraints for non-periodic directions
+                for idx, axis in enumerate(axes):
+                    if not inputs.lammps.structure.pbc[idx]:
+                        constraint.pop(axis, None)  # Avoid KeyError if axis doesn't exist
+
+                params_md["integration"]["constraints"] = constraint
+
+
                 parameters.md = dict(params_md)
+
                 inputs.lammps.parameters = Dict(parameters)
                 future = self.submit(LammpsWorkChain, **inputs)
                 self.to_context(md_wc=append_(future))                 

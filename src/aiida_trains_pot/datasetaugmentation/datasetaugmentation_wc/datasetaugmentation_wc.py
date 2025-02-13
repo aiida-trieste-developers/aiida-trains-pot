@@ -105,6 +105,45 @@ def replicate(atm, min_dist, max_atoms=1000):
             break
         to_continue, fail_dir = check_min_distace(atm2, min_dist)
     return atm2
+
+def wrap_and_restore_pbc(atoms: Atoms) -> Atoms:
+    """
+    Checks for atoms outside the cell, wraps them, and moves all atoms near the cell center.
+    Restores the original PBC settings.
+
+    Parameters:
+    atoms (ase.Atoms): Input structure.
+
+    Returns:
+    ase.Atoms: Structure with wrapped and centered atoms.
+    """
+       
+    # Get current cell dimensions
+    cell = atoms.get_cell().array
+    if np.linalg.det(cell) == 0:
+        raise ValueError("Cell is degenerate. Ensure the structure has a valid cell.")
+
+    # Check if any atom is outside the cell boundaries
+    positions = atoms.get_positions()
+    is_out_of_bounds = np.any((positions < 0) | (positions >= cell.diagonal()), axis=1)
+
+    if np.any(is_out_of_bounds):
+         # Save the current PBC configuration
+        original_pbc = atoms.get_pbc()
+        
+        center_of_cell = cell.diagonal() / 2.0
+        com = atoms.get_center_of_mass()
+        shift_vector = center_of_cell - com
+        atoms.positions += shift_vector
+
+        # Temporarily set PBC to True to ensure correct wrapping
+        atoms.set_pbc([True, True, True])
+        atoms.wrap()
+
+        # Restore the original PBC settings
+        atoms.set_pbc(original_pbc)
+
+    return atoms
     
 
 @calcfunction
@@ -145,7 +184,7 @@ def RattleStrainDefectsStructureGenerator(n_configs, rattle_fraction, max_sigma_
                 rnd = randint(0, len(mod_structure.get_positions())-1)
                 del mod_structure[rnd]
 
-            structures.append(ase_to_dict(mod_structure))
+            structures.append(ase_to_dict(wrap_and_restore_pbc(mod_structure)))
             structures[-1]['rattle_fraction'] = rattle_fraction.value
             structures[-1]['max_sigma_strain'] = max_sigma_strain.value
             structures[-1]['n_vacancies'] = n_vacancies
@@ -170,7 +209,7 @@ def InputStructureGenerator(vacuum, input_structures):
             ase_structure = structure
 
 
-        structures.append(ase_to_dict(ase_structure))
+        structures.append(ase_to_dict(wrap_and_restore_pbc(ase_structure)))
         structures[-1]['gen_method'] = 'INPUT_STRUCTURE'
 
     pes_dataset = PESData(structures)        
@@ -194,7 +233,7 @@ def IsolatedStructureGenerator(vacuum, input_structures):
                 done_types.append(atm_type)
                 isolated_structure = Atoms(atm_type, positions=[[0.0, 0.0, 0.0]], cell=[[vacuum, 0.0, 0.0], [0.0, vacuum, 0.0], [0.0, 0.0, vacuum]], pbc=False)
                 
-                structures.append(ase_to_dict(isolated_structure))
+                structures.append(ase_to_dict(wrap_and_restore_pbc(isolated_structure)))
                 structures[-1]['gen_method'] = 'ISOLATED_ATOM'
 
     pes_dataset = PESData(structures)        
@@ -235,7 +274,7 @@ def ClustersGenerator(n_clusters, max_atoms, interatomic_distance, vacuum, input
                     break
             positions.append(position)
             atoms = check_vacuum(Atoms(symbols=species, positions=positions, pbc=False), vacuum)
-        structures.append(ase_to_dict(atoms))
+        structures.append(ase_to_dict(wrap_and_restore_pbc(atoms)))
         structures[-1]['gen_method'] = 'CLUSTER'
 
     return {'cluster_structures': PESData(structures)}
@@ -271,7 +310,7 @@ def SlabsGenerator(miller_indices, min_thickness, max_atoms, vacuum, input_struc
                     slab = surface(indices=tuple(indices), layers=layers-1, vacuum=vacuum/2, lattice=ase_structure)
                     break
                 layers += 1
-            structures.append(ase_to_dict(slab))
+            structures.append(ase_to_dict(wrap_and_restore_pbc(slab)))
             structures[-1]['gen_method'] = 'SLAB'
     pes_dataset = PESData(structures)        
     return {'slab_structures': pes_dataset}
@@ -299,6 +338,7 @@ def ReplicateStructures(min_dist, max_atoms, vacuum, input_structures):
         else:
             ase_structure = structure
         replicated_structure = replicate(ase_structure, min_dist, max_atoms)
+        replicated_structure.wrap()
         structures.append(ase_to_dict(replicated_structure))
 
     pes_dataset = PESData(structures)

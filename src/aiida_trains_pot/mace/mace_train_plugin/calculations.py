@@ -162,7 +162,7 @@ class MaceTrainCalculation(CalcJob):
 
         # Save the checkpoints folder
         if 'checkpoints' in self.inputs and self.inputs.restart.value==True:
-            mace_config_dict['restart_latest'] = 'true'
+            mace_config_dict['restart_latest'] = True
             checkpoints_folder = self.inputs.checkpoints
             folder.get_subfolder('checkpoints', create=True)  # Create the checkpoints directory
             for checkpoint_file in checkpoints_folder.list_object_names():

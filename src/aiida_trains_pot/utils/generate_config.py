@@ -33,7 +33,8 @@ def generate_lammps_md_config(temperatures, pressures, steps, styles, dt):
         constraint = {
             "temp": [temp, temp, 100*dt],
             "x": [press, press, 1000*dt],
-            "y": [press, press, 1000*dt]           
+            "y": [press, press, 1000*dt],
+            "z": [press, press, 1000*dt]           
         }
         md_block = {
             "max_number_steps": step,

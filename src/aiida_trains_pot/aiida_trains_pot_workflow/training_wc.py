@@ -15,7 +15,7 @@ def SplitDataset(dataset):
     # data = self.inputs.dataset_list.get_list()
     data = dataset.get_list()
 
-    exclude_list = ["energy", "cell", "stress", "forces", "symbols", "positions"]
+    exclude_list = ["energy", "cell", "stress", "forces", "symbols", "positions", "id_lammps", "input_structure_uuid"]
     # Define a function to extract the grouping key
     def check_esclude_list(string):
         for el in exclude_list:
