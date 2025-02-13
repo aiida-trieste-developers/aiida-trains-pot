@@ -6,12 +6,14 @@ from aiida.orm import Code
 load_profile()
 
 
-def install_committee_evaluation(label = 'committee_evaluation_portable'):
+def install_committee_evaluation(label = 'committee_evaluation_portable', prepend = None, append = None):
 
     committee_evaluation_path = Path.joinpath(Path(aiida_trains_pot.__path__[0]), 'portable_codes/committee_evaluation/')
 
-    prepend = input("Prepend command (es. source mace_env/bin/activate): ")
-    append = input("Append command: ")
+    if prepend is None:
+        prepend = input("Prepend command (es. source mace_env/bin/activate): ")
+    if append is None:
+        append = input("Append command: ")
 
     code = PortableCode(
         label = label,
