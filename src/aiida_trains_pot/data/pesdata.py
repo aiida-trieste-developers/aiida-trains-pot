@@ -269,11 +269,15 @@ class PESData(Data):
         
     def get_unlabelled(self):
         """Return a PESData object with only unlabelled frames."""
+        if self.base.attributes.get('num_labelled_frames') == 0:
+            return self
         unlabelled_data = [config for config in self.get_list() if 'dft_forces' not in config.keys() or 'dft_energy' not in config.keys()]
         return PESData(data=unlabelled_data)
 
     def get_labelled(self):
         """Return a PESData object with only labelled frames."""
+        if self.base.attributes.get('num_unlabelled_frames') == 0:
+            return self
         labelled_data = [config for config in self.get_list() if 'dft_forces' in config.keys() and 'dft_energy' in config.keys()]
         return PESData(data=labelled_data)
     
