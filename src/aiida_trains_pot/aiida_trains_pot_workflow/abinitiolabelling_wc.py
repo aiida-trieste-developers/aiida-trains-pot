@@ -1,5 +1,5 @@
-from aiida.engine import WorkChain, ToContext, append_, calcfunction
-from aiida.orm import StructureData, Dict, Str, Group, load_group
+from aiida.engine import WorkChain, ToContext, append_, calcfunction, while_
+from aiida.orm import StructureData, Dict, Str, Group, load_group, Int
 from aiida.plugins import WorkflowFactory, DataFactory
 from aiida.common import AttributeDict
 from aiida_quantumespresso.utils.mapping import prepare_process_inputs
@@ -31,12 +31,14 @@ class AbInitioLabellingWorkChain(WorkChain):
     def define(cls, spec):
         super().define(spec)
         spec.input('unlabelled_dataset', valid_type=PESData, help="Structures to label.")     
-        spec.input('group_label', valid_type=Str, help="Label for group.", required=False)        
+        spec.input('group_label', valid_type=Str, help="Label for group.", required=False)
+        spec.input('batch_size', valid_type=Int, help="Number of structures to label in each batch.", required=False, default=lambda:Int(1000))        
         spec.expose_inputs(PwBaseWorkChain, namespace="quantumespresso", exclude=('pw.structure',), namespace_options={'validator': None})          
         spec.output("ab_initio_labelling_data", valid_type=PESData,)
         spec.outline(
             cls.setup,
-            cls.run_ab_initio_labelling,
+            while_(cls.check_labelled)(
+                cls.run_ab_initio_labelling),
             cls.finalize            
         )        
         
@@ -44,7 +46,13 @@ class AbInitioLabellingWorkChain(WorkChain):
     def setup(self):
         """Initialize context and input parameters."""                
         # Initialize the list of structures
-        self.ctx.config = 0        
+        self.ctx.config = 0
+        self.ctx.unlabelled_structures = self.inputs.unlabelled_dataset.get_ase_list()
+        self.ctx.batch_num = 0
+
+    def check_labelled(self):
+        """Check if all structures have been labelled."""
+        return self.ctx.config < len(self.ctx.unlabelled_structures)
 
     def run_ab_initio_labelling(self):
         """Run PwBaseWorkChain for each structure."""
@@ -64,7 +72,7 @@ class AbInitioLabellingWorkChain(WorkChain):
             group = Group(label=group_label).store()
             self.report(f'Created new group: {group_label}')
         
-        for _, structure in enumerate(self.inputs.unlabelled_dataset.get_ase_list()):   
+        for structure in self.ctx.unlabelled_structures[self.ctx.config : self.ctx.config + self.inputs.batch_size.value]:   
             self.ctx.config += 1    
             str_data = StructureData(ase=structure)
 
@@ -94,7 +102,9 @@ class AbInitioLabellingWorkChain(WorkChain):
 
             # Add the calculation to the group
             group.add_nodes(future)
-            self.to_context(ab_initio_labelling_calculations=append_(future))            
+            self.to_context(ab_initio_labelling_calculations=append_(future))
+        
+        self.ctx.batch_num += 1   
 
     def finalize(self):
 
