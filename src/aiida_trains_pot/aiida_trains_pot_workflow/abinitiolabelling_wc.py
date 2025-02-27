@@ -13,8 +13,15 @@ def WriteLabelledDataset(non_labelled_structures, **labelled_data):
     labelled_dataset = []
     elem_charge = 1.60217653e-19
     gpa_to_eV_per_ang3 = 1.0e9/elem_charge/1.0e30
+    non_labbeled_list = non_labelled_structures.get_list()
+
     for key, value in labelled_data.items():
-        labelled_dataset.append(non_labelled_structures.get_list()[int(key.split('_')[1])])
+
+        # Check if required data exists 
+        if 'forces' not in value['output_trajectory'].get_arraynames() or 'stress' not in value['output_trajectory'].get_arraynames():
+            continue  # Skip if 'forces' or 'stress' arrays are missing
+
+        labelled_dataset.append(non_labbeled_list[int(key.split('_')[1])])
         labelled_dataset[-1]['dft_energy'] = float(value['output_parameters'].dict.energy)
         labelled_dataset[-1]['dft_forces'] = value['output_trajectory'].get_array('forces')[0].tolist()
         stress = value['output_trajectory'].get_array('stress')[0]*gpa_to_eV_per_ang3

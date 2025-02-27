@@ -40,10 +40,22 @@ def error_calibration(dataset, thr_energy, thr_forces, thr_stress):
 
     def line(x, a): return a * x
 
+    def get_rmse(dataset, key_pattern):
+        return [
+            np.mean([v for k, v in el.items() if k.startswith('pot_') and k.endswith(key_pattern)]) 
+            for el in dataset
+        ]
+
+    
     dataset = dataset.get_list()
-    RMSE_e = [np.mean([el['pot_4_energy_rmse'], el['pot_3_energy_rmse'], el['pot_2_energy_rmse'], el['pot_1_energy_rmse']])/len(el['positions']) for el in dataset]
-    RMSE_f = [np.mean([el['pot_4_forces_rmse'], el['pot_3_forces_rmse'], el['pot_2_forces_rmse'], el['pot_1_forces_rmse']]) for el in dataset]
-    RMSE_s = [np.mean([el['pot_4_stress_rmse'], el['pot_3_stress_rmse'], el['pot_2_stress_rmse'], el['pot_1_stress_rmse']]) for el in dataset]
+
+    RMSE_e = [e / len(el['positions']) for e, el in zip(get_rmse(dataset, '_energy_rmse'), dataset)]
+    RMSE_f = get_rmse(dataset, '_forces_rmse')
+    RMSE_s = get_rmse(dataset, '_stress_rmse')
+
+    #RMSE_e = [np.mean([el['pot_4_energy_rmse'], el['pot_3_energy_rmse'], el['pot_2_energy_rmse'], el['pot_1_energy_rmse']])/len(el['positions']) for el in dataset]
+    #RMSE_f = [np.mean([el['pot_4_forces_rmse'], el['pot_3_forces_rmse'], el['pot_2_forces_rmse'], el['pot_1_forces_rmse']]) for el in dataset]
+    #RMSE_s = [np.mean([el['pot_4_stress_rmse'], el['pot_3_stress_rmse'], el['pot_2_stress_rmse'], el['pot_1_stress_rmse']]) for el in dataset]
     # CD_e = [el['energy_deviation_model'] for el in dataset]
     # CD_f = [el['forces_deviation_model'] for el in dataset]
     # CD_s = [el['stress_deviation_model'] for el in dataset]
