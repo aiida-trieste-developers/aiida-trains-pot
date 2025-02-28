@@ -40,10 +40,10 @@ def SplitDataset(dataset):
     for _, group in grouped_data:
     # Calculate the number of elements for each set
         group_list = list(group)
-
-        if group_list[0]['gen_method'] == "INPUT_STRUCTURE" or group_list[0]['gen_method'] == "ISOLATED_ATOM" or len(group_list[0]['positions']) == 1 or group_list[0]['gen_method'] == "EQUILIBRIUM":
-                training_set += group_list
-                continue
+        if 'gen_method' in group_list[0].keys():
+            if group_list[0]['gen_method'] == "INPUT_STRUCTURE" or group_list[0]['gen_method'] == "ISOLATED_ATOM" or len(group_list[0]['positions']) == 1 or group_list[0]['gen_method'] == "EQUILIBRIUM":
+                    training_set += group_list
+                    continue
         elif 'set' in group_list[0].keys():
             if group_list[0]['set'] == 'TRAINING':
                 training_set += group_list
@@ -69,10 +69,16 @@ def SplitDataset(dataset):
 
     for ii in range(len(training_set)):
         training_set[ii]['set'] = 'TRAINING'
+        if 'gen_method' not in training_set[ii].keys():
+            training_set[ii]['gen_method'] = 'UNKNOWN'
     for ii in range(len(validation_set)):
         validation_set[ii]['set'] = 'VALIDATION'
+        if 'gen_method' not in validation_set[ii].keys():
+            validation_set[ii]['gen_method'] = 'UNKNOWN'
     for ii in range(len(test_set)):
         test_set[ii]['set'] = 'TEST'
+        if 'gen_method' not in test_set[ii].keys():
+            test_set[ii]['gen_method'] = 'UNKNOWN'
 
     pes_training_set = PESData()    
     pes_training_set.set_list(training_set)    
