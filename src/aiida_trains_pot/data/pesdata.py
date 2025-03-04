@@ -245,6 +245,7 @@ class PESData(Data):
         for config in self.get_list():
             params = [key for key in config.keys() if key not in exclude_params and not exclude_pattern.match(key)]
             atm = Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'], pbc=config['pbc'])
+            atm.pbc = [True, True, True]
             atm.info = {}
             if write_params:
                 for key in params:
