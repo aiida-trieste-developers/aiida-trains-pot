@@ -3,6 +3,7 @@ from aiida.orm import PortableCode
 from aiida import load_profile
 import aiida_trains_pot
 from aiida.orm import Code
+import argparse
 load_profile()
 
 
@@ -41,6 +42,19 @@ def check_code_exists(label):
             
     
 def main():
+    parser = argparse.ArgumentParser(description='Install or list portable codes.')
+    parser.add_argument('-l', '--list', action='store_true', help='List existing codes')
+    args = parser.parse_args()
+
+    if args.list:
+        codes = Code.collection.find()
+        print("Existing portable codes:")
+        print("    PK     Label")
+        print("------------------------")
+        for code in codes:
+            if 'portable' in code.node_type:
+                print(f" {code.pk:7n} - {code.label}")
+        return
     print()
     print("Creating a new portable code for committee evaluation")
     print("-----------------------------------------------------")
