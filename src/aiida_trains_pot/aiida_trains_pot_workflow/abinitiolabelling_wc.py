@@ -12,7 +12,7 @@ PESData         = DataFactory('pesdata')
 def WriteLabelledDataset(non_labelled_structures, **labelled_data):
     labelled_dataset = []
     elem_charge = 1.60217653e-19
-    gpa_to_eV_per_ang3 = 1.0e9/elem_charge/1.0e30
+    gpa_to_eV_per_ang3 = -1*1.0e9/elem_charge/1.0e30
     non_labbeled_list = non_labelled_structures.get_list()
 
     for key, value in labelled_data.items():

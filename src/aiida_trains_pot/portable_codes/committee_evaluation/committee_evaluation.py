@@ -155,7 +155,7 @@ def global_rmse(dataset):
         elif re.fullmatch(r'pot_\d+_stress',key):
             dnn_s.append([])
             for frame in dataset:
-                dnn_s[-1].extend(frame[key].ravel()/len(frame['positions']))
+                dnn_s[-1].extend(frame[key].ravel())
         elif 'dft_energy' in key:
             for frame in dataset:
                 dft_e.append(frame[key]/len(frame['positions']))
@@ -164,7 +164,7 @@ def global_rmse(dataset):
                 dft_f.extend(frame[key].ravel())
         elif 'dft_stress' in key:
             for frame in dataset:
-                dft_s.extend(frame[key].ravel()/len(frame['positions']))
+                dft_s.extend(frame[key].ravel())
     
     rmse_e = np.array([calc_rmse(dft_e, dnn) for dnn in dnn_e])
     rmse_f = np.array([calc_rmse(dft_f, dnn) for dnn in dnn_f])
