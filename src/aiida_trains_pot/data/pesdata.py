@@ -33,10 +33,27 @@ class PESData(Data):
                 self.set_list(data)
 
     def __iter__(self):
-        """Return an iterator over the dataset list."""
+        """Return an iterator over the dataset."""
         self._index = 0
-        self._data = self.get_list()  # Load the list
+        self._max_index = self.base.attributes.get('dataset_size', 0)
+        if self._max_index == 0:
+            # Count the number of items in the HDF5 file
+            try:
+                with self.base.repository.open(self._list_key, 'rb') as hdf_file:
+                    with h5py.File(hdf_file, 'r') as hdf:
+                        self._max_index = len(hdf)
+            except (FileNotFoundError, KeyError):
+                self._max_index = 0
         return self
+
+    def __next__(self):
+        """Return the next item from the dataset."""
+        if self._index < self._max_index:
+            result = self.get_item(self._index)
+            self._index += 1
+            return result
+        else:
+            raise StopIteration
     
     def __add__(self, other):
         if not isinstance(other, PESData):
@@ -51,15 +68,6 @@ class PESData(Data):
 
         return PESData(data = self.get_list() + other.get_list())
 
-
-    def __next__(self):
-        """Return the next item from the dataset list."""
-        if self._index < len(self._data):
-            result = self._data[self._index]
-            self._index += 1
-            return result
-        else:
-            raise StopIteration
         
     def __len__(self):
         """Return the number of configurations in the dataset."""
@@ -68,40 +76,96 @@ class PESData(Data):
         else:
             return len(self.get_list())
 
-    def get_list(self):
-        """Return the contents of this node as a list."""
+    def _extract_config_from_group(self, group):
+        """
+        Helper method to extract configuration data from an HDF5 group.
+        
+        :param group: HDF5 group object containing configuration data
+        :return: Dictionary with the configuration data
+        """
+        config = {}
+        # Extract datasets
+        for key, value in group.items():
+            # Convert datasets to lists or native Python types
+            if isinstance(value, h5py.Dataset):
+                config[key] = value[()].tolist() if hasattr(value[()], 'tolist') else value[()]
+            else:
+                config[key] = value[()]
+        
+        # Add attributes to the config
+        for attr_key, attr_value in group.attrs.items():
+            config[attr_key] = attr_value
+        
+        # Ensure symbols are decoded properly
+        if 'symbols' in config:
+            config['symbols'] = [str(symbol, 'utf-8') if isinstance(symbol, bytes) else str(symbol) for symbol in config['symbols']]
+        
+        return config
+
+    def get_item(self, index):
+        """Return a specific item from the dataset by index."""
         try:
-            # Open the HDF5 file and load its contents
             with self.base.repository.open(self._list_key, 'rb') as hdf_file:
                 with h5py.File(hdf_file, 'r') as hdf:
-                    data = []
-                    for group in hdf.values():
-                        config = {}
-                        for key, value in group.items():
-                            # Convert datasets to lists or native Python types
-                            if isinstance(value, h5py.Dataset):
-                                config[key] = value[()].tolist() if hasattr(value[()], 'tolist') else value[()]
-                            else:
-                                config[key] = value[()]
-                        # Add attributes to the config
-                        for attr_key, attr_value in group.attrs.items():
-                            config[attr_key] = attr_value
-                        data.append(config)
-
-            # Ensure symbols are decoded properly (if they were byte strings)
-            for config in data:
-                if 'symbols' in config:
-                    config['symbols'] = [str(symbol, 'utf-8') if isinstance(symbol, bytes) else str(symbol) for symbol in config['symbols']]
-
-            return data
-
+                    group_key = f"item_{index}"
+                    if group_key not in hdf:
+                        raise IndexError(f"Index {index} out of range")
+                    
+                    return self._extract_config_from_group(hdf[group_key])
+                    
         except FileNotFoundError as e:
             print(f"File '{self._list_key}' not found: {e}")
-            return []
+            raise IndexError(f"Index {index} out of range") from e
         except Exception as e:
             print(f"An error occurred while reading '{self._list_key}': {e}")
-            return []
+            raise
 
+    def iter_items(self):
+        """Generator function to iterate through items without loading all into memory."""
+        try:
+            with self.base.repository.open(self._list_key, 'rb') as hdf_file:
+                with h5py.File(hdf_file, 'r') as hdf:
+                    for group_key in sorted(hdf.keys(), key=lambda k: int(k.split('_')[1])):
+                        yield self._extract_config_from_group(hdf[group_key])
+        except FileNotFoundError as e:
+            print(f"File '{self._list_key}' not found: {e}")
+        except Exception as e:
+            print(f"An error occurred while reading '{self._list_key}': {e}")
+
+    def get_list(self, max_items=None, warn_threshold=1000):
+        """
+        Return the contents of this node as a list.
+        
+        :param max_items: Optional limit to the number of items to load
+        :param warn_threshold: Show warning if loading more than this many items
+        """
+        n_items = self.base.attributes.get('dataset_size', 0)
+        if n_items == 0:
+            # Count the number of items in the HDF5 file
+            try:
+                with self.base.repository.open(self._list_key, 'rb') as hdf_file:
+                    with h5py.File(hdf_file, 'r') as hdf:
+                        n_items = len(hdf)
+            except (FileNotFoundError, KeyError):
+                n_items = 0
+        
+        if max_items is None:
+            max_items = n_items
+        else:
+            max_items = min(max_items, n_items)
+        
+        if max_items > warn_threshold:
+            warnings.warn(f"Loading {max_items} items into memory. This may consume a significant amount of RAM. "
+                         f"Consider using iter_items() for memory-efficient iteration.", UserWarning)
+        
+        # Use the iterator to build the list, which is more consistent and reuses code
+        data = []
+        for i, config in enumerate(self.iter_items()):
+            if i >= max_items:
+                break
+            data.append(config)
+        
+        return data
 
     def set_ase(self, data):
         """
@@ -219,54 +283,169 @@ class PESData(Data):
             self.base.attributes.set('atomic_species', list(symb))
         except Exception as e:
             print(f"An error occurred while saving '{self._list_key}': {e}")
+    
+    def _config_to_ase(self, config):
+        """
+        Helper method to convert a configuration dictionary to an ASE Atoms object.
+        
+        :param config: Dictionary containing atomic configuration data
+        :return: ASE Atoms object
+        """
+        atoms = Atoms(
+            symbols=config['symbols'], 
+            positions=config['positions'], 
+            cell=config['cell'], 
+            pbc=config['pbc']
+        )
+        
+        # Add calculator with DFT data if available
+        if 'dft_energy' in config and 'dft_forces' in config:
+            calc_kwargs = {
+                'energy': config['dft_energy'],
+                'forces': config['dft_forces']
+            }
+            if 'dft_stress' in config:
+                if len(np.shape(config['dft_stress'])) == 1:
+                    if len(config['dft_stress']) == 6:
+                        stress = np.array([[config['dft_stress'][0], config['dft_stress'][5], config['dft_stress'][4]],
+                                           [config['dft_stress'][5], config['dft_stress'][1], config['dft_stress'][3]],
+                                           [config['dft_stress'][4], config['dft_stress'][3], config['dft_stress'][2]]])
+                    else:
+                        stress = np.array([[config['dft_stress'][0], config['dft_stress'][1], config['dft_stress'][2]],
+                                           [config['dft_stress'][3], config['dft_stress'][4], config['dft_stress'][5]],
+                                           [config['dft_stress'][6], config['dft_stress'][7], config['dft_stress'][8]]])
+                else:
+                    stress = config['dft_stress']
+                calc_kwargs['stress'] = stress
+            
+            atoms.set_calculator(SinglePointCalculator(atoms, **calc_kwargs))
+        
+        return atoms
 
-    def get_ase_list(self):
-        """Convert dataset list to an ASE list."""
+    def get_ase_item(self, index):
+        """
+        Get a specific configuration as an ASE Atoms object.
+        
+        :param index: Index of the configuration to retrieve
+        :return: ASE Atoms object
+        """
+        config = self.get_item(index)
+        return self._config_to_ase(config)
+    
+    def get_ase(self, index=None):
+        if index is not None:
+            return self.get_ase_item(index)
+        else:
+            return self.get_ase_list()
 
+    def get_ase_list(self, max_items=None, warn_threshold=1000):
+        """
+        Convert dataset to a list of ASE Atoms objects.
+        
+        :param max_items: Optional limit to the number of items to load
+        :param warn_threshold: Show warning if loading more than this many items
+        :return: List of ASE Atoms objects
+        """
+        n_items = self.base.attributes.get('dataset_size', 0)
+        if n_items == 0:
+            # Count the number of items in the HDF5 file
+            try:
+                with self.base.repository.open(self._list_key, 'rb') as hdf_file:
+                    with h5py.File(hdf_file, 'r') as hdf:
+                        n_items = len(hdf)
+            except (FileNotFoundError, KeyError):
+                n_items = 0
+        
+        if max_items is None:
+            max_items = n_items
+        else:
+            max_items = min(max_items, n_items)
+        
+        if max_items > warn_threshold:
+            warnings.warn(f"Loading {max_items} items into memory. This may consume a significant amount of RAM.", 
+                          UserWarning)
+        
         ase_list = []
-        dataset_list = self.get_list()
-        for config in dataset_list:
-            ase_list.append(Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'], pbc=config['pbc']))
-            if 'dft_stress' in config.keys():
-                stress = config['dft_stress']
-            if 'dft_energy' in config.keys() and 'dft_forces' in config.keys():
-                ase_list[-1].set_calculator(SinglePointCalculator(ase_list[-1], energy=config['dft_energy'], forces=config['dft_forces'], stress=stress))
+        for i, config in enumerate(self.iter_items()):
+            if i >= max_items:
+                break
+            ase_list.append(self._config_to_ase(config))
         
         return ase_list
-    
-    def get_txt(self, write_params=False, key_prefix=''):
-        """Convert dataset list to xyz file."""
 
+    def get_txt(self, write_params=False, key_prefix='', max_items=None, warn_threshold=1000):
+        return self.get_xyz(write_params, key_prefix, max_items, warn_threshold)
+
+    def get_xyz(self, write_params=False, key_prefix='', max_items=None, warn_threshold=1000):
+        """
+        Convert dataset to XYZ format text.
+        
+        :param write_params: Whether to include additional parameters in the output
+        :param key_prefix: Prefix to add to property keys (energy, forces, stress)
+        :param max_items: Optional limit to the number of items to process
+        :param warn_threshold: Show warning if processing more than this many items
+        :return: Text in XYZ format
+        """
+        n_items = self.base.attributes.get('dataset_size', 0)
+        if n_items == 0:
+            # Count the number of items in the HDF5 file
+            try:
+                with self.base.repository.open(self._list_key, 'rb') as hdf_file:
+                    with h5py.File(hdf_file, 'r') as hdf:
+                        n_items = len(hdf)
+            except (FileNotFoundError, KeyError):
+                n_items = 0
+        
+        if max_items is None:
+            max_items = n_items
+        else:
+            max_items = min(max_items, n_items)
+        
+        if max_items > warn_threshold:
+            warnings.warn(f"Processing {max_items} items. This may take some time and consume memory.", 
+                          UserWarning)
+        
         dataset_txt = ''
         if not key_prefix.endswith('_') and key_prefix != '':
             key_prefix += '_'
-        exclude_params = ['cell', 'symbols', 'positions', 'pbc', 'forces', 'stress', 'energy', 'dft_forces', 'dft_stress', 'dft_energy', 'md_forces', 'md_stress', 'md_energy']
+        
+        exclude_params = ['cell', 'symbols', 'positions', 'pbc', 'forces', 'stress', 'energy', 
+                          'dft_forces', 'dft_stress', 'dft_energy', 'md_forces', 'md_stress', 'md_energy']
         exclude_pattern = re.compile(r'pot_\d+_(energy|forces|stress)')
-        for config in self.get_list():
+        
+        for i, config in enumerate(self.iter_items()):
+            if i >= max_items:
+                break
+            
             params = [key for key in config.keys() if key not in exclude_params and not exclude_pattern.match(key)]
             atm = Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'], pbc=config['pbc'])
             atm.pbc = [True, True, True]
             atm.info = {}
+            
             if write_params:
                 for key in params:
                     atm.info[key] = config[key]
+                    
             if len(atm.get_chemical_symbols()) == 1:
                 atm.info["config_type"] = "IsolatedAtom"
-            if 'dft_stress' in config.keys():
+                
+            if 'dft_stress' in config:
                 s = config['dft_stress']
                 atm.info[f'{key_prefix}stress'] = f"{s[0][0]:.6f} {s[0][1]:.6f} {s[0][2]:.6f} {s[1][0]:.6f} {s[1][1]:.6f} {s[1][2]:.6f} {s[2][0]:.6f} {s[2][1]:.6f} {s[2][2]:.6f}"
-                # atm.info['dft_stress'] = f"{s[0][0]:.6f} {s[1][1]:.6f} {s[2][2]:.6f} {s[1][2]:.6f} {s[0][2]:.6f} {s[0][1]:.6f}"
-
-            if 'dft_energy' in config.keys():
+            
+            if 'dft_energy' in config:
                 atm.info[f'{key_prefix}energy'] = config['dft_energy']
-            if 'dft_forces' in config.keys():
+                
+            if 'dft_forces' in config:
                 atm.set_calculator(SinglePointCalculator(atm, forces=config['dft_forces']))
             
             with io.StringIO() as buf, redirect_stdout(buf):
                 write('-', atm, format='extxyz', write_results=True, write_info=True)
                 dataset_txt += buf.getvalue()
+                
         if key_prefix != '':
             dataset_txt = dataset_txt.replace(':forces', f':{key_prefix}forces')
+            
         return dataset_txt
     
         
@@ -274,14 +453,20 @@ class PESData(Data):
         """Return a PESData object with only unlabelled frames."""
         if self.base.attributes.get('num_labelled_frames') == 0:
             return self
-        unlabelled_data = [config for config in self.get_list() if 'dft_forces' not in config.keys() or 'dft_energy' not in config.keys()]
+        unlabelled_data = []
+        for config in self.iter_items():
+            if 'dft_forces' not in config.keys() or 'dft_energy' not in config.keys():
+                unlabelled_data.append(config)
         return PESData(data=unlabelled_data)
 
     def get_labelled(self):
         """Return a PESData object with only labelled frames."""
         if self.base.attributes.get('num_unlabelled_frames') == 0:
             return self
-        labelled_data = [config for config in self.get_list() if 'dft_forces' in config.keys() and 'dft_energy' in config.keys()]
+        labelled_data = []
+        for config in self.iter_items():
+            if 'dft_forces' in config.keys() and 'dft_energy' in config.keys():
+                labelled_data.append(config)
         return PESData(data=labelled_data)
     
     @property
@@ -299,3 +484,21 @@ class PESData(Data):
             return self.base.attributes.get('num_labelled_frames')
         else:
             return len(self.get_labelled())
+
+    def iter_ase(self, max_items=None):
+        """
+        Generator function to iterate through ASE Atoms objects without loading all into memory.
+        
+        :param max_items: Optional limit to the number of items to process
+        :yield: ASE Atoms objects one at a time
+        """
+        if max_items is not None:
+            counter = 0
+            for config in self.iter_items():
+                if counter >= max_items:
+                    break
+                yield self._config_to_ase(config)
+                counter += 1
+        else:
+            for config in self.iter_items():
+                yield self._config_to_ase(config)
