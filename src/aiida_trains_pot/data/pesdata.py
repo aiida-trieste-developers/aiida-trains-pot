@@ -11,6 +11,21 @@ import warnings
 import h5py
 import re
 
+def convert_stress(stress):
+    if len(np.shape(stress)) == 1:
+        if len(stress) == 6:
+            stress = np.array([[stress[0], stress[5], stress[4]],
+                               [stress[5], stress[1], stress[3]],
+                               [stress[4], stress[3], stress[2]]])
+        else:
+            stress = np.array([[stress[0], stress[1], stress[2]],
+                               [stress[3], stress[4], stress[5]],
+                               [stress[6], stress[7], stress[8]]])
+    else:
+        stress = stress
+    return stress
+
+
 class PESData(Data):
     
     @property
@@ -305,18 +320,7 @@ class PESData(Data):
                 'forces': config['dft_forces']
             }
             if 'dft_stress' in config:
-                if len(np.shape(config['dft_stress'])) == 1:
-                    if len(config['dft_stress']) == 6:
-                        stress = np.array([[config['dft_stress'][0], config['dft_stress'][5], config['dft_stress'][4]],
-                                           [config['dft_stress'][5], config['dft_stress'][1], config['dft_stress'][3]],
-                                           [config['dft_stress'][4], config['dft_stress'][3], config['dft_stress'][2]]])
-                    else:
-                        stress = np.array([[config['dft_stress'][0], config['dft_stress'][1], config['dft_stress'][2]],
-                                           [config['dft_stress'][3], config['dft_stress'][4], config['dft_stress'][5]],
-                                           [config['dft_stress'][6], config['dft_stress'][7], config['dft_stress'][8]]])
-                else:
-                    stress = config['dft_stress']
-                calc_kwargs['stress'] = stress
+                calc_kwargs['stress'] = convert_stress(config['dft_stress'])
             
             atoms.set_calculator(SinglePointCalculator(atoms, **calc_kwargs))
         
@@ -430,7 +434,7 @@ class PESData(Data):
                 atm.info["config_type"] = "IsolatedAtom"
                 
             if 'dft_stress' in config:
-                s = config['dft_stress']
+                s = convert_stress(config['dft_stress'])
                 atm.info[f'{key_prefix}stress'] = f"{s[0][0]:.6f} {s[0][1]:.6f} {s[0][2]:.6f} {s[1][0]:.6f} {s[1][1]:.6f} {s[1][2]:.6f} {s[2][0]:.6f} {s[2][1]:.6f} {s[2][2]:.6f}"
             
             if 'dft_energy' in config:
