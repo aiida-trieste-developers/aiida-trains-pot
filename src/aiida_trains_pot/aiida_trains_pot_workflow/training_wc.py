@@ -44,7 +44,7 @@ def SplitDataset(dataset):
             if group_list[0]['gen_method'] == "INPUT_STRUCTURE" or group_list[0]['gen_method'] == "ISOLATED_ATOM" or len(group_list[0]['positions']) == 1 or group_list[0]['gen_method'] == "EQUILIBRIUM":
                     training_set += group_list
                     continue
-        elif 'set' in group_list[0].keys():
+        if 'set' in group_list[0].keys():
             if group_list[0]['set'] == 'TRAINING':
                 training_set += group_list
                 continue

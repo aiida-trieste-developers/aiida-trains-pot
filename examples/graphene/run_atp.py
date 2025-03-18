@@ -267,7 +267,7 @@ _parameters.md = {}
 _parameters.dump = {"dump_rate": 1} ## This parameter will be updated automatically based on the value of builder.frame_extraction.sampling_time
 
 # Parameters used to pass special information about the structure
-_parameters.structure = {"atom_style": "atomic", "atom_modify": "map yes"}
+_parameters.structure = {"atom_style": "atomic", "atom_modify": "map yes", "dimension": "3", "boundary": "p p p"}
 # Parameters controlling the global values written directly to the output
 _parameters.thermo = {
     "printing_rate": 20,
