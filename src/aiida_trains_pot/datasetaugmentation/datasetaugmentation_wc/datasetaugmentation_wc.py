@@ -279,6 +279,23 @@ def ClustersGenerator(n_clusters, max_atoms, interatomic_distance, vacuum, input
 
     return {'cluster_structures': PESData(structures)}
 
+@calcfunction
+def SubstitutionGenerator(fraction_substitutions, fraction_structures, **input_datasets):
+    """Generate structures with substitutions.
+
+    :param input_datasets: PESData datasets with the input structures
+    :param fraction_substitutions: Float with the fraction of substitutions
+    :param fraction_structures: Float with the fraction of structures to generate
+    """
+    structures = []
+    for _, input_dataset in input_datasets.items():
+        input_structures = input_dataset.get_ase_list()
+        for structure in input_structures:
+            if np.random.random() < fraction_structures.value:
+                structures.append(ase_to_dict(wrap_and_restore_pbc(atoms_substitution(structure, fraction_substitutions.value))))
+                structures[-1]['gen_method'] = 'SUBSTITUTION'
+    pes_dataset = PESData(structures)
+    return {'substituted_structures': pes_dataset}
 
 @calcfunction
 def SlabsGenerator(miller_indices, min_thickness, max_atoms, vacuum, input_structures):
@@ -399,6 +416,29 @@ def uniform_random_atomic_displacement(positions, min_distances, max_displacemen
     return positions
 
 
+def atoms_substitution(structure, fraction_substitution):
+    """Substitute atoms in the structure with random atoms from the same structure.
+
+    :param structure: An ASE structure
+    :param fraction_substitution: A float that determines the fraction of atoms to be substituted
+    """
+    symbols = structure.get_chemical_symbols()
+    fraction_substitution = 0.2
+    
+    num_substitutions = np.random.randint(0, len(symbols)) * fraction_substitution
+    count_substitutions = 0
+    substituted_symbols = symbols.copy()
+    while count_substitutions < num_substitutions:
+        rnd1 = np.random.randint(0, len(symbols))
+        rnd2 = np.random.randint(0, len(symbols))
+        if symbols[rnd1] == substituted_symbols[rnd1] and symbols[rnd2] == substituted_symbols[rnd2]:
+            substituted_symbols[rnd1] = symbols[rnd2]
+            substituted_symbols[rnd2] = symbols[rnd1]
+            count_substitutions += 1
+
+    structure.set_chemical_symbols(substituted_symbols)
+    return structure
+
 class DatasetAugmentationWorkChain(WorkChain):
     """WorkChain to generate a training dataset."""
 
@@ -420,6 +460,8 @@ class DatasetAugmentationWorkChain(WorkChain):
     DEFAULT_replicate_min_dist              = Float(15.0)
     DEFAULT_replicate_max_atoms             = Int(1000)
     DEFAULT_vacuum                          = Float(15.0)
+    DEFAULT_max_substitution_fraction       = Float(0.1)
+    DEFAULT_substitution_fraction           = Float(0.2)
 
     DEFAULT_do_rattle_strain_defects        = Bool(True)
     DEFAULT_do_input                        = Bool(True)
@@ -428,6 +470,7 @@ class DatasetAugmentationWorkChain(WorkChain):
     DEFAULT_do_slabs                        = Bool(True)
     DEFAULT_do_replicate                    = Bool(True)
     DEFAULT_do_check_vacuum                 = Bool(True)
+    DEFAULT_do_substitution                 = Bool(True)
    ######################################################
 
 
@@ -445,6 +488,7 @@ class DatasetAugmentationWorkChain(WorkChain):
         spec.input("do_slabs", valid_type=Bool, default=lambda:cls.DEFAULT_do_slabs, required=False, help=f"Add slabs to the dataset. Default: {cls.DEFAULT_do_slabs}")
         spec.input("do_check_vacuum", valid_type=Bool, default=lambda:cls.DEFAULT_do_check_vacuum, required=False, help=f"Check if vacuum along non periodic directions is enough and add it if necessary. Default: {cls.DEFAULT_do_check_vacuum}")
         spec.input("do_replication", valid_type=Bool, default=lambda:cls.DEFAULT_do_replicate, required=False, help=f"Replicate structures to have a minimum distance between atoms greater than min_dist. Default: {cls.DEFAULT_do_replicate}")
+        spec.input("do_substitution", valid_type=Bool, default=lambda:cls.DEFAULT_do_substitution, required=False, help=f"Add substituted structures to the dataset. Default: {cls.DEFAULT_do_substitution}")
 
         spec.input("rsd.params.rattle_fraction", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_rattle_fraction, required=False, help=f"Atoms are displaced by a rattle_fraction of the minimum interatomic distance. Default: {cls.DEFAULT_RSD_rattle_fraction}")
         spec.input("rsd.params.max_sigma_strain", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_max_sigma_strain, required=False, help=f"Maximum strain factor. Cell is stretched or compressed up to this fraction of cell parameters. Default: {cls.DEFAULT_RSD_max_sigma_strain}")
@@ -462,6 +506,10 @@ class DatasetAugmentationWorkChain(WorkChain):
 
         spec.input("replicate.min_dist", valid_type=(Int,Float), default=lambda:cls.DEFAULT_replicate_min_dist, required=False, help=f"Minimum distance between atoms in PBC replicas, unless max_atoms is reached. Default: {cls.DEFAULT_replicate_min_dist}")
         spec.input("replicate.max_atoms", valid_type=Int, default=lambda:cls.DEFAULT_replicate_max_atoms, required=False, help=f"Maximum number of atoms in the supercell. Stronger criteria respect to min_dist. Default: {cls.DEFAULT_replicate_max_atoms}")
+        
+        spec.input("substitution.switches_fraction", valid_type=(Int,Float), default=lambda:cls.DEFAULT_substitution_fraction, required=False, help=f"Fraction of atoms to be substituted. Default: {cls.DEFAULT_substitution_fraction}")
+        spec.input("substitution.structures_fraction", valid_type=(Int,Float), default=lambda:cls.DEFAULT_max_substitution_fraction, required=False, help=f"Fraction of structures to be substituted. Default: {cls.DEFAULT_max_substitution_fraction}")
+
         spec.input("vacuum", valid_type=(Int,Float), default=lambda:cls.DEFAULT_vacuum, required=False, help=f"Minimum vacuum along non periodic directions. Default: {cls.DEFAULT_vacuum}")
         spec.output_namespace("structures", valid_type=PESData, dynamic=True, help="Augmented datasets.")
 
@@ -554,5 +602,16 @@ class DatasetAugmentationWorkChain(WorkChain):
                                               self.inputs.slabs.max_atoms,
                                               vacuum=self.ctx.vacuum,
                                               input_structures = self.ctx.initial_dataset)['slab_structures']
+        if self.inputs.do_substitution:
+            datasets_to_substitute = {}
+            if self.inputs.do_input:
+                datasets_to_substitute['input_structures'] = dataset['input_structures']
+            if self.inputs.do_rattle_strain_defects:
+                datasets_to_substitute['rattle_strain_defects_structures'] = dataset['rattle_strain_defects_structures']
+            if self.inputs.do_slabs:
+                datasets_to_substitute['slabs'] = dataset['slabs']
+            dataset['substituted'] = SubstitutionGenerator( self.inputs.substitution.switches_fraction,
+                                                            self.inputs.substitution.structures_fraction,
+                                                            **datasets_to_substitute,)['substituted_structures']
         dataset['global_structures'] = WriteDataset(**dataset)['global_structures']
         self.out("structures", dataset)

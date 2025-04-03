@@ -86,10 +86,13 @@ class PESData(Data):
         
     def __len__(self):
         """Return the number of configurations in the dataset."""
-        if self.base.attributes.get('dataset_size'):
-            return self.base.attributes.get('dataset_size')
-        else:
-            return len(self.get_list())
+        try:
+            if self.base.attributes.get('dataset_size'):
+                return self.base.attributes.get('dataset_size')
+            else:
+                return len(self.get_list())
+        except:
+            return 0
 
     def _extract_config_from_group(self, group):
         """
