@@ -268,6 +268,9 @@ _parameters.dump = {"dump_rate": 1} ## This parameter will be updated automatica
 
 # Parameters used to pass special information about the structure
 _parameters.structure = {"atom_style": "atomic", "atom_modify": "map yes", "dimension": "3", "boundary": "p p p"}
+
+# In case of few potentials possible put list of pair_coeff
+#_parameters.potential = {"potential_style_options": "table linear 20000 mace no_domain_decomposition", "pair_coeff_list": ["table d2.table D2 9.0", "mace potential.dat C"]}
 # Parameters controlling the global values written directly to the output
 _parameters.thermo = {
     "printing_rate": 20,
@@ -307,6 +310,10 @@ builder.exploration.md.lammps.metadata.options.resources = {
     'num_mpiprocs_per_machine': LAMMPS_machine['taskpn'],
     'num_cores_per_mpiproc': LAMMPS_machine['cpupt']
 }
+# In case of few potentials possible load one from file
+#builder.exploration.potential_pair_style = Str("hybrid/overlay")
+#builder.exploration.md.lammps.additional_potential = SinglefileData(os.path.join(script_dir, '*.*'))
+builder.exploration.potential_pair_style = Str("mace no_domain_decomposition")
 builder.exploration.md.lammps.metadata.options.max_wallclock_seconds = LAMMPS_time
 builder.exploration.md.lammps.metadata.options.max_memory_kb = LAMMPS_mem
 builder.exploration.md.lammps.metadata.options.import_sys_environment = False
