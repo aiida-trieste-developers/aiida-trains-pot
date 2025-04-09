@@ -269,7 +269,7 @@ def ClustersGenerator(n_clusters, max_atoms, interatomic_distance, vacuum, input
             species.append(random.choice(atomic_species))
             while True:
                 position = np.array([random.uniform(-interatomic_distance, interatomic_distance) for _ in range(3)]) + positions[random.randint(0, len(positions)-1)]
-                print(position)
+                
                 if all(np.linalg.norm(position - np.array(pos)) >= interatomic_distance for pos in positions):
                     break
             positions.append(position)
@@ -446,7 +446,7 @@ class DatasetAugmentationWorkChain(WorkChain):
    ######################################################
    ##                 DEFAULT VALUES                   ##
    ######################################################
-    DEFAULT_RSD_rattle_fraction             = Float(0.1)
+    DEFAULT_RSD_rattle_fraction             = Float(0.4)
     DEFAULT_RSD_max_sigma_strain            = Float(0.1)
     DEFAULT_RSD_n_configs                   = Int(50)
     DEFAULT_RSD_frac_vacancies              = Float(0.4)
@@ -457,10 +457,10 @@ class DatasetAugmentationWorkChain(WorkChain):
     DEFAULT_slabs_miller_indices            = List([[1,1,1],[1,1,0],[1,0,0]])
     DEFAULT_slabs_min_thickness             = Float(10.0)
     DEFAULT_slabs_max_atoms                 = Int(1000)
-    DEFAULT_replicate_min_dist              = Float(15.0)
+    DEFAULT_replicate_min_dist              = Float(20.0)
     DEFAULT_replicate_max_atoms             = Int(1000)
     DEFAULT_vacuum                          = Float(15.0)
-    DEFAULT_max_substitution_fraction       = Float(0.1)
+    DEFAULT_max_substitution_fraction       = Float(0.2)
     DEFAULT_substitution_fraction           = Float(0.2)
 
     DEFAULT_do_rattle_strain_defects        = Bool(True)
