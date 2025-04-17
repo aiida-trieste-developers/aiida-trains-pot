@@ -2,7 +2,7 @@
 """Equation of State WorkChain."""
 from aiida.engine import WorkChain, append_, calcfunction, workfunction, if_, while_, ExitCode
 from aiida import load_profile
-from aiida.orm import Code, Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict, load_node, FolderData
+from aiida.orm import Code, Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict, load_node, FolderData, load_group
 from aiida.plugins import CalculationFactory, WorkflowFactory
 from aiida.common import AttributeDict
 from ase import Atoms
@@ -13,6 +13,8 @@ from scipy.optimize import curve_fit
 from io import StringIO
 import numpy as np
 import io
+from aiida_pseudo.data.pseudo.upf import UpfData
+from aiida.plugins import GroupFactory
 load_profile()
 
 # LammpsCalculation = CalculationFactory('lammps_base')
@@ -22,6 +24,9 @@ AbInitioLabellingWorkChain      = WorkflowFactory('trains_pot.labelling')
 ExplorationWorkChain            = WorkflowFactory('trains_pot.exploration')
 EvaluationCalculation           = CalculationFactory('trains_pot.evaluation')
 PESData                         = DataFactory('pesdata')
+
+PwBaseWorkChain                 = WorkflowFactory('quantumespresso.pw.base')
+
 
 @calcfunction
 def SaveRMSE(rmse):
@@ -170,7 +175,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('random_input_structures_lammps', valid_type=Bool, help='If true, input structures for LAMMPS are randomly selected from the dataset', required=False)
         spec.input('num_random_structures_lammps', valid_type=Int, help='Number of random structures for LAMMPS', required=False)
         spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
-        spec.input('dataset', valid_type=PESData, help='Dataset containing labelled structures and structures to be labelled', required=False)
+        spec.input('dataset', valid_type=PESData, help='Dataset containing labelled structures and structures to be labelled', required=True)
 
         spec.input_namespace('models_lammps', valid_type=SinglefileData, help='MACE potential for md exploration', required=False)
         spec.input_namespace('models_ase', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False) 
@@ -187,12 +192,11 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('thr_stress', valid_type=Float, help='Threshold for stress', required=True)
         spec.input('max_selected_frames', valid_type=Int, help='Maximum number of frames to be selected for labelling per iteration', required=False) 
 
-        spec.expose_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation", exclude=('structures'))    
-        spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('unlabelled_dataset'), namespace_options={'validator': None})    
+        spec.expose_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation", exclude=('structures'))
+        spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('unlabelled_dataset'), namespace_options={'validator': None})
         spec.expose_inputs(TrainingWorkChain, namespace="training", exclude=('dataset'), namespace_options={'validator': None})
         spec.expose_inputs(ExplorationWorkChain, namespace="exploration", exclude=('potential_lammps', 'lammps_input_structures','sampling_time'), namespace_options={'validator': None})
-        spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))        
-        spec.input('structures', valid_type=PESData, help='Initial structures for dataset augmentation', required=True)
+        spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))
         
         spec.output("dataset", valid_type=PESData, help="Final dataset containing all structures labelled and selected to be labelled")
         spec.output_namespace("models_ase", valid_type=SinglefileData, help="Last committee of trained potentials compiled for ASE")
@@ -203,6 +207,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.exit_code(308, "LESS_THAN_2_POTENTIALS", message="Calculation didn't produce more tha 1 expected potentials.",)
         spec.exit_code(309, "NO_MD_CALCULATIONS", message="Calculation didn't produce any MD calculations.",)
         spec.exit_code(200, "NO_LABELLED_STRUCTURES", message="No labelled structures in the dataset.",)
+        spec.exit_code(201, "MISSING_PSEUDOS", message="Missing pseudopotentials for some atomic species in the input dataset.",)
 
         
         spec.outline(
@@ -226,7 +231,40 @@ class TrainsPotWorkChain(WorkChain):
             ),
             cls.finalize            
         )
-    
+
+    @classmethod
+    def get_builder(cls, dataset, abinitiolabeling_protocol=None, abinitiolabeling_code=None, pseudo_family=None, md_protocol=None, **kwargs):
+        """Return a builder prepopulated with inputs selected according to the chosen protocol.
+
+        :param qe_protocol: The protocol to use for the QE calculation.
+        :param md_protocol: The protocol to use for the MD calculation.
+        :param kwargs: Additional keyword arguments to pass to the builder.
+
+        :return: A builder prepopulated with inputs selected according to the chosen protocol.
+        """
+        builder = super().get_builder(**kwargs)
+        qe_protocol = abinitiolabeling_protocol or 'stringent'
+
+        atomic_species = dataset.get_atomic_species()
+        fictitious_structure = StructureData(ase=Atoms(atomic_species))
+        qe_builder = PwBaseWorkChain.get_builder_from_protocol(protocol=qe_protocol, code=abinitiolabeling_code, structure=fictitious_structure)
+        builder.ab_initio_labelling.quantumespresso = qe_builder
+        if pseudo_family is not None:
+            try:
+                pseudo_family = load_group(pseudo_family)
+            except:
+                raise ValueError(f"Pseudo family {pseudo_family} not found.")
+        else:
+            pseudo_family = load_group(PwBaseWorkChain.get_protocol_inputs(qe_protocol)['pseudo_family'])
+
+        builder.ab_initio_labelling.quantumespresso.pw.pseudos = pseudo_family.get_pseudos(structure=fictitious_structure)
+        cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=fictitious_structure, unit='Ry')
+        builder.ab_initio_labelling.quantumespresso.pw.parameters = {'SYSTEM': {'ecutwfc': cutoff_wfc, 'ecutrho': cutoff_rho,}}
+
+        builder.dataset = dataset
+
+        return builder
+
     def do_dataset_augmentation(self): return bool(self.ctx.do_dataset_augmentation)
     def do_ab_initio_labelling(self): return bool(self.ctx.do_ab_initio_labelling)
     def do_training(self): return bool(self.ctx.do_training)
@@ -288,15 +326,20 @@ class TrainsPotWorkChain(WorkChain):
         if 'lammps_input_structures' in self.inputs:
             self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
         else:
-            self.ctx.lammps_input_structures = {f'structure_{ii}': StructureData(ase=atm) for ii, atm in enumerate(self.inputs.structures.get_ase_list())}
-            
+            self.ctx.lammps_input_structures = {f'structure_{ii}': StructureData(ase=atm) for ii, atm in enumerate(self.inputs.dataset.get_ase_list())}
 
+        atomic_species = self.ctx.dataset.get_atomic_species()
+        for specie in atomic_species:
+            if specie not in self.inputs.ab_initio_labelling.quantumespresso.pw.pseudos.keys():
+                return self.exit_codes.MISSING_PSEUDOS
+        
+                 
 
     def dataset_augmentation(self):
         """Generate data for the dataset."""
         
         inputs = self.exposed_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation")
-        inputs['structures'] = self.inputs.structures
+        inputs['structures'] = self.ctx.dataset
 
         future = self.submit(DatasetAugmentationWorkChain, **inputs)
         self.report(f'launched lammps calculation <{future.pk}>')

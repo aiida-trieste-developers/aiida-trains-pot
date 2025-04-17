@@ -120,6 +120,14 @@ class PESData(Data):
         
         return config
 
+    def get_atomic_species(self):
+        """Return the list of atomic species in the dataset."""
+        try:
+            return self.base.attributes.get('atomic_species', [])
+        except Exception as e:
+            print(f"An error occurred while retrieving atomic species: {e}")
+            return []
+
     def get_item(self, index):
         """Return a specific item from the dataset by index."""
         try:
