@@ -162,15 +162,36 @@ def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_fra
 class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
 
+   ######################################################
+   ##                 DEFAULT VALUES                   ##
+   ######################################################
+    DEFAULT_thr_energy                      = Float(0.001)
+    DEFAULT_thr_forces                      = Float(0.1)
+    DEFAULT_thr_stress                      = Float(0.001)
+
+    DEFAULT_max_selected_frames             = Int(20)
+
+    DEFAULT_thermalization_time             = Float(0.0)
+    DEFAULT_sampling_time                   = Float(1.0)
+
+    DEFAULT_max_loops                       = Int(10)
+
+    DEFAULT_do_dataset_augmentation         = Bool(True)
+    DEFAULT_do_ab_initio_labelling          = Bool(True)
+    DEFAULT_do_training                     = Bool(True)
+    DEFAULT_do_exploration                  = Bool(True)
+   ######################################################
+   
     @classmethod
     def define(cls, spec):
         """Specify inputs and outputs."""
+        
         super().define(spec)
-        spec.input('do_dataset_augmentation', valid_type=Bool, default=lambda: Bool(True), help='Do data generation', required=False)
-        spec.input('do_ab_initio_labelling', valid_type=Bool, default=lambda: Bool(True), help='Do ab_initio_labelling calculations', required=False)
-        spec.input('do_training', valid_type=Bool, default=lambda: Bool(True), help='Do MACE calculations', required=False)
-        spec.input('do_exploration', valid_type=Bool, default=lambda: Bool(True), help='Do exploration calculations', required=False)
-        spec.input('max_loops', valid_type=Int, default=lambda: Int(10), help='Maximum number of active learning workflow loops', required=False)
+        spec.input('do_dataset_augmentation', valid_type=Bool, default=lambda: DEFAULT_do_dataset_augmentation, help='Do data generation', required=False)
+        spec.input('do_ab_initio_labelling', valid_type=Bool, default=lambda: DEFAULT_do_ab_initio_labelling, help='Do ab_initio_labelling calculations', required=False)
+        spec.input('do_training', valid_type=Bool, default=lambda: DEFAULT_do_training, help='Do MACE calculations', required=False)
+        spec.input('do_exploration', valid_type=Bool, default=lambda: DEFAULT_do_exploration, help='Do exploration calculations', required=False)
+        spec.input('max_loops', valid_type=Int, default=lambda: DEFAULT_max_loops, help='Maximum number of active learning workflow loops', required=False)
 
         spec.input('random_input_structures_lammps', valid_type=Bool, help='If true, input structures for LAMMPS are randomly selected from the dataset', required=False)
         spec.input('num_random_structures_lammps', valid_type=Int, help='Number of random structures for LAMMPS', required=False)
@@ -184,13 +205,13 @@ class TrainsPotWorkChain(WorkChain):
         
         # spec.input('potential', valid_type=SinglefileData, help='MACE potential for exploration', required=False)
 
-        spec.input('frame_extraction.sampling_time', valid_type=Float, help='Correlation time for frame extraction', required=False)
-        spec.input('frame_extraction.thermalization_time', valid_type=Float, default=lambda : Float(0.0), help='Thermalization time for exploration', required=False)
+        spec.input('frame_extraction.sampling_time', valid_type=Float, help='Correlation time for frame extraction', required=False, default=lambda: DEFAULT_sampling_time)
+        spec.input('frame_extraction.thermalization_time', valid_type=Float, default=lambda : DEFAULT_thermalization_time, help='Thermalization time for exploration', required=False)
 
-        spec.input('thr_energy', valid_type=Float, help='Threshold for energy', required=True)
-        spec.input('thr_forces', valid_type=Float, help='Threshold for forces', required=True)
-        spec.input('thr_stress', valid_type=Float, help='Threshold for stress', required=True)
-        spec.input('max_selected_frames', valid_type=Int, help='Maximum number of frames to be selected for labelling per iteration', required=False) 
+        spec.input('thr_energy', valid_type=Float, help='Threshold for energy', required=True, default=lambda: DEFAULT_thr_energy)
+        spec.input('thr_forces', valid_type=Float, help='Threshold for forces', required=True, default=lambda: DEFAULT_thr_forces)
+        spec.input('thr_stress', valid_type=Float, help='Threshold for stress', required=True, default=lambda: DEFAULT_thr_stress)
+        spec.input('max_selected_frames', valid_type=Int, help='Maximum number of frames to be selected for labelling per iteration', required=False, default=lambda: DEFAULT_max_selected_frames) 
 
         spec.expose_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation", exclude=('structures'))
         spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('unlabelled_dataset'), namespace_options={'validator': None})
