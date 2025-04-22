@@ -7,6 +7,8 @@ from aiida_lammps.data.potential import LammpsPotentialData
 from pathlib import Path
 import tempfile
 import random  # to change seed for each retry
+from aiida_quantumespresso.workflows.protocols.utils import recursive_merge
+from aiida_trains_pot.utils.lammps_pair_coeffs import get_dftd2_pair_coeffs, get_mace_pair_coeff
 
 LammpsWorkChain = WorkflowFactory('lammps.base')
 PESData         = DataFactory('pesdata')
@@ -44,17 +46,51 @@ def generate_potential(potential, pair_style) -> LammpsPotentialData:
     
     return potential
 
+###################################################################
+##                       DEFAULT VALUES                          ##
+###################################################################
+
+DEFAULT_potential_pair_style = Str("mace no_domain_decomposition")
+DEFAULT_settings             = Dict({"store_restart": True,},) 
+DEFAULT_parameters           = Dict({"structure":{
+                                        "atom_style" : "atomic",
+                                        "atom_modify": "map yes",
+                                        "dimension"  : "3",
+                                        "boundary"   : "p p p",
+                                        },
+                                    "potential":{
+                                        "potential_style_options": "mace no_domain_decomposition",
+                                        },
+                                    "control":{
+                                        "timestep": 0.001,
+                                        "newton": 'on',
+                                        "units": 'metal',
+                                        },
+                                    "thermo":{
+                                        "printing_rate": 100,
+                                        "thermo_printing": {
+                                            "step": True,
+                                            "time": True,
+                                            "pe": True,
+                                            "ke": True,
+                                            "etotal": True,
+                                            "press": True,
+                                            "pxx": True,
+                                            "pyy": True,
+                                            "pzz": True,
+                                            "temp": True,
+                                            },
+                                        },
+                                    "restart":
+                                        {"print_final": True,
+                                        },
+                                    "md": {},
+                                    "dump": {},
+                                    })
+###################################################################
 
 class ExplorationWorkChain(WorkChain):
     """A workchain to loop over structures and submit LammpsWorkChain with retries."""
-
-
-    ###################################################################
-    ##                       DEFAULT VALUES                          ##
-    ###################################################################
-
-    DEFAULT_potential_pair_style = Str('mace no_domain_decomposition')
-    ###################################################################
 
     @classmethod
     def define(cls, spec):
@@ -62,9 +98,11 @@ class ExplorationWorkChain(WorkChain):
         spec.input('params_list', valid_type=List, help='List of parameters for md')
         spec.input('parameters', valid_type=Dict, help='Global parameters for lammps')
         spec.input('potential_lammps', valid_type=SinglefileData, required=False, help='One of the potential for MD')
-        spec.input('potential_pair_style', valid_type=Str, default=lambda:cls.DEFAULT_potential_pair_style, required=False, help=f"General potential pair style. Default: {cls.DEFAULT_potential_pair_style}")
-        spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps')
+        spec.input('potential_pair_style', valid_type=Str, default=lambda:DEFAULT_potential_pair_style, required=False, help=f"General potential pair style. Default: {DEFAULT_potential_pair_style}")
         spec.input('sampling_time', valid_type=Float, help='Correlation time for frame extraction')
+        spec.input('protocol', valid_type=Str, help='Protocol for the calculation', required=False)
+        spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps')
+        
 
         spec.expose_inputs(LammpsWorkChain, namespace="md", exclude=('lammps.structure', 'lammps.potential', 'lammps.parameters'), namespace_options={'validator': None})
         spec.output_namespace("md", dynamic=True, help="Exploration outputs")
@@ -94,10 +132,37 @@ class ExplorationWorkChain(WorkChain):
             inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
             inputs.lammps.structure = structure
             inputs.lammps.potential = generate_potential(potential, str(self.inputs.potential_pair_style.value))
+
+            generate_pair_coeff = True
+            if "potential" in self.inputs.parameters:
+                if "pair_coeff_list" in self.inputs.parameters["potential"]:
+                    generate_pair_coeff = False
             
-            params_list = list(self.inputs.params_list)
-            parameters = AttributeDict(self.inputs.parameters)
-            parameters.dump.dump_rate = int(self.inputs.sampling_time / parameters.control.timestep)
+            # Pair coefficients for MACE potential without hybrid/overlay is always generated, if needed it is overwritten
+            if generate_pair_coeff:
+                pair_coeffs = [get_mace_pair_coeff(structure, hybrid=False)]
+                
+            params_list = self.inputs.params_list.get_list()
+            input_parameters = self.inputs.parameters.get_dict()
+            if self.inputs.protocol is not None:
+                if self.inputs.protocol == 'vdw_d2':
+                    if 'potential' in self.inputs.parameters:
+                        if 'potential_style_options' not in self.inputs.parameters['potential']:
+                            input_parameters['potential']['potential_style_options'] = 'mace no_domain_decomposition momb 20.0 0.75 20.0'
+                    else:
+                        input_parameters['potential'] = {'potential_style_options': 'mace no_domain_decomposition momb 20.0 0.75 20.0'}
+                    if generate_pair_coeff:
+                        # Generate DFT-D2 pair coefficients, it overwrites the MACE pair_coeff generated above
+                        pair_coeffs = get_dftd2_pair_coeffs(structure)
+                        pair_coeffs.append(get_mace_pair_coeff(structure, hybrid=True))
+            input_parameters['potential']['pair_coeff_list'] = pair_coeffs
+
+            parameters = recursive_merge(DEFAULT_parameters.get_dict(), input_parameters)
+            inputs.lammps.settings = recursive_merge(DEFAULT_settings.get_dict(), self.inputs.md.lammps.settings.get_dict())
+            # if 'dump' not in parameters:
+            #     parameters['dump'] = {}
+            parameters['dump']['dump_rate'] = int(self.inputs.sampling_time / parameters['control']['timestep'])
+            
             
             # Loop over the MD parameter sets
             for params_md in params_list:           
@@ -117,8 +182,7 @@ class ExplorationWorkChain(WorkChain):
 
                 params_md["integration"]["constraints"] = constraint
 
-
-                parameters.md = dict(params_md)
+                parameters['md'] = dict(params_md)
 
                 inputs.lammps.parameters = Dict(parameters)
                 future = self.submit(LammpsWorkChain, **inputs)

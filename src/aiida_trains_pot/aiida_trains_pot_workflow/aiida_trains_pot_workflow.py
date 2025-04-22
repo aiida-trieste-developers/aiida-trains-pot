@@ -15,6 +15,7 @@ import numpy as np
 import io
 from aiida_pseudo.data.pseudo.upf import UpfData
 from aiida.plugins import GroupFactory
+from aiida_trains_pot.utils.generate_config import generate_lammps_md_config
 load_profile()
 
 # LammpsCalculation = CalculationFactory('lammps_base')
@@ -162,29 +163,33 @@ def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_fra
 class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
 
-   ######################################################
-   ##                 DEFAULT VALUES                   ##
-   ######################################################
-    DEFAULT_thr_energy                      = Float(0.001)
-    DEFAULT_thr_forces                      = Float(0.1)
-    DEFAULT_thr_stress                      = Float(0.001)
 
-    DEFAULT_max_selected_frames             = Int(20)
-
-    DEFAULT_thermalization_time             = Float(0.0)
-    DEFAULT_sampling_time                   = Float(1.0)
-
-    DEFAULT_max_loops                       = Int(10)
-
-    DEFAULT_do_dataset_augmentation         = Bool(True)
-    DEFAULT_do_ab_initio_labelling          = Bool(True)
-    DEFAULT_do_training                     = Bool(True)
-    DEFAULT_do_exploration                  = Bool(True)
-   ######################################################
    
     @classmethod
     def define(cls, spec):
         """Specify inputs and outputs."""
+
+        ######################################################
+        ##                 DEFAULT VALUES                   ##
+        ######################################################
+        DEFAULT_thr_energy                      = Float(0.001)
+        DEFAULT_thr_forces                      = Float(0.1)
+        DEFAULT_thr_stress                      = Float(0.001)
+
+        DEFAULT_max_selected_frames             = Int(20)
+        DEFAULT_random_input_structures_lammps  = Bool(True)
+
+        DEFAULT_thermalization_time             = Float(0.0)
+        DEFAULT_sampling_time                   = Float(1.0)
+
+        DEFAULT_max_loops                       = Int(10)
+
+        DEFAULT_do_dataset_augmentation         = Bool(True)
+        DEFAULT_do_ab_initio_labelling          = Bool(True)
+        DEFAULT_do_training                     = Bool(True)
+        DEFAULT_do_exploration                  = Bool(True)
+        ######################################################
+        
         
         super().define(spec)
         spec.input('do_dataset_augmentation', valid_type=Bool, default=lambda: DEFAULT_do_dataset_augmentation, help='Do data generation', required=False)
@@ -193,7 +198,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('do_exploration', valid_type=Bool, default=lambda: DEFAULT_do_exploration, help='Do exploration calculations', required=False)
         spec.input('max_loops', valid_type=Int, default=lambda: DEFAULT_max_loops, help='Maximum number of active learning workflow loops', required=False)
 
-        spec.input('random_input_structures_lammps', valid_type=Bool, help='If true, input structures for LAMMPS are randomly selected from the dataset', required=False)
+        spec.input('random_input_structures_lammps', valid_type=Bool, help='If true, input structures for LAMMPS are randomly selected from the dataset', default=lambda: DEFAULT_random_input_structures_lammps, required=False)
         spec.input('num_random_structures_lammps', valid_type=Int, help='Number of random structures for LAMMPS', required=False)
         spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
         spec.input('dataset', valid_type=PESData, help='Dataset containing labelled structures and structures to be labelled', required=True)
@@ -254,16 +259,22 @@ class TrainsPotWorkChain(WorkChain):
         )
 
     @classmethod
-    def get_builder(cls, dataset, abinitiolabeling_protocol=None, abinitiolabeling_code=None, pseudo_family=None, md_protocol=None, **kwargs):
+    def get_builder(cls, dataset, abinitiolabeling_code, md_code, abinitiolabeling_protocol=None, pseudo_family=None, md_protocol=None, **kwargs):
         """Return a builder prepopulated with inputs selected according to the chosen protocol.
 
-        :param qe_protocol: The protocol to use for the QE calculation.
+        :param dataset: The dataset to use for the calculation.
+        :param abinitiolabeling_protocol: The protocol to use for the ab initio labelling calculation.
+        :param abinitiolabeling_code: The code to use for the ab initio labelling calculation.
+        :param pseudo_family: The pseudo family to use for the calculation.
         :param md_protocol: The protocol to use for the MD calculation.
         :param kwargs: Additional keyword arguments to pass to the builder.
 
         :return: A builder prepopulated with inputs selected according to the chosen protocol.
         """
         builder = super().get_builder(**kwargs)
+        builder.dataset = dataset
+
+        ### Quantum ESPRESSO ###
         qe_protocol = abinitiolabeling_protocol or 'stringent'
 
         atomic_species = dataset.get_atomic_species()
@@ -282,7 +293,15 @@ class TrainsPotWorkChain(WorkChain):
         cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=fictitious_structure, unit='Ry')
         builder.ab_initio_labelling.quantumespresso.pw.parameters = {'SYSTEM': {'ecutwfc': cutoff_wfc, 'ecutrho': cutoff_rho,}}
 
-        builder.dataset = dataset
+        ### LAMMPS ###
+        if md_protocol not in ['vdw_d2', None]:
+            raise ValueError(f"MD protocol {md_protocol} not found.")
+        if md_protocol == 'vdw_d2':
+            builder.exploration.potential_pair_style = Str('hybrid/overlay')
+        builder.exploration.md.lammps.code  = md_code
+        builder.exploration.params_list     = generate_lammps_md_config()
+        builder.exploration.protocol        = md_protocol
+        builder.exploration.parameters      = Dict({"control":{"timestep": 0.001}})
 
         return builder
 

@@ -1,6 +1,6 @@
 import yaml
 
-def generate_lammps_md_config(temperatures, pressures, steps, styles, dt):
+def generate_lammps_md_config(temperatures=range(0,1001,100), pressures=[-5000,0,5000], steps=[10000], styles=['npt'], dt=0.001):
     """
     Generate a YAML-like configuration for a set of parameters.
     
@@ -24,26 +24,27 @@ def generate_lammps_md_config(temperatures, pressures, steps, styles, dt):
     Returns:
         str: A YAML-formatted string of the configuration.
     """
-    if not (len(temperatures) == len(pressures) == len(steps) == len(styles)):
-        raise ValueError("The lengths of temperatures, pressures, steps, and styles must match.")
     
     config = []
-    for temp, press, step, style in zip(temperatures, pressures, steps, styles):
-
-        constraint = {
-            "temp": [temp, temp, 100*dt],
-            "x": [press, press, 1000*dt],
-            "y": [press, press, 1000*dt],
-            "z": [press, press, 1000*dt]           
-        }
-        md_block = {
-            "max_number_steps": step,
-            "velocity": [{"create": {"temp": temp}}],
-            "integration": {
-                "style": style,
-                "constraints": constraint                
-            }
-        }
-        config.append(md_block)
+    for temp in temperatures:
+        for press in pressures:
+            for step in steps:
+                for style in styles:
+                    
+                    constraint = {
+                        "temp": [temp, temp, 100*dt],
+                        "x": [press, press, 1000*dt],
+                        "y": [press, press, 1000*dt],
+                        "z": [press, press, 1000*dt]           
+                    }
+                    md_block = {
+                        "max_number_steps": step,
+                        "velocity": [{"create": {"temp": temp}}],
+                        "integration": {
+                            "style": style,
+                            "constraints": constraint                
+                        }
+                    }
+                    config.append(md_block)
 
     return config
