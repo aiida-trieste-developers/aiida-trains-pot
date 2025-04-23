@@ -549,10 +549,10 @@ class DatasetAugmentationWorkChain(WorkChain):
                 if self.inputs.rsd.params.vacancies_per_config > len(structure['positions']):
                     raise ValueError(f'Number of vacancies per configuration is greater than the number of atoms in the structure <{structure.uuid}>.')
             # WARNINGS
-            if self.inputs.rsd.params.rattle_fraction > 0.15:
-                self.report('rattle_fraction is greater than 0.15 (15%), can lead to atoms too close to each other.')
-            if self.inputs.rsd.params.max_sigma_strain > 0.15:
-                self.report('max_sigma_strain is greater than 0.15 (15%), can lead to atoms too close to each other.')
+            if self.inputs.rsd.params.rattle_fraction > 0.4:
+                self.report('rattle_fraction is greater than 0.4 (40%), can lead to atoms too close to each other.')
+            if self.inputs.rsd.params.max_sigma_strain > 0.1:
+                self.report('max_sigma_strain is greater than 0.1 (10%), can lead to atoms too close to each other.')
         
         self.ctx.initial_dataset = self.inputs.structures
         if self.inputs.do_check_vacuum:
@@ -567,8 +567,8 @@ class DatasetAugmentationWorkChain(WorkChain):
         """Replicate structures."""
         self.report("Replicating structures")
         self.ctx.initial_dataset = ReplicateStructures(min_dist= self.inputs.replicate.min_dist,
-                                                        max_atoms=self.inputs.replicate.max_atoms,
-                                                        vacuum=self.ctx.vacuum,
+                                                       max_atoms=self.inputs.replicate.max_atoms,
+                                                       vacuum=self.ctx.vacuum,
                                                        input_structures = self.ctx.initial_dataset)['replicated_structures']
 
     def run_dataset_generation(self):
