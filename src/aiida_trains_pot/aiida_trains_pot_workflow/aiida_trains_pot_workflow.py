@@ -252,8 +252,9 @@ class TrainsPotWorkChain(WorkChain):
                     cls.exploration,
                     cls.finalize_exploration,
                     cls.exploration_frame_extraction),
+                if_(cls.do_evaluation)(
                 cls.run_committee_evaluation,
-                cls.finalize_committee_evaluation,
+                cls.finalize_committee_evaluation),
             ),
             cls.finalize            
         )
@@ -302,6 +303,9 @@ class TrainsPotWorkChain(WorkChain):
     def do_ab_initio_labelling(self): return bool(self.ctx.do_ab_initio_labelling)
     def do_training(self): return bool(self.ctx.do_training)
     def do_exploration(self): return bool(self.ctx.do_exploration)
+    def do_evaluation(self):
+        self.ctx.iteration = self.inputs.max_loops+1
+        return bool('explored_dataset' in self.ctx)
     def check_iteration(self):
         if self.ctx.iteration > 0:
             self.ctx.do_dataset_augmentation = False
@@ -331,7 +335,7 @@ class TrainsPotWorkChain(WorkChain):
         self.ctx.do_ab_initio_labelling = self.inputs.do_ab_initio_labelling
         self.ctx.do_training = self.inputs.do_training
         self.ctx.do_exploration = self.inputs.do_exploration
-        if not self.ctx.do_ab_initio_labelling:
+        if not self.ctx.do_ab_initio_labelling and self.ctx.do_training:
             if "dataset" in self.inputs:
                 if self.inputs.dataset.len_labelled > 0:
                     self.ctx.dataset = self.inputs.dataset
@@ -503,8 +507,8 @@ class TrainsPotWorkChain(WorkChain):
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')
 
     def finalize(self):
-        RMSE = SaveRMSE(self.ctx.rmse)
-        self.out('RMSE', RMSE) 
+        
+        self.out('RMSE', SaveRMSE(self.ctx.rmse))
         self.out('dataset', self.ctx.dataset)
         self.out('models_ase', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_ase)})
         self.out('models_lammps', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_lammps)}) 
