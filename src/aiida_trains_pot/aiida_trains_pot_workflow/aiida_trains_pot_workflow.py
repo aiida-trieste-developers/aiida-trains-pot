@@ -279,19 +279,12 @@ class TrainsPotWorkChain(WorkChain):
 
         atomic_species = dataset.get_atomic_species()
         fictitious_structure = StructureData(ase=Atoms(atomic_species))
-        qe_builder = PwBaseWorkChain.get_builder_from_protocol(protocol=qe_protocol, code=abinitiolabeling_code, structure=fictitious_structure)
-        builder.ab_initio_labelling.quantumespresso = qe_builder
         if pseudo_family is not None:
-            try:
-                pseudo_family = load_group(pseudo_family)
-            except:
-                raise ValueError(f"Pseudo family {pseudo_family} not found.")
+            overrides = {'pseudo_family': pseudo_family}
         else:
-            pseudo_family = load_group(PwBaseWorkChain.get_protocol_inputs(qe_protocol)['pseudo_family'])
-
-        builder.ab_initio_labelling.quantumespresso.pw.pseudos = pseudo_family.get_pseudos(structure=fictitious_structure)
-        cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=fictitious_structure, unit='Ry')
-        builder.ab_initio_labelling.quantumespresso.pw.parameters = {'SYSTEM': {'ecutwfc': cutoff_wfc, 'ecutrho': cutoff_rho,}}
+            overrides = {}
+        qe_builder = PwBaseWorkChain.get_builder_from_protocol(protocol=qe_protocol, code=abinitiolabeling_code, structure=fictitious_structure, overrides=overrides)
+        builder.ab_initio_labelling.quantumespresso = qe_builder
 
         ### LAMMPS ###
         if md_protocol not in ['vdw_d2', None]:

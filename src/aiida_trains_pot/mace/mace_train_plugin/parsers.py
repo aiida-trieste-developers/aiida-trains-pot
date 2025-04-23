@@ -230,10 +230,11 @@ class MaceBaseParser(Parser):
                 if 'results' in output_filename:
                     folder_contents = self.retrieved.list_object_names(output_filename)
                     for file_in_folder in folder_contents:
-                        file_path = os.path.join(output_filename, file_in_folder)
-                        with self.retrieved.open(file_path, "rb") as handle:                                           
-                            parsed_results = parse_log_file(SinglefileData(file=handle))
-                            self.out("results", List(parsed_results))    
+                        if not file_in_folder.endswith('.png'):
+                            file_path = os.path.join(output_filename, file_in_folder)
+                            with self.retrieved.open(file_path, "rb") as handle:                                           
+                                parsed_results = parse_log_file(SinglefileData(file=handle))
+                                self.out("results", List(parsed_results))    
                 if 'logs' in output_filename:
                     folder_data = FolderData()
                     folder_contents = self.retrieved.list_object_names(output_filename)
