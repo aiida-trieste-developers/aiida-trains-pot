@@ -219,7 +219,7 @@ def model_deviation(data):
         return np.std(data)
     else:
         mean = np.mean(data, axis=0)
-        return np.max(np.mean(np.linalg.norm(data - mean, axis=2)**2, axis=0)**0.5)
+        return np.mean(np.mean(np.sqrt(np.mean((data - mean[np.newaxis, :, :]) ** 2, axis=0))))
 
 
 def maximum_deviation(data):
