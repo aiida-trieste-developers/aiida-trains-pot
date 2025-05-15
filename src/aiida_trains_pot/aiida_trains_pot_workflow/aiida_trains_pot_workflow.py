@@ -176,7 +176,7 @@ class TrainsPotWorkChain(WorkChain):
         DEFAULT_thr_forces                      = Float(0.1)
         DEFAULT_thr_stress                      = Float(0.001)
 
-        DEFAULT_max_selected_frames             = Int(20)
+        DEFAULT_max_selected_frames             = Int(1000)
         DEFAULT_random_input_structures_lammps  = Bool(True)
 
         DEFAULT_thermalization_time             = Float(0.0)
