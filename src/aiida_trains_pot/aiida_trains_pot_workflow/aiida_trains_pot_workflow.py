@@ -304,7 +304,6 @@ class TrainsPotWorkChain(WorkChain):
     def do_training(self): return bool(self.ctx.do_training)
     def do_exploration(self): return bool(self.ctx.do_exploration)
     def do_evaluation(self):
-        self.ctx.iteration = self.inputs.max_loops+1
         return bool('explored_dataset' in self.ctx)
     def check_iteration(self):
         if self.ctx.iteration > 0:
@@ -401,7 +400,7 @@ class TrainsPotWorkChain(WorkChain):
 
         inputs = self.exposed_inputs(TrainingWorkChain, namespace="training")
         inputs.dataset = self.ctx.dataset.get_labelled()
-        if self.ctx.iteration > 1:
+        if self.ctx.iteration > 0:
             inputs['checkpoints'] = {f"chkpt_{ii+1}": self.ctx.potential_checkpoints[-ii] for ii in range(min(len(self.ctx.potential_checkpoints), self.inputs.training.num_potentials.value))}
       
       
