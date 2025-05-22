@@ -260,7 +260,7 @@ class TrainsPotWorkChain(WorkChain):
         )
 
     @classmethod
-    def get_builder(cls, dataset, abinitiolabeling_code, md_code, abinitiolabeling_protocol=None, pseudo_family=None, md_protocol=None, **kwargs):
+    def get_builder(cls, dataset, abinitiolabeling_code, md_code, training_code=None, abinitiolabeling_protocol=None, pseudo_family=None, md_protocol=None, **kwargs):
         """Return a builder prepopulated with inputs selected according to the chosen protocol.
 
         :param dataset: The dataset to use for the calculation.
@@ -400,7 +400,7 @@ class TrainsPotWorkChain(WorkChain):
 
         inputs = self.exposed_inputs(TrainingWorkChain, namespace="training")
         inputs.dataset = self.ctx.dataset.get_labelled()
-        if self.ctx.iteration > 0:
+        if 'potential_checkpoints' in self.ctx:
             inputs['checkpoints'] = {f"chkpt_{ii+1}": self.ctx.potential_checkpoints[-ii] for ii in range(min(len(self.ctx.potential_checkpoints), self.inputs.training.num_potentials.value))}
       
       

@@ -4,7 +4,7 @@ AiiDA calculation plugin for the MACE training code.
 import re
 from aiida.common import datastructures
 from aiida.engine import CalcJob
-from aiida.orm import SinglefileData, List, FolderData, Dict, Bool, Code
+from aiida.orm import SinglefileData, List, FolderData, Dict, Bool, Code, Str
 import io
 from contextlib import redirect_stdout
 from ase.io import write
@@ -13,9 +13,18 @@ from ase import Atoms
 from aiida.plugins import DataFactory
 import random
 import yaml
-import random
 
 PESData = DataFactory('pesdata')
+
+def validate_protocol(node, _):
+    """Validate the protocol input."""
+    if node.value not in ["naive-finetune"]:
+        return "The `protocol` input can only be 'naive-finetune'."
+
+def validate_inputs(inputs, _):
+    """Validate the top-level inputs."""
+    if inputs["protocol"].value == "naive-finetune" and "finetune_model" not in inputs:
+        return "The `finetune_model` input is required when using the 'naive-finetune' protocol."
 
 class MaceTrainCalculation(CalcJob):
     """
@@ -44,7 +53,10 @@ class MaceTrainCalculation(CalcJob):
         spec.input("preprocess_code", valid_type=Code, help="Preprocess code, required if do_preprocess is True", required=False)
         spec.input("postprocess_code", valid_type=Code, help="Postprocess code", required=False)
         spec.input("restart", valid_type=Bool, help="Restart from a previous calculation", required=False, default=lambda:Bool(False))
-        spec.input("checkpoints_restart", valid_type=FolderData, help="Checkpoints file", required=False)        
+        spec.input("checkpoints_restart", valid_type=FolderData, help="Checkpoints file", required=False)
+        spec.input("protocol", valid_type=Str, help="Protocol for the calculation {only 'naive-finetune'}", required=False, validator=validate_protocol)
+        spec.input("finetune_model", valid_type=SinglefileData, help="Model to finetune", required=False)
+        spec.inputs.validator = validate_inputs     
 
         spec.output("model_stage1_lammps", valid_type=SinglefileData, help="Stage 1 model compiled for LAMMPS",)
         spec.output("model_stage1_ase", valid_type=SinglefileData, help="Stage 1 model compiled for ASE",)
@@ -93,11 +105,12 @@ class MaceTrainCalculation(CalcJob):
                 '--energy_key', "dft_energy",
                 '--forces_key', "dft_forces",
                 '--stress_key', "dft_stress",
-                '--r_max', str(mace_config_dict['r_max']),
                 '--compute_statistics',
                 '--h5_prefix', "processed_data/",
-                '--seed', str(mace_config_dict['seed'])
+                '--seed', str(random.randint(0, 10000))
             ]
+            if 'r_max' in mace_config_dict:
+                codeinfo_preprocess.cmdline_params += ['--r_max', str(mace_config_dict['r_max'])]
 
         # for MACE < 0.3.7
         codeinfo_postprocess1 = datastructures.CodeInfo()
@@ -144,7 +157,14 @@ class MaceTrainCalculation(CalcJob):
 
         mace_config_dict['energy_key'] = "dft_energy" 
         mace_config_dict['forces_key'] = "dft_forces" 
-        mace_config_dict['stress_key'] = "dft_stress"   
+        mace_config_dict['stress_key'] = "dft_stress"  
+
+        if 'protocol' in self.inputs:
+            if self.inputs.protocol.value == "naive-finetune":
+                mace_config_dict['foundation_model'] = "finetune_model.dat"
+                mace_config_dict['multiheads_finetuning'] = False
+
+
         if 'checkpoints' in self.inputs:
             mace_config_dict['restart_latest'] = True
 
@@ -199,6 +219,12 @@ class MaceTrainCalculation(CalcJob):
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
         calcinfo = datastructures.CalcInfo()
+        calcinfo.local_copy_list = [
+            (
+                self.inputs.finetune_model.uuid,
+                self.inputs.finetune_model.filename,
+                "finetune_model.dat",
+            ),]
         if do_preprocess:
             calcinfo.codes_info = [codeinfo_preprocess, codeinfo, codeinfo_postprocess1, codeinfo_postprocess1b, codeinfo_postprocess2]
         else:
