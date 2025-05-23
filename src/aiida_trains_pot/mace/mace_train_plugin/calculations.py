@@ -18,13 +18,19 @@ PESData = DataFactory('pesdata')
 
 def validate_protocol(node, _):
     """Validate the protocol input."""
-    if node.value not in ["naive-finetune"]:
-        return "The `protocol` input can only be 'naive-finetune'."
+    if node.value not in ["naive-finetune", "replay-finetune"]:
+        return "The `protocol` input can only be 'naive-finetune' or 'replay-finetune'."
 
 def validate_inputs(inputs, _):
     """Validate the top-level inputs."""
-    if inputs["protocol"].value == "naive-finetune" and "finetune_model" not in inputs:
-        return "The `finetune_model` input is required when using the 'naive-finetune' protocol."
+    if 'protocol' in inputs:
+        if inputs["protocol"].value == "naive-finetune" and "finetune_model" not in inputs:
+            return "The `finetune_model` input is required when using the 'naive-finetune' protocol."
+        if inputs["protocol"].value == "replay-finetune":
+            if "finetune_model" not in inputs:
+                return "The `finetune_model` input is required when using the 'replay-finetune' protocol."
+            if "finetune_replay_dataset" not in inputs:
+                return "The `finetune_replay_dataset` input is required when using the 'replay-finetune' protocol."
 
 class MaceTrainCalculation(CalcJob):
     """
@@ -54,8 +60,9 @@ class MaceTrainCalculation(CalcJob):
         spec.input("postprocess_code", valid_type=Code, help="Postprocess code", required=False)
         spec.input("restart", valid_type=Bool, help="Restart from a previous calculation", required=False, default=lambda:Bool(False))
         spec.input("checkpoints_restart", valid_type=FolderData, help="Checkpoints file", required=False)
-        spec.input("protocol", valid_type=Str, help="Protocol for the calculation {only 'naive-finetune'}", required=False, validator=validate_protocol)
+        spec.input("protocol", valid_type=Str, help="Protocol for the calculation {'naive-finetune' or 'replay-finetune'}", required=False, validator=validate_protocol)
         spec.input("finetune_model", valid_type=SinglefileData, help="Model to finetune", required=False)
+        spec.input("finetune_replay_dataset", valid_type=PESData, help="Dataset for replay finetune", required=False)
         spec.inputs.validator = validate_inputs     
 
         spec.output("model_stage1_lammps", valid_type=SinglefileData, help="Stage 1 model compiled for LAMMPS",)
@@ -163,16 +170,25 @@ class MaceTrainCalculation(CalcJob):
             if self.inputs.protocol.value == "naive-finetune":
                 mace_config_dict['foundation_model'] = "finetune_model.dat"
                 mace_config_dict['multiheads_finetuning'] = False
+            if self.inputs.protocol.value == "replay-finetune":
+                mace_config_dict['foundation_model'] = "finetune_model.dat"
+                mace_config_dict['multiheads_finetuning'] = True
+                replay_txt = self.inputs.finetune_replay_dataset.get_txt(write_params=False, key_prefix='dft')
+                with folder.open('replay.xyz', "w") as handle:
+                    handle.write(replay_txt)
+                mace_config_dict['pt_train_file'] = "replay.xyz"
+                if 'E0s' in mace_config_dict and mace_config_dict['E0s'] == "average":
+                    del mace_config_dict['E0s']
 
 
         if 'checkpoints' in self.inputs:
             mace_config_dict['restart_latest'] = True
 
-        for training_structure in self.inputs.training_set:
-            training_dict = dict(training_structure)
-            if len(training_dict['symbols']) != 1:
-                mace_config_dict['E0s'] = "average"
-                break
+        # for training_structure in self.inputs.training_set:
+        #     training_dict = dict(training_structure)
+        #     if len(training_dict['symbols']) != 1:
+        #         mace_config_dict['E0s'] = "average"
+        #         break
 
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
