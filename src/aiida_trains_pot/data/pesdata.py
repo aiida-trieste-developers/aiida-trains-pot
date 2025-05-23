@@ -10,6 +10,7 @@ from ase.io import write
 import warnings
 import h5py
 import re
+from ase.data import atomic_numbers
 
 def convert_stress(stress):
     if len(np.shape(stress)) == 1:
@@ -200,6 +201,8 @@ class PESData(Data):
         :param data: A list of ASE Atoms objects to save.
         """
         from ase.calculators.singlepoint import SinglePointDFTCalculator as dft_calc
+        from ase.calculators.singlepoint import SinglePointCalculator as single_calc
+
         # Ensure data is a list of Atoms objects
         if not isinstance(data, list):
             raise TypeError("Input data must be a list of ase.atoms.Atoms.")
@@ -214,7 +217,7 @@ class PESData(Data):
         
         save_data = []
         for atm in data:
-            if isinstance(atm.calc, dft_calc):
+            if isinstance(atm.calc, dft_calc) or isinstance(atm.calc, single_calc):
                 num_labelled_frames += 1
                 
                 save_data.append({'cell': atm.cell, 'symbols': atm.get_chemical_symbols(), 'positions': atm.get_positions(), 'pbc': atm.pbc, 'dft_energy': atm.calc.results['energy'], 'dft_forces': atm.calc.results['forces']})
@@ -517,3 +520,18 @@ class PESData(Data):
         else:
             for config in self.iter_items():
                 yield self._config_to_ase(config)
+    
+    def get_e0s(self, format='atomic_numbers') -> dict:
+        """
+        Get the energies of isolated atoms from the dataset.
+        :param format: Format of the atomic species ('atomic_numbers' or 'symbols')
+        :return: dictionary of isolated atom energies
+        """
+        # e0s = {atomic_numbers[k]: None for k in self.get_atomic_species()}
+        e0s = {k: None for k in self.get_atomic_species()}
+        for config in self.iter_items():
+            if len(config['symbols']) == 1 and 'dft_energy' in config.keys():
+                e0s[config['symbols'][0]] = config['dft_energy']
+        if format == 'atomic_numbers':
+            e0s = {atomic_numbers[k]: v for k, v in e0s.items()}
+        return e0s

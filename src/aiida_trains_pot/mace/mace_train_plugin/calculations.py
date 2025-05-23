@@ -166,6 +166,11 @@ class MaceTrainCalculation(CalcJob):
         mace_config_dict['forces_key'] = "dft_forces" 
         mace_config_dict['stress_key'] = "dft_stress"  
 
+        if 'E0s' not in mace_config_dict:
+            e0s = self.inputs.training_set.get_e0s()
+            if None not in e0s.values():
+                mace_config_dict['E0s'] = str(e0s)
+
         if 'protocol' in self.inputs:
             if self.inputs.protocol.value == "naive-finetune":
                 mace_config_dict['foundation_model'] = "finetune_model.dat"
