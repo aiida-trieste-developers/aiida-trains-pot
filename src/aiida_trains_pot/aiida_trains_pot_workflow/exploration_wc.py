@@ -101,7 +101,7 @@ class ExplorationWorkChain(WorkChain):
         spec.input('potential_pair_style', valid_type=Str, default=lambda:DEFAULT_potential_pair_style, required=False, help=f"General potential pair style. Default: {DEFAULT_potential_pair_style}")
         spec.input('sampling_time', valid_type=Float, help='Correlation time for frame extraction')
         spec.input('protocol', valid_type=Str, help='Protocol for the calculation', required=False)
-        spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps')
+        spec.input('lammps_input_structures', valid_type=PESData, help='Input structures for lammps')
         
 
         spec.expose_inputs(LammpsWorkChain, namespace="md", exclude=('lammps.structure', 'lammps.potential', 'lammps.parameters'), namespace_options={'validator': None})
@@ -128,9 +128,9 @@ class ExplorationWorkChain(WorkChain):
         self.ctx.dict_wc = {} 
         self.ctx.iteration = 0     
         # Loop over structures
-        for _, structure in self.inputs.lammps_input_structures.items():
+        for structure in self.inputs.lammps_input_structures.get_ase_list():
             inputs = self.exposed_inputs(LammpsWorkChain, namespace="md")
-            inputs.lammps.structure = structure
+            inputs.lammps.structure = StructureData(ase=structure)
             inputs.lammps.potential = generate_potential(potential, str(self.inputs.potential_pair_style.value))
 
             generate_pair_coeff = True
@@ -140,7 +140,7 @@ class ExplorationWorkChain(WorkChain):
             
             # Pair coefficients for MACE potential without hybrid/overlay is always generated, if needed it is overwritten
             if generate_pair_coeff:
-                pair_coeffs = [get_mace_pair_coeff(structure, hybrid=False)]
+                pair_coeffs = [get_mace_pair_coeff(inputs.lammps.structure, hybrid=False)]
                 
             params_list = self.inputs.params_list.get_list()
             input_parameters = self.inputs.parameters.get_dict()
@@ -153,8 +153,8 @@ class ExplorationWorkChain(WorkChain):
                         input_parameters['potential'] = {'potential_style_options': 'mace no_domain_decomposition momb 20.0 0.75 20.0'}
                     if generate_pair_coeff:
                         # Generate DFT-D2 pair coefficients, it overwrites the MACE pair_coeff generated above
-                        pair_coeffs = get_dftd2_pair_coeffs(structure)
-                        pair_coeffs.append(get_mace_pair_coeff(structure, hybrid=True))
+                        pair_coeffs = get_dftd2_pair_coeffs(inputs.lammps.structure)
+                        pair_coeffs.append(get_mace_pair_coeff(inputs.lammps.structure, hybrid=True))
             input_parameters['potential']['pair_coeff_list'] = pair_coeffs
 
             parameters = recursive_merge(DEFAULT_parameters.get_dict(), input_parameters)

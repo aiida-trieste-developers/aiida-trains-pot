@@ -200,7 +200,7 @@ class TrainsPotWorkChain(WorkChain):
 
         spec.input('random_input_structures_lammps', valid_type=Bool, help='If true, input structures for LAMMPS are randomly selected from the dataset', default=lambda: DEFAULT_random_input_structures_lammps, required=False)
         spec.input('num_random_structures_lammps', valid_type=Int, help='Number of random structures for LAMMPS', required=False)
-        spec.input_namespace('lammps_input_structures', valid_type=StructureData, help='Input structures for lammps, if not specified input structures are used', required=False)
+        spec.input('lammps_input_structures', valid_type=PESData, help='Input structures for lammps, if not specified input structures are used', required=False)
         spec.input('dataset', valid_type=PESData, help='Dataset containing labelled structures and structures to be labelled', required=True)
 
         spec.input_namespace('models_lammps', valid_type=SinglefileData, help='MACE potential for md exploration', required=False)
@@ -362,7 +362,7 @@ class TrainsPotWorkChain(WorkChain):
         if 'lammps_input_structures' in self.inputs:
             self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
         else:
-            self.ctx.lammps_input_structures = {f'structure_{ii}': StructureData(ase=atm) for ii, atm in enumerate(self.inputs.dataset.get_ase_list())}
+            self.ctx.lammps_input_structures = PESData([atm for atm in self.inputs.dataset.get_ase_list()])
 
         atomic_species = self.ctx.dataset.get_atomic_species()
         for specie in atomic_species:
@@ -414,11 +414,16 @@ class TrainsPotWorkChain(WorkChain):
         inputs = self.exposed_inputs(ExplorationWorkChain, namespace="exploration")
         inputs.potential_lammps = self.ctx.potentials_lammps[-1]
         
-        if "random_input_structures_lammps" in self.inputs and "num_random_structures_lammps" in self.inputs:
+        if "random_input_structures_lammps" in self.inputs:
             if self.inputs.random_input_structures_lammps:
-                ase_list = self.ctx.dataset.get_ase_list()
-                id_selected = np.random.choice(range(len(ase_list)), self.inputs.num_random_structures_lammps.value, replace=False)
-                self.ctx.lammps_input_structures = {f'structure_{key}': StructureData(ase=ase_list[key]) for key in id_selected} 
+                if 'dataset_augmentation' in self.ctx:
+                    self.ctx.lammps_input_structures = self.ctx.dataset_augmentation.outputs.structures.global_structures
+                else:
+                    self.ctx.lammps_input_structures = self.ctx.dataset
+        
+        if "num_random_structures_lammps" in self.inputs:
+                id_selected = np.random.choice(range(len(self.ctx.lammps_input_structures)), self.inputs.num_random_structures_lammps.value, replace=False)
+                self.ctx.lammps_input_structures = PESData([self.ctx.lammps_input_structures.get_item(key) for key in id_selected])
             
         inputs.lammps_input_structures = self.ctx.lammps_input_structures
         inputs.sampling_time = self.inputs.frame_extraction.sampling_time

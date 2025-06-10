@@ -171,7 +171,9 @@ class MaceTrainCalculation(CalcJob):
             if None not in e0s.values():
                 mace_config_dict['E0s'] = str(e0s)
 
+        finetune = False
         if 'protocol' in self.inputs:
+            finetune = True
             if self.inputs.protocol.value == "naive-finetune":
                 mace_config_dict['foundation_model'] = "finetune_model.dat"
                 mace_config_dict['multiheads_finetuning'] = False
@@ -240,12 +242,13 @@ class MaceTrainCalculation(CalcJob):
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
         calcinfo = datastructures.CalcInfo()
-        calcinfo.local_copy_list = [
-            (
-                self.inputs.finetune_model.uuid,
-                self.inputs.finetune_model.filename,
-                "finetune_model.dat",
-            ),]
+        if finetune:
+            calcinfo.local_copy_list = [
+                (
+                    self.inputs.finetune_model.uuid,
+                    self.inputs.finetune_model.filename,
+                    "finetune_model.dat",
+                ),]
         if do_preprocess:
             calcinfo.codes_info = [codeinfo_preprocess, codeinfo, codeinfo_postprocess1, codeinfo_postprocess1b, codeinfo_postprocess2]
         else:

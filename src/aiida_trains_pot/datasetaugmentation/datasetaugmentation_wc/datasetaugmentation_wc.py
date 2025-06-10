@@ -171,7 +171,7 @@ def RattleStrainDefectsStructureGenerator(n_configs, rattle_fraction, max_sigma_
 
         
         for i in range(int(n_configs)):
-            if i > int(n_configs) * frac_vacancies:
+            if i < int(n_configs) * frac_vacancies:
                 n_vacancies = vacancies_per_config.value
             else:
                 n_vacancies = 0
@@ -545,9 +545,9 @@ class DatasetAugmentationWorkChain(WorkChain):
                 raise ValueError('frac_vacancies must be between 0 and 1')
             if self.inputs.rsd.params.vacancies_per_config < 0:
                 raise ValueError('vacancies_per_config must be non-negative')
-            for structure in self.inputs.structures.get_list():
-                if self.inputs.rsd.params.vacancies_per_config > len(structure['positions']):
-                    raise ValueError(f'Number of vacancies per configuration is greater than the number of atoms in the structure <{structure.uuid}>.')
+            # for structure in self.inputs.structures.get_list():
+            #     if self.inputs.rsd.params.vacancies_per_config > len(structure['positions']):
+            #         raise ValueError(f'Number of vacancies per configuration is greater than the number of atoms in the structure <{structure.uuid}>.')
             # WARNINGS
             if self.inputs.rsd.params.rattle_fraction > 0.4:
                 self.report('rattle_fraction is greater than 0.4 (40%), can lead to atoms too close to each other.')
