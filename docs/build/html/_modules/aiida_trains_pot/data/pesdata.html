@@ -340,7 +340,24 @@
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">redirect_stdout</span>
 <span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">write</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="k">def</span> <span class="nf">convert_stress</span><span class="p">(</span><span class="n">stress</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">stress</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stress</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="n">stress</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">4</span><span class="p">]],</span>
+                               <span class="p">[</span><span class="n">stress</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">3</span><span class="p">]],</span>
+                               <span class="p">[</span><span class="n">stress</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">2</span><span class="p">]]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stress</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">stress</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                               <span class="p">[</span><span class="n">stress</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">5</span><span class="p">]],</span>
+                               <span class="p">[</span><span class="n">stress</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span> <span class="n">stress</span><span class="p">[</span><span class="mi">8</span><span class="p">]]])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stress</span> <span class="o">=</span> <span class="n">stress</span>
+    <span class="k">return</span> <span class="n">stress</span>
+
 
 <div class="viewcode-block" id="PESData">
 <a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData">[docs]</a>
@@ -360,13 +377,33 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># Initialize the parent class</span>
         <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_list</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Atoms</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_ase</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_list</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an iterator over the dataset list.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an iterator over the dataset.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_list</span><span class="p">()</span>  <span class="c1"># Load the list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Count the number of items in the HDF5 file</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf_file</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">hdf_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_max_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdf</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_max_index</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the next item from the dataset.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_index</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span>
     
     <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">PESData</span><span class="p">):</span>
@@ -381,15 +418,6 @@
 
         <span class="k">return</span> <span class="n">PESData</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_list</span><span class="p">()</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">get_list</span><span class="p">())</span>
 
-
-    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the next item from the dataset list.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">):</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="k">return</span> <span class="n">result</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">StopIteration</span>
         
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the number of configurations in the dataset.&quot;&quot;&quot;</span>
@@ -398,41 +426,170 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_list</span><span class="p">())</span>
 
-<div class="viewcode-block" id="PESData.get_list">
-<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_list">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the contents of this node as a list.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_extract_config_from_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to extract configuration data from an HDF5 group.</span>
+<span class="sd">        </span>
+<span class="sd">        :param group: HDF5 group object containing configuration data</span>
+<span class="sd">        :return: Dictionary with the configuration data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Extract datasets</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Convert datasets to lists or native Python types</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">[()]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">[()],</span> <span class="s1">&#39;tolist&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span><span class="p">[()]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">[()]</span>
+        
+        <span class="c1"># Add attributes to the config</span>
+        <span class="k">for</span> <span class="n">attr_key</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">config</span><span class="p">[</span><span class="n">attr_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr_value</span>
+        
+        <span class="c1"># Ensure symbols are decoded properly</span>
+        <span class="k">if</span> <span class="s1">&#39;symbols&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]]</span>
+        
+        <span class="k">return</span> <span class="n">config</span>
+
+<div class="viewcode-block" id="PESData.get_item">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_item">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a specific item from the dataset by index.&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># Open the HDF5 file and load its contents</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf_file</span><span class="p">:</span>
                 <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">hdf_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf</span><span class="p">:</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">hdf</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                        <span class="n">config</span> <span class="o">=</span> <span class="p">{}</span>
-                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                            <span class="c1"># Convert datasets to lists or native Python types</span>
-                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
-                                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">[()]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">[()],</span> <span class="s1">&#39;tolist&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span><span class="p">[()]</span>
-                            <span class="k">else</span><span class="p">:</span>
-                                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">[()]</span>
-                        <span class="c1"># Add attributes to the config</span>
-                        <span class="k">for</span> <span class="n">attr_key</span><span class="p">,</span> <span class="n">attr_value</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                            <span class="n">config</span><span class="p">[</span><span class="n">attr_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr_value</span>
-                        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-
-            <span class="c1"># Ensure symbols are decoded properly (if they were byte strings)</span>
-            <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">&#39;symbols&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-                    <span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]]</span>
-
-            <span class="k">return</span> <span class="n">data</span>
-
+                    <span class="n">group_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;item_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">if</span> <span class="n">group_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hdf</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Index </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> out of range&quot;</span><span class="p">)</span>
+                    
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_config_from_group</span><span class="p">(</span><span class="n">hdf</span><span class="p">[</span><span class="n">group_key</span><span class="p">])</span>
+                    
         <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="si">}</span><span class="s2">&#39; not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Index </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> out of range&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while reading &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">[]</span></div>
+            <span class="k">raise</span></div>
+
+
+<div class="viewcode-block" id="PESData.iter_items">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.iter_items">[docs]</a>
+    <span class="k">def</span> <span class="nf">iter_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generator function to iterate through items without loading all into memory.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf_file</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">hdf_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">group_key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">hdf</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])):</span>
+                        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_config_from_group</span><span class="p">(</span><span class="n">hdf</span><span class="p">[</span><span class="n">group_key</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="si">}</span><span class="s2">&#39; not found: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while reading &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PESData.get_list">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">warn_threshold</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the contents of this node as a list.</span>
+<span class="sd">        </span>
+<span class="sd">        :param max_items: Optional limit to the number of items to load</span>
+<span class="sd">        :param warn_threshold: Show warning if loading more than this many items</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_items</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Count the number of items in the HDF5 file</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf_file</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">hdf_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf</span><span class="p">:</span>
+                        <span class="n">n_items</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdf</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                <span class="n">n_items</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">if</span> <span class="n">max_items</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_items</span> <span class="o">=</span> <span class="n">n_items</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">max_items</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_items</span><span class="p">,</span> <span class="n">n_items</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">max_items</span> <span class="o">&gt;</span> <span class="n">warn_threshold</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading </span><span class="si">{</span><span class="n">max_items</span><span class="si">}</span><span class="s2"> items into memory. This may consume a significant amount of RAM. &quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot;Consider using iter_items() for memory-efficient iteration.&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+        
+        <span class="c1"># Use the iterator to build the list, which is more consistent and reuses code</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter_items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">max_items</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="PESData.set_ase">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.set_ase">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_ase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the contents of this node by saving a list of ASE Atoms objects as an HDF5 file.</span>
+
+<span class="sd">        :param data: A list of ASE Atoms objects to save.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">ase.calculators.singlepoint</span> <span class="kn">import</span> <span class="n">SinglePointDFTCalculator</span> <span class="k">as</span> <span class="n">dft_calc</span>
+        <span class="c1"># Ensure data is a list of Atoms objects</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input data must be a list of ase.atoms.Atoms.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Atoms</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input data must be a list of ase.atoms.Atoms.&quot;</span><span class="p">)</span>
+        
+        <span class="n">num_labelled_frames</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">num_unlabelled_frames</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">symb</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        
+        <span class="n">save_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">atm</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atm</span><span class="o">.</span><span class="n">calc</span><span class="p">,</span> <span class="n">dft_calc</span><span class="p">):</span>
+                <span class="n">num_labelled_frames</span> <span class="o">+=</span> <span class="mi">1</span>
+                
+                <span class="n">save_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="s1">&#39;symbols&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">(),</span> <span class="s1">&#39;positions&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(),</span> <span class="s1">&#39;pbc&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">pbc</span><span class="p">,</span> <span class="s1">&#39;dft_energy&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">],</span> <span class="s1">&#39;dft_forces&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;forces&#39;</span><span class="p">]})</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">stress</span> <span class="o">=</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_stress</span><span class="p">(</span><span class="n">voigt</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="n">save_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;dft_stress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stress</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">num_unlabelled_frames</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">save_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="s1">&#39;symbols&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">(),</span> <span class="s1">&#39;positions&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(),</span> <span class="s1">&#39;pbc&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">pbc</span><span class="p">})</span>
+
+            <span class="n">symb</span> <span class="o">=</span> <span class="n">symb</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">save_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;symbols&#39;</span><span class="p">]))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Create a temporary directory to save the file</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">temp_dir</span><span class="p">:</span>
+                <span class="n">dataset_temp_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="si">}</span><span class="s2">.h5&quot;</span><span class="p">)</span>
+                <span class="c1"># Save the data using h5py</span>
+                <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">dataset_temp_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">save_data</span><span class="p">):</span>
+                        <span class="n">group</span> <span class="o">=</span> <span class="n">hdf</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;item_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                                <span class="n">group</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">group</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+                <span class="c1"># Store the file in the AiiDA repository</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">put_object_from_file</span><span class="p">(</span><span class="n">dataset_temp_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="p">)</span>
+            <span class="c1"># Store metadata as attributes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;num_labelled_frames&#39;</span><span class="p">,</span> <span class="n">num_labelled_frames</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;num_unlabelled_frames&#39;</span><span class="p">,</span> <span class="n">num_unlabelled_frames</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;atomic_species&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">symb</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while saving &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>          </div>
+
+
+
 
 
 <div class="viewcode-block" id="PESData.set_list">
@@ -444,14 +601,25 @@
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input data must be a list.&quot;</span><span class="p">)</span>
         <span class="n">num_labelled_frames</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">num_unlabelled_frames</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">symb</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;dft_forces&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s2">&quot;dft_energy&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">num_labelled_frames</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">num_unlabelled_frames</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">symb</span> <span class="o">=</span> <span class="n">symb</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]))</span>
 
         <span class="n">save_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;pbc&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                <span class="n">item</span><span class="p">[</span><span class="s1">&#39;pbc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">]</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Periodic boundary conditions not found in the dataset. Assuming PBC = [True, True, True].&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;cell&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cell vectors not found in the dataset.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;symbols&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Atomic symbols not found in the dataset.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;positions&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Atomic positions not found in the dataset.&quot;</span><span class="p">)</span>
             <span class="c1"># Ensure that symbols are a list of strings</span>
             <span class="n">item</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]]</span>
             <span class="n">save_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
@@ -476,55 +644,170 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;num_labelled_frames&#39;</span><span class="p">,</span> <span class="n">num_labelled_frames</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;num_unlabelled_frames&#39;</span><span class="p">,</span> <span class="n">num_unlabelled_frames</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;atomic_species&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">symb</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while saving &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
+    
+    <span class="k">def</span> <span class="nf">_config_to_ase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to convert a configuration dictionary to an ASE Atoms object.</span>
+<span class="sd">        </span>
+<span class="sd">        :param config: Dictionary containing atomic configuration data</span>
+<span class="sd">        :return: ASE Atoms object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span>
+            <span class="n">symbols</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">],</span> 
+            <span class="n">positions</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">],</span> 
+            <span class="n">cell</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;cell&#39;</span><span class="p">],</span> 
+            <span class="n">pbc</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;pbc&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># Add calculator with DFT data if available</span>
+        <span class="k">if</span> <span class="s1">&#39;dft_energy&#39;</span> <span class="ow">in</span> <span class="n">config</span> <span class="ow">and</span> <span class="s1">&#39;dft_forces&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">calc_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_energy&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;forces&#39;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_forces&#39;</span><span class="p">]</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="s1">&#39;dft_stress&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+                <span class="n">calc_kwargs</span><span class="p">[</span><span class="s1">&#39;stress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">convert_stress</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_stress&#39;</span><span class="p">])</span>
+            
+            <span class="n">atoms</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">SinglePointCalculator</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="o">**</span><span class="n">calc_kwargs</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="n">atoms</span>
+
+<div class="viewcode-block" id="PESData.get_ase_item">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_ase_item">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_ase_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a specific configuration as an ASE Atoms object.</span>
+<span class="sd">        </span>
+<span class="sd">        :param index: Index of the configuration to retrieve</span>
+<span class="sd">        :return: ASE Atoms object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_to_ase</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+
+    
+    <span class="k">def</span> <span class="nf">get_ase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ase_item</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ase_list</span><span class="p">()</span>
 
 <div class="viewcode-block" id="PESData.get_ase_list">
 <a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_ase_list">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_ase_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dataset list to an ASE list.&quot;&quot;&quot;</span>
-
+    <span class="k">def</span> <span class="nf">get_ase_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">warn_threshold</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert dataset to a list of ASE Atoms objects.</span>
+<span class="sd">        </span>
+<span class="sd">        :param max_items: Optional limit to the number of items to load</span>
+<span class="sd">        :param warn_threshold: Show warning if loading more than this many items</span>
+<span class="sd">        :return: List of ASE Atoms objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_items</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Count the number of items in the HDF5 file</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf_file</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">hdf_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf</span><span class="p">:</span>
+                        <span class="n">n_items</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdf</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                <span class="n">n_items</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">if</span> <span class="n">max_items</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_items</span> <span class="o">=</span> <span class="n">n_items</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">max_items</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_items</span><span class="p">,</span> <span class="n">n_items</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">max_items</span> <span class="o">&gt;</span> <span class="n">warn_threshold</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading </span><span class="si">{</span><span class="n">max_items</span><span class="si">}</span><span class="s2"> items into memory. This may consume a significant amount of RAM.&quot;</span><span class="p">,</span> 
+                          <span class="ne">UserWarning</span><span class="p">)</span>
+        
         <span class="n">ase_list</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">dataset_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">dataset_list</span><span class="p">:</span>
-            <span class="n">ase_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Atoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">],</span> <span class="n">positions</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">],</span> <span class="n">cell</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;cell&#39;</span><span class="p">],</span> <span class="n">pbc</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;pbc&#39;</span><span class="p">]))</span>
-            <span class="k">if</span> <span class="s1">&#39;dft_stress&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">s</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_stress&#39;</span><span class="p">]</span>
-                <span class="n">stress</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="p">,</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
-            <span class="k">if</span> <span class="s1">&#39;dft_energy&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">&#39;dft_forces&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">ase_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">SinglePointCalculator</span><span class="p">(</span><span class="n">ase_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">energy</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_energy&#39;</span><span class="p">],</span> <span class="n">forces</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_forces&#39;</span><span class="p">],</span> <span class="n">stress</span><span class="o">=</span><span class="n">stress</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter_items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">max_items</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">ase_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config_to_ase</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
         
         <span class="k">return</span> <span class="n">ase_list</span></div>
 
-    
-<div class="viewcode-block" id="PESData.get_txt">
-<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_txt">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_txt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dataset list to xyz file.&quot;&quot;&quot;</span>
 
+    <span class="k">def</span> <span class="nf">get_txt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">write_params</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">key_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">warn_threshold</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xyz</span><span class="p">(</span><span class="n">write_params</span><span class="p">,</span> <span class="n">key_prefix</span><span class="p">,</span> <span class="n">max_items</span><span class="p">,</span> <span class="n">warn_threshold</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PESData.get_xyz">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_xyz">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">write_params</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">key_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">warn_threshold</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert dataset to XYZ format text.</span>
+<span class="sd">        </span>
+<span class="sd">        :param write_params: Whether to include additional parameters in the output</span>
+<span class="sd">        :param key_prefix: Prefix to add to property keys (energy, forces, stress)</span>
+<span class="sd">        :param max_items: Optional limit to the number of items to process</span>
+<span class="sd">        :param warn_threshold: Show warning if processing more than this many items</span>
+<span class="sd">        :return: Text in XYZ format</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_items</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Count the number of items in the HDF5 file</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_key</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf_file</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">hdf_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdf</span><span class="p">:</span>
+                        <span class="n">n_items</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hdf</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                <span class="n">n_items</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">if</span> <span class="n">max_items</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_items</span> <span class="o">=</span> <span class="n">n_items</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">max_items</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_items</span><span class="p">,</span> <span class="n">n_items</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">max_items</span> <span class="o">&gt;</span> <span class="n">warn_threshold</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">max_items</span><span class="si">}</span><span class="s2"> items. This may take some time and consume memory.&quot;</span><span class="p">,</span> 
+                          <span class="ne">UserWarning</span><span class="p">)</span>
+        
         <span class="n">dataset_txt</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-
-        <span class="n">exclude_params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span> <span class="s1">&#39;symbols&#39;</span><span class="p">,</span> <span class="s1">&#39;positions&#39;</span><span class="p">,</span> <span class="s1">&#39;pbc&#39;</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">,</span> <span class="s1">&#39;stress&#39;</span><span class="p">,</span> <span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;dft_forces&#39;</span><span class="p">,</span> <span class="s1">&#39;dft_stress&#39;</span><span class="p">,</span> <span class="s1">&#39;dft_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;md_forces&#39;</span><span class="p">,</span> <span class="s1">&#39;md_stress&#39;</span><span class="p">,</span> <span class="s1">&#39;md_energy&#39;</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_list</span><span class="p">():</span>
-            <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_params</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">key_prefix</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">key_prefix</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">key_prefix</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span>
+        
+        <span class="n">exclude_params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span> <span class="s1">&#39;symbols&#39;</span><span class="p">,</span> <span class="s1">&#39;positions&#39;</span><span class="p">,</span> <span class="s1">&#39;pbc&#39;</span><span class="p">,</span> <span class="s1">&#39;forces&#39;</span><span class="p">,</span> <span class="s1">&#39;stress&#39;</span><span class="p">,</span> <span class="s1">&#39;energy&#39;</span><span class="p">,</span> 
+                          <span class="s1">&#39;dft_forces&#39;</span><span class="p">,</span> <span class="s1">&#39;dft_stress&#39;</span><span class="p">,</span> <span class="s1">&#39;dft_energy&#39;</span><span class="p">,</span> <span class="s1">&#39;md_forces&#39;</span><span class="p">,</span> <span class="s1">&#39;md_stress&#39;</span><span class="p">,</span> <span class="s1">&#39;md_energy&#39;</span><span class="p">]</span>
+        <span class="n">exclude_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;pot_\d+_(energy|forces|stress)&#39;</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter_items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">max_items</span><span class="p">:</span>
+                <span class="k">break</span>
+            
+            <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_params</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">exclude_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span>
             <span class="n">atm</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">],</span> <span class="n">positions</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">],</span> <span class="n">cell</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;cell&#39;</span><span class="p">],</span> <span class="n">pbc</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;pbc&#39;</span><span class="p">])</span>
+            <span class="n">atm</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">]</span>
             <span class="n">atm</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
-                <span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s1">&#39;dft_stress&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">s</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_stress&#39;</span><span class="p">]</span>
-                <span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;dft_stress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span>
-
-            <span class="k">if</span> <span class="s1">&#39;dft_energy&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;dft_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_energy&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s1">&#39;dft_forces&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            
+            <span class="k">if</span> <span class="n">write_params</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                    <span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atm</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;config_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;IsolatedAtom&quot;</span>
+                
+            <span class="k">if</span> <span class="s1">&#39;dft_stress&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">convert_stress</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_stress&#39;</span><span class="p">])</span>
+                <span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key_prefix</span><span class="si">}</span><span class="s1">stress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span>
+            
+            <span class="k">if</span> <span class="s1">&#39;dft_energy&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+                <span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key_prefix</span><span class="si">}</span><span class="s1">energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_energy&#39;</span><span class="p">]</span>
+                
+            <span class="k">if</span> <span class="s1">&#39;dft_forces&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
                 <span class="n">atm</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">SinglePointCalculator</span><span class="p">(</span><span class="n">atm</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_forces&#39;</span><span class="p">]))</span>
             
             <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buf</span><span class="p">,</span> <span class="n">redirect_stdout</span><span class="p">(</span><span class="n">buf</span><span class="p">):</span>
                 <span class="n">write</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">atm</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;extxyz&#39;</span><span class="p">,</span> <span class="n">write_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">dataset_txt</span> <span class="o">+=</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
-
+                
+        <span class="k">if</span> <span class="n">key_prefix</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">dataset_txt</span> <span class="o">=</span> <span class="n">dataset_txt</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:forces&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;:</span><span class="si">{</span><span class="n">key_prefix</span><span class="si">}</span><span class="s1">forces&#39;</span><span class="p">)</span>
+            
         <span class="k">return</span> <span class="n">dataset_txt</span></div>
 
     
@@ -533,7 +816,12 @@
 <a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_unlabelled">[docs]</a>
     <span class="k">def</span> <span class="nf">get_unlabelled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a PESData object with only unlabelled frames.&quot;&quot;&quot;</span>
-        <span class="n">unlabelled_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">config</span> <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_list</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;dft_forces&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="s1">&#39;dft_energy&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;num_labelled_frames&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">unlabelled_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">&#39;dft_forces&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="s1">&#39;dft_energy&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">unlabelled_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">PESData</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">unlabelled_data</span><span class="p">)</span></div>
 
 
@@ -541,7 +829,12 @@
 <a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_labelled">[docs]</a>
     <span class="k">def</span> <span class="nf">get_labelled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a PESData object with only labelled frames.&quot;&quot;&quot;</span>
-        <span class="n">labelled_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">config</span> <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_list</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;dft_forces&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">&#39;dft_energy&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;num_unlabelled_frames&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">labelled_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">&#39;dft_forces&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="s1">&#39;dft_energy&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">labelled_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">PESData</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">labelled_data</span><span class="p">)</span></div>
 
     
@@ -559,7 +852,28 @@
         <span class="k">if</span> <span class="s2">&quot;num_labelled_frames&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;num_labelled_frames&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_labelled</span><span class="p">())</span></div>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_labelled</span><span class="p">())</span>
+
+<div class="viewcode-block" id="PESData.iter_ase">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.iter_ase">[docs]</a>
+    <span class="k">def</span> <span class="nf">iter_ase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_items</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generator function to iterate through ASE Atoms objects without loading all into memory.</span>
+<span class="sd">        </span>
+<span class="sd">        :param max_items: Optional limit to the number of items to process</span>
+<span class="sd">        :yield: ASE Atoms objects one at a time</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">max_items</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;=</span> <span class="n">max_items</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_to_ase</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+                <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_items</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_to_ase</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 

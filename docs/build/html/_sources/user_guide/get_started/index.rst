@@ -24,16 +24,14 @@ Before starting, ensure you load your AiiDA profile and import necessary depende
 
 .. code-block:: python
 
-    from aiida.orm import load_code, load_node, load_group, load_computer, Str, Dict, List, Int, Bool, Float, StructureData
+    from aiida.orm import load_code, load_computer, Str, Dict, List, Int, Bool, Float
     from aiida import load_profile
     from aiida.engine import submit
     from aiida.plugins import WorkflowFactory, DataFactory
-    from pathlib import Path
-    from aiida.common.extendeddicts import AttributeDict
     from ase.io import read
     import yaml
     import os
-    from aiida_trains_pot.utils.restart import models_from_trainingwc
+    from aiida_trains_pot.utils.restart import models_from_trainingwc,  models_from_aiidatrainspotwc
     from aiida_trains_pot.utils.generate_config import generate_lammps_md_config
 
     load_profile()
@@ -80,29 +78,42 @@ Load the graphene structure `gr8x8.xyz <https://github.com/aiida-trieste-develop
 
 .. code-block:: python
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    input_structures = [StructureData(ase=read(os.path.join(script_dir, 'gr8x8.xyz')))]
+    input_structures = PESData([read(os.path.join(script_dir, 'gr8x8.xyz'))])
 
 Step 5: Setup the TrainsPot Workflow
 ------------------------------------
 
-The `TrainsPot` workflow combines several tasks. Use `get_builder()` to get the workflow's builder and give the input structures:
+The `TrainsPot` workflow combines several tasks. Use `get_builder()` to get the workflow's builder and give the input structures.
+
+**Note**: Passing pseudopotentials pay attention to give one per each atomic species present in the dataset. Hence in getting the pseudos from SSSP library you should pass to the `get_pseudos` method a structure containing all the atomic species present in the dataset.
+
 
 .. code-block:: python
 
-    TrainsPot = WorkflowFactory('trains_pot.workflow')
-    builder = TrainsPot.get_builder()
-    builder.structures =  {f'structure_{i}':input_structures[i] for i in range(len(input_structures))}
+    builder = TrainsPot.get_builder(
+                abinitiolabeling_code     = QE_code,
+                abinitiolabeling_protocol = 'stringent',
+                pseudo_family             = 'SSSP/1.3/PBE/precision',
+                md_code                   = LAMMPS_code,
+                md_protocol               = 'vdw_d2',
+                dataset                   = input_structures,
+            )
 
-The workflow has several steps, each of them can be enabled or disabled by setting the corresponding flags. Can be also specified a maximum number of active learning loops:
+The workflow has several steps, each of them can be enabled or disabled by setting the corresponding flags. Can be also specified a maximum number of active learning loops, threshold of energy, force and stress and maximum selected frames to label:
 
 .. code-block:: python
 
     builder.do_dataset_augmentation = Bool(True)
-    builder.do_ab_initio_labelling = Bool(True)
-    builder.do_training = Bool(True)
-    builder.do_exploration = Bool(True)
-    builder.max_loops = Int(1)
+    builder.do_ab_initio_labelling  = Bool(True)
+    builder.do_training             = Bool(True)
+    builder.do_exploration          = Bool(True)
+    builder.max_loops               = Int(1)
+
+    builder.thr_energy              = Float(2e-3)
+    builder.thr_forces              = Float(5e-2)
+    builder.thr_stress              = Float(1e-2)
+    builder.max_selected_frames     = Int(1000)
+
 
 Step 6: Configure Dataset Augmentation
 --------------------------------------
@@ -112,32 +123,38 @@ Various parameters for data augmentation can be adjusted:
 
 .. code-block:: python
 
-    builder.dataset_augmentation.do_rattle = Bool(True)
-    builder.dataset_augmentation.do_input = Bool(True)
-    builder.dataset_augmentation.do_isolated = Bool(True)
-    builder.dataset_augmentation.rattle.params.rattle_fraction = Float(0.1)
-    builder.dataset_augmentation.rattle.params.max_sigma_strain = Float(0.1)
-    builder.dataset_augmentation.rattle.params.n_configs = Int(20)
-    builder.dataset_augmentation.rattle.params.frac_vacancies = Float(0.1)
-    builder.dataset_augmentation.rattle.params.vacancies_per_config = Int(1)
+    builder.dataset_augmentation.do_rattle_strain_defects           = Bool(True)
+    builder.dataset_augmentation.do_input                           = Bool(True)
+    builder.dataset_augmentation.do_isolated                        = Bool(True)
+    builder.dataset_augmentation.do_clusters                        = Bool(True)
+    builder.dataset_augmentation.do_slabs                           = Bool(True)
+    builder.dataset_augmentation.do_replication                     = Bool(True)
+    builder.dataset_augmentation.do_check_vacuum                    = Bool(True)
+    builder.dataset_augmentation.do_substitution                    = Bool(True)
+
+    builder.dataset_augmentation.rsd.params.rattle_fraction         = Float(0.6)
+    builder.dataset_augmentation.rsd.params.max_sigma_strain        = Float(0.3)
+    builder.dataset_augmentation.rsd.params.n_configs               = Int(80)
+    builder.dataset_augmentation.rsd.params.frac_vacancies          = Float(0.2)
+    builder.dataset_augmentation.rsd.params.vacancies_per_config    = Int(1)
+    builder.dataset_augmentation.clusters.n_clusters                = Int(80)
+    builder.dataset_augmentation.clusters.max_atoms                 = Int(30)
+    builder.dataset_augmentation.clusters.interatomic_distance      = Float(1.5)
+    builder.dataset_augmentation.slabs.miller_indices               = List([[1, 0, 0], [1, 1, 0], [1, 1, 1], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 0, 1]])
+    builder.dataset_augmentation.slabs.min_thickness                = Float(10)
+    builder.dataset_augmentation.slabs.max_atoms                    = Int(600)
+    builder.dataset_augmentation.replicate.min_dist                 = Float(24)
+    builder.dataset_augmentation.replicate.max_atoms                = Int(600)
+    builder.dataset_augmentation.vacuum                             = Float(15)
+    builder.dataset_augmentation.substitution.switches_fraction     = Float(0.2)
+    builder.dataset_augmentation.substitution.structures_fraction   = Float(0.1)
+
 
 Step 7: Configure Ab Initio Labelling (Quantum ESPRESSO)
 --------------------------------------------------------
 
-Load Quantum ESPRESSO settings, k-points, cutoffs, pseudopotentials,... for labelling.
+PW parameters are already populated once defining the builder according to pseudo_family and protocol
 
-**Note**: Passing pseudopotentials pay attention to give one per each atomic species present in the dataset. Hence in getting the pseudos from SSSP library you should pass to the `get_pseudos` method a structure containing all the atomic species present in the dataset.
-
-.. code-block:: python
-
-    kpoints = KpointsData()
-    kpoints.set_kpoints_mesh([1, 1, 1])
-    pseudo_family = load_group('SSSP/1.3/PBE/precision')
-    cutoff_wfc, cutoff_rho = pseudo_family.get_recommended_cutoffs(structure=input_structures[0], unit='Ry')
-
-    builder.ab_initio_labelling.quantumespresso.pw.code = QE_code
-    builder.ab_initio_labelling.quantumespresso.pw.pseudos = pseudo_family.get_pseudos(structure=input_structures[0])
-    builder.ab_initio_labelling.quantumespresso.kpoints = kpoints
 
 Step 8: Configure MACE and LAMMPS for Training and Exploration
 --------------------------------------------------------------
@@ -146,16 +163,22 @@ MACE parameters can be written in a yaml file as in `mace_config.yml <https://gi
 
 **Note**: In latest release of MACE (v0.3.8) the training can fail if using multiple GPUs and the training stops earlier following `patience` criteria. To avoid this issue, when using multiple GPUs, set `patience` parameter to a large value (e.g., 1000).
 
-Here we load the MACE configuration file and set the number of potentials in the committee:
+Here we load the MACE configuration file, preprocess and posprocess codes, set the number of potentials in the committee:
 
 .. code-block:: python
 
-    MACE_config = os.path.join(script_dir, 'mace_config.yml')
+    MACE_config                                   = os.path.join(script_dir, 'mace_config.yml')
     with open(MACE_config, 'r') as yaml_file:
         mace_config = yaml.safe_load(yaml_file)
+    builder.training.mace.train.mace_config       = Dict(mace_config)
 
-    builder.training.mace.train.mace_config = Dict(mace_config)
-    builder.training.num_potentials = Int(4)
+    builder.training.mace.train.code              = MACE_train_code
+    builder.training.mace.train.preprocess_code   = MACE_preprocess_code
+    builder.training.mace.train.postprocess_code  = MACE_postprocess_code
+    builder.training.mace.train.do_preprocess     = Bool(True)
+
+
+    builder.training.num_potentials = Int(3)
 
 As for MACE, also for LAMMPS, simulation parameters can be loaded from file, i.e. `lammps_md_params.yml <https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/examples/graphene/lammps_md_params.yml>`_. The additonal information about the LAMMPS parameters can be found in the `LAMMPS documentation <https://aiida-lammps.readthedocs.io/en/latest/topics/data/parameters.html>`_:
 
@@ -170,14 +193,14 @@ Otherwise `generate_lammps_md_config` can be used to generate simple LAMMPS para
 
 .. code-block:: python
 
-    timestep = 0.001
-    temperatures = [30, 35, 40, 45]
-    pressures = [0] * len(temperatures)
-    steps = [500] * len(temperatures)
-    styles =  ["npt"] * len(temperatures)  
-    lammps_params_list = generate_lammps_md_config(temperatures, pressures, steps, styles, timestep)
+    temperatures                     = [30, 35, 40, 45]
+    pressures                        = [0]
+    steps                            = [500]
+    styles                           = ["npt"]
+    timestep                         = 0.001
+    builder.exploration.params_list  = generate_lammps_md_config(temperatures, pressures, steps, styles, timestep)
+    builder.exploration.parameters   = Dict({'control':{'timestep': timestep,},})
 
-    builder.exploration.params_list = List(lammps_params_list)
 
 Step 9: Setup Committee Evaluation
 ----------------------------------
