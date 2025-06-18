@@ -436,14 +436,14 @@ class PESData(Data):
             
             params = [key for key in config.keys() if key not in exclude_params and not exclude_pattern.match(key)]
             atm = Atoms(symbols=config['symbols'], positions=config['positions'], cell=config['cell'], pbc=config['pbc'])
-            atm.pbc = [True, True, True]
+            atm.pbc = config['pbc']
             atm.info = {}
             
             if write_params:
                 for key in params:
                     atm.info[key] = config[key]
-                    
-            if len(atm.get_chemical_symbols()) == 1:
+
+            if len(atm.get_chemical_symbols()) == 1 and atm.get_pbc().all() == False:
                 atm.info["config_type"] = "IsolatedAtom"
                 
             if 'dft_stress' in config:
