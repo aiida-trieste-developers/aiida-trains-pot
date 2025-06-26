@@ -170,6 +170,14 @@ class MaceTrainCalculation(CalcJob):
             e0s = self.inputs.training_set.get_e0s()
             if None not in e0s.values():
                 mace_config_dict['E0s'] = str(e0s)
+            else:
+                atomic_numbers = self.inputs.training_set.get_atomic_numbers()
+                if do_preprocess:
+                    codeinfo_preprocess.cmdline_params += ['--E0s=average']
+                    codeinfo_preprocess.cmdline_params += [f'--atomic_numbers={str(atomic_numbers)}']
+                else:
+                    mace_config_dict['E0s'] = "average"
+                    mace_config_dict['atomic_numbers'] = f'"{str(atomic_numbers)}"'
 
         finetune = False
         if 'protocol' in self.inputs:

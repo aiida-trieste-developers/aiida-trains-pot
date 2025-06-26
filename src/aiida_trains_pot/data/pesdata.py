@@ -128,6 +128,11 @@ class PESData(Data):
         except Exception as e:
             print(f"An error occurred while retrieving atomic species: {e}")
             return []
+    def get_atomic_numbers(self):
+        """Return the list of atomic numbers in the dataset."""
+        atomic_species = self.get_atomic_species()
+        atomic_nums = [atomic_numbers[symbol] for symbol in atomic_species if symbol in atomic_numbers]
+        return atomic_nums
 
     def get_item(self, index):
         """Return a specific item from the dataset by index."""
@@ -536,7 +541,7 @@ class PESData(Data):
         # e0s = {atomic_numbers[k]: None for k in self.get_atomic_species()}
         e0s = {k: None for k in self.get_atomic_species()}
         for config in self.iter_items():
-            if len(config['symbols']) == 1 and 'dft_energy' in config.keys():
+            if not all(config['pbc']) and len(config['symbols']) == 1 and 'dft_energy' in config.keys():
                 e0s[config['symbols'][0]] = config['dft_energy']
         if format == 'atomic_numbers':
             e0s = {atomic_numbers[k]: v for k, v in e0s.items()}
