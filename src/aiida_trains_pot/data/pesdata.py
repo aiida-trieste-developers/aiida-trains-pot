@@ -216,11 +216,15 @@ class PESData(Data):
         symb = set()
         save_data = []
         for atm in data:
+            info = atm.info
             if isinstance(atm.calc, dft_calc) or isinstance(atm.calc, single_calc):
                 num_labelled_frames += 1
                 
                 save_data.append({'cell': atm.cell, 'symbols': atm.get_chemical_symbols(), 'positions': atm.get_positions(), 'pbc': atm.pbc, 'dft_energy': atm.calc.results['energy'], 'dft_forces': atm.calc.results['forces']})
                 symb = symb.union(set(save_data[-1]['symbols']))
+                for key, value in info.items():
+                    if 'energy' not in key:
+                        save_data[-1][key] = value
                 try:
                     stress = atm.get_stress(voigt=False)
                     save_data[-1]['dft_stress'] = stress
@@ -230,6 +234,9 @@ class PESData(Data):
                 num_unlabelled_frames += 1
                 save_data.append({'cell': atm.cell, 'symbols': atm.get_chemical_symbols(), 'positions': atm.get_positions(), 'pbc': atm.pbc})
                 symb = symb.union(set(save_data[-1]['symbols']))
+                for key, value in info.items():
+                    if 'energy' not in key:
+                        save_data[-1][key] = value
 
         try:
             # Create a temporary directory to save the file
