@@ -112,7 +112,8 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
                         masses, symbols = zip(*sorted(zip(masses, symbols)))
         
         i = int(thermalization_time/params['control']['timestep']/saving_frequency)
-
+        
+        if i == 0: i=1
         while i < trajectory.number_steps:
             step_data = trajectory.get_step_data(i)
             cell = step_data.cell
