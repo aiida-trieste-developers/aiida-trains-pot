@@ -187,6 +187,7 @@ def RattleStrainDefectsStructureGenerator(n_configs, rattle_fraction, max_sigma_
             structures.append(ase_to_dict(wrap_and_restore_pbc(mod_structure)))
             structures[-1]['rattle_fraction'] = rattle_fraction.value
             structures[-1]['max_sigma_strain'] = max_sigma_strain.value
+            structures[-1]['sigma_strain'] = sigma_strain
             structures[-1]['n_vacancies'] = n_vacancies
             structures[-1]['gen_method'] = 'RATTLE_STRAIN_DEFECTS'
 

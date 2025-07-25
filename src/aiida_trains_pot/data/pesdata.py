@@ -34,7 +34,7 @@ class PESData(Data):
         """Generate a unique filename for the list based on the node's UUID."""
         return f"psedata_{self.uuid}.npz"  # Unique filename with the node's UUID
     
-    def __init__(self, data=None, **kwargs):
+    def __init__(self, data=None, save_labels=True, **kwargs):
         """
         Initialize a PESData instance.
 
@@ -44,7 +44,7 @@ class PESData(Data):
         super().__init__(**kwargs)  # Initialize the parent class
         if data:
             if isinstance(data[0], Atoms):
-                self.set_ase(data)
+                self.set_ase(data, save_labels=save_labels)
             else:
                 self.set_list(data)
 
@@ -199,7 +199,7 @@ class PESData(Data):
         
         return data
 
-    def set_ase(self, data):
+    def set_ase(self, data, save_labels=True):
         """
         Set the contents of this node by saving a list of ASE Atoms objects as an HDF5 file.
 
@@ -222,7 +222,7 @@ class PESData(Data):
         save_data = []
         for atm in data:
             info = atm.info
-            if isinstance(atm.calc, dft_calc) or isinstance(atm.calc, single_calc):
+            if save_labels and (isinstance(atm.calc, dft_calc) or isinstance(atm.calc, single_calc)):
                 num_labelled_frames += 1
                 
                 save_data.append({'cell': atm.cell, 'symbols': atm.get_chemical_symbols(), 'positions': atm.get_positions(), 'pbc': atm.pbc, 'dft_energy': atm.calc.results['energy'], 'dft_forces': atm.calc.results['forces']})
