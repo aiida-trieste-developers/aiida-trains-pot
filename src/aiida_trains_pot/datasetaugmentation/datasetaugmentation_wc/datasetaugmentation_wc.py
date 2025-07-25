@@ -147,13 +147,14 @@ def wrap_and_restore_pbc(atoms: Atoms) -> Atoms:
     
 
 @calcfunction
-def RattleStrainDefectsStructureGenerator(n_configs, rattle_fraction, max_sigma_strain, frac_vacancies, vacancies_per_config, vacuum, input_structures):
+def RattleStrainDefectsStructureGenerator(n_configs, rattle_fraction, max_compressive_strain, max_tensile_strain, frac_vacancies, vacancies_per_config, vacuum, input_structures):
     """Generate structures.
     
     :param in_structure_list: A list of AiiDA `StructureData` nodes
     :param n_configs: Int with the number of configurations to generate
     :param rattle_fraction: Float with the rattle fraction
-    :param max_sigma_strain: Float with the maximum strain factor
+    :param max_compressive_strain: Float with the maximum compressive strain factor
+    :param max_tensile_strain: Float with the maximum tensile strain factor
     :param frac_vacancies: Float with the fraction of vacancies
     :param vacancies_per_config: Int with the number of vacancies per configuration
     :param vacuum: Float with the vacuum along non periodic directions
@@ -177,7 +178,7 @@ def RattleStrainDefectsStructureGenerator(n_configs, rattle_fraction, max_sigma_
                 n_vacancies = 0
 
             mod_structure = ase_structure.copy()
-            sigma_strain = uniform(1-max_sigma_strain.value, 1+max_sigma_strain.value)
+            sigma_strain = uniform(1-max_compressive_strain.value, 1+max_tensile_strain.value)
             mod_structure.set_cell(ase_structure.get_cell() * sigma_strain, scale_atoms=True)
             mod_structure.set_positions(uniform_random_atomic_displacement(mod_structure.get_positions(), min_interatomic_distances*sigma_strain, rattle_fraction.value))
             for _ in range(int(n_vacancies)):
@@ -186,7 +187,6 @@ def RattleStrainDefectsStructureGenerator(n_configs, rattle_fraction, max_sigma_
 
             structures.append(ase_to_dict(wrap_and_restore_pbc(mod_structure)))
             structures[-1]['rattle_fraction'] = rattle_fraction.value
-            structures[-1]['max_sigma_strain'] = max_sigma_strain.value
             structures[-1]['sigma_strain'] = sigma_strain
             structures[-1]['n_vacancies'] = n_vacancies
             structures[-1]['gen_method'] = 'RATTLE_STRAIN_DEFECTS'
@@ -448,7 +448,8 @@ class DatasetAugmentationWorkChain(WorkChain):
    ##                 DEFAULT VALUES                   ##
    ######################################################
     DEFAULT_RSD_rattle_fraction             = Float(0.4)
-    DEFAULT_RSD_max_sigma_strain            = Float(0.1)
+    DEFAULT_RSD_max_compressive_strain      = Float(0.3)
+    DEFAULT_RSD_max_tensile_strain          = Float(0.5)
     DEFAULT_RSD_n_configs                   = Int(50)
     DEFAULT_RSD_frac_vacancies              = Float(0.4)
     DEFAULT_RSD_vacancies_per_config        = Int(2)
@@ -492,7 +493,8 @@ class DatasetAugmentationWorkChain(WorkChain):
         spec.input("do_substitution", valid_type=Bool, default=lambda:cls.DEFAULT_do_substitution, required=False, help=f"Add substituted structures to the dataset. Default: {cls.DEFAULT_do_substitution}")
 
         spec.input("rsd.params.rattle_fraction", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_rattle_fraction, required=False, help=f"Atoms are displaced by a rattle_fraction of the minimum interatomic distance. Default: {cls.DEFAULT_RSD_rattle_fraction}")
-        spec.input("rsd.params.max_sigma_strain", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_max_sigma_strain, required=False, help=f"Maximum strain factor. Cell is stretched or compressed up to this fraction of cell parameters. Default: {cls.DEFAULT_RSD_max_sigma_strain}")
+        spec.input("rsd.params.max_compressive_strain", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_max_compressive_strain, required=False, help=f"Maximum compressive strain factor. Cell can be compressed up to this fraction of cell parameters. Default: {cls.DEFAULT_RSD_max_compressive_strain}")
+        spec.input("rsd.params.max_tensile_strain", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_max_tensile_strain, required=False, help=f"Maximum tensile strain factor. Cell can be stretched up to this fraction of cell parameters. Default: {cls.DEFAULT_RSD_max_tensile_strain}")
         spec.input("rsd.params.n_configs", valid_type=Int, default=lambda:cls.DEFAULT_RSD_n_configs, required=False, help=f"Number of configurations to generate per each input structure. Default: {cls.DEFAULT_RSD_n_configs}")
         spec.input("rsd.params.frac_vacancies", valid_type=(Int,Float), default=lambda:cls.DEFAULT_RSD_frac_vacancies, required=False, help=f"Fraction of configurations with vacancies. Default: {cls.DEFAULT_RSD_frac_vacancies}")
         spec.input("rsd.params.vacancies_per_config", valid_type=Int, default=lambda:cls.DEFAULT_RSD_vacancies_per_config, required=False, help=f"Number of vacancies per configuration. Default: {cls.DEFAULT_RSD_vacancies_per_config}")
@@ -586,7 +588,8 @@ class DatasetAugmentationWorkChain(WorkChain):
         if self.inputs.do_rattle_strain_defects:
             dataset['rattle_strain_defects_structures'] = RattleStrainDefectsStructureGenerator(self.inputs.rsd.params.n_configs,
                                                                                                 self.inputs.rsd.params.rattle_fraction,
-                                                                                                self.inputs.rsd.params.max_sigma_strain,
+                                                                                                self.inputs.rsd.params.max_compressive_strain,
+                                                                                                self.inputs.rsd.params.max_tensile_strain,
                                                                                                 self.inputs.rsd.params.frac_vacancies,
                                                                                                 self.inputs.rsd.params.vacancies_per_config,
                                                                                                 vacuum=self.ctx.vacuum,
