@@ -7,10 +7,10 @@ from aiida.plugins import CalculationFactory, WorkflowFactory
 from aiida.common import AttributeDict
 from ase import Atoms
 from aiida.plugins import DataFactory
-from scipy.optimize import curve_fit
 import numpy as np
 from aiida_trains_pot.utils.generate_config import generate_lammps_md_config
 import random
+from aiida_trains_pot.utils.tools import enlarge_vacuum, error_calibration
 
 load_profile()
 
@@ -38,53 +38,13 @@ def SaveRMSE(rmse):
 
     return List(list=rmse_serializable)
 
-def error_calibration(dataset, thr_energy, thr_forces, thr_stress):
-
-    def line(x, a): return a * x
-
-    def get_rmse(dataset, key_pattern):
-        return [
-            np.mean([v for k, v in el.items() if k.startswith('pot_') and k.endswith(key_pattern)]) 
-            for el in dataset
-        ]
-
-    
-    dataset = dataset.get_list()
-
-    RMSE_e = [e / len(el['positions']) for e, el in zip(get_rmse(dataset, '_energy_rmse'), dataset)]
-    RMSE_f = get_rmse(dataset, '_forces_rmse')
-    RMSE_s = get_rmse(dataset, '_stress_rmse')
-
-    #RMSE_e = [np.mean([el['pot_4_energy_rmse'], el['pot_3_energy_rmse'], el['pot_2_energy_rmse'], el['pot_1_energy_rmse']])/len(el['positions']) for el in dataset]
-    #RMSE_f = [np.mean([el['pot_4_forces_rmse'], el['pot_3_forces_rmse'], el['pot_2_forces_rmse'], el['pot_1_forces_rmse']]) for el in dataset]
-    #RMSE_s = [np.mean([el['pot_4_stress_rmse'], el['pot_3_stress_rmse'], el['pot_2_stress_rmse'], el['pot_1_stress_rmse']]) for el in dataset]
-    # CD_e = [el['energy_deviation_model'] for el in dataset]
-    # CD_f = [el['forces_deviation_model'] for el in dataset]
-    # CD_s = [el['stress_deviation_model'] for el in dataset]
-
-    CD2_e = [el['energy_deviation'] for el in dataset]
-    CD2_f = [el['forces_deviation'] for el in dataset]
-    CD2_s = [el['stress_deviation'] for el in dataset]
-
-    fit_par_e = curve_fit(line, RMSE_e, CD2_e)[0]
-    fit_par_f = curve_fit(line, RMSE_f, CD2_f)[0]
-    fit_par_s = curve_fit(line, RMSE_s, CD2_s)[0]
-
-    thr_energy = fit_par_e[0] * thr_energy
-    thr_forces = fit_par_f[0] * thr_forces
-    thr_stress = fit_par_s[0] * thr_stress
-
-    return thr_energy, thr_forces, thr_stress
-
 @calcfunction
-def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0, **trajectories):
+def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0, check_vacuum=Bool(False), min_vacuum=Float(5.0), target_vacuum=Float(15.0), **trajectories):
     """Extract frames from trajectory."""
-
 
     extracted_frames = []      
     for _, trajectory in trajectories.items():
 
-        params = {}
         params = {}
         for inc in trajectory.base.links.get_incoming().all():
             if inc.node.process_type == 'aiida.calculations:lammps.base':
@@ -94,8 +54,10 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
                     if inc2.link_label == 'lammps__parameters':
                         params = Dict(dict=inc2.node).get_dict()
                     elif inc2.link_label == 'lammps__structure':
-                        
-                        input_structure = inc2.node.get_ase()
+
+                        input_structure = enlarge_vacuum(inc2.node.get_ase(), 
+                                                        min_vacuum=min_vacuum, 
+                                                        target_vacuum=target_vacuum)
                         input_structure_node =  inc2.node
                         masses = []
                         symbols = []
@@ -156,6 +118,20 @@ def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_fra
     pes_selected_dataset = PESData(selected_dataset)
     return {'selected_dataset':pes_selected_dataset, 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
+def validate_inputs(inputs, _):
+    """Validate the top-level inputs."""
+    if inputs.check_vacuum:
+        if "vacuum.min_vacuum" not in inputs:
+            try:
+                inputs["vacuum.min_vacuum"] = Float(inputs.training.mace.train.mace_config.get_dict()['r_max'])
+            except:
+                inputs["vacuum.min_vacuum"] = Float(5.0) # Default value of MACE 0.3.13
+        if "vacuum.target_vacuum" not in inputs:
+            try:
+                inputs["vacuum.target_vacuum"] = inputs.dataset_augmentation.vacuum
+            except:
+                return "The `vacuum.target_vacuum` or `dataset_augmentation.vacuum` input is required when using the 'check_vacuum' option."
+
 class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
 
@@ -184,6 +160,8 @@ class TrainsPotWorkChain(WorkChain):
         DEFAULT_do_ab_initio_labelling          = Bool(True)
         DEFAULT_do_training                     = Bool(True)
         DEFAULT_do_exploration                  = Bool(True)
+
+        DEFAULT_check_vacuum                    = Bool(True)
         ######################################################
         
         
@@ -213,6 +191,12 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('thr_forces', valid_type=Float, help='Threshold for forces', required=True, default=lambda: DEFAULT_thr_forces)
         spec.input('thr_stress', valid_type=Float, help='Threshold for stress', required=True, default=lambda: DEFAULT_thr_stress)
         spec.input('max_selected_frames', valid_type=Int, help='Maximum number of frames to be selected for labelling per iteration', required=False, default=lambda: DEFAULT_max_selected_frames) 
+
+        spec.input('check_vacuum', valid_type=Bool, default=lambda:DEFAULT_check_vacuum, help='Check vacuum in the explored structures', required=False)
+        spec.input('vacuum.min_vacuum', valid_type=Float, help='Minimum vacuum size to consider for enlarging, if not specified NNIP cutoff will be used', required=False)
+        spec.input('vacuum.target_vacuum', valid_type=Float, help='Target vacuum size after enlarging, if not specified dataset_augmentation vacuum value will be used', required=False)
+
+        spec.inputs.validator = validate_inputs
 
         spec.expose_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation", exclude=('structures'))
         spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('unlabelled_dataset'), namespace_options={'validator': None})
@@ -436,7 +420,10 @@ class TrainsPotWorkChain(WorkChain):
         dump_rate = int(self.inputs.frame_extraction.sampling_time/parameters.control.timestep)
         explored_dataset = LammpsFrameExtraction(self.inputs.frame_extraction.sampling_time,
                                 dump_rate,
-                                thermalization_time = self.inputs.frame_extraction.thermalization_time, 
+                                thermalization_time = self.inputs.frame_extraction.thermalization_time,
+                                check_vacuum = self.inputs.check_vacuum,
+                                min_vacuum = self.inputs.vacuum.min_vacuum,
+                                target_vacuum = self.inputs.vacuum.target_vacuum,
                                 **self.ctx.trajectories)['explored_dataset']
         self.ctx.explored_dataset = explored_dataset
       
