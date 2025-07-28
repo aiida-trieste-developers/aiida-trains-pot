@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
 """Equation of State WorkChain."""
-from aiida.engine import WorkChain, append_, calcfunction, workfunction, if_, while_, ExitCode
+from aiida.engine import WorkChain, append_, calcfunction, workfunction, if_, while_
 from aiida import load_profile
-from aiida.orm import Code, Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict, load_node, FolderData, load_group
+from aiida.orm import Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict, FolderData
 from aiida.plugins import CalculationFactory, WorkflowFactory
 from aiida.common import AttributeDict
 from ase import Atoms
-from ase.calculators.singlepoint import SinglePointCalculator
 from aiida.plugins import DataFactory
-from ase.io.lammpsrun import read_lammps_dump_text
 from scipy.optimize import curve_fit
-from io import StringIO
 import numpy as np
-import io
-from aiida_pseudo.data.pseudo.upf import UpfData
-from aiida.plugins import GroupFactory
 from aiida_trains_pot.utils.generate_config import generate_lammps_md_config
+import random
+
 load_profile()
 
 # LammpsCalculation = CalculationFactory('lammps_base')
@@ -155,9 +151,8 @@ def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_fra
                 loss.append(config['energy_deviation']/thr_energy + config['forces_deviation']/thr_forces + config['stress_deviation']/thr_stress)
     if max_frames:
         if len(selected_dataset) > max_frames:
-            thr_loss = np.sort(loss)[-max_frames]
-            selected_dataset = [selected_dataset[ii] for ii, el in enumerate(loss) if el >= thr_loss]
-
+            random.shuffle(selected_dataset)
+            selected_dataset = selected_dataset[:max_frames]
     pes_selected_dataset = PESData(selected_dataset)
     return {'selected_dataset':pes_selected_dataset, 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
