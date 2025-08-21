@@ -540,8 +540,10 @@ class DatasetAugmentationWorkChain(WorkChain):
             # ERRORS
             if self.inputs.rsd.params.rattle_fraction < 0.0 or self.inputs.rsd.params.rattle_fraction > 1.0:
                 raise ValueError('rattle_fraction must be between 0 and 1')
-            if self.inputs.rsd.params.max_sigma_strain < 0.0 or self.inputs.rsd.params.max_sigma_strain > 1.0:
-                raise ValueError('max_sigma_strain must be between 0 and 1')
+            if self.inputs.rsd.params.max_tensile_strain < 0.0:
+                raise ValueError('max_tensile_strain must be greater than 0')
+            if self.inputs.rsd.params.max_compressive_strain < 0.0 or self.inputs.rsd.params.max_compressive_strain > 1.0:
+                raise ValueError('max_compressive_strain must be between 0 and 1')
             if self.inputs.rsd.params.n_configs < 1:
                 raise ValueError('n_configs must be at least 1')
             if self.inputs.rsd.params.frac_vacancies < 0.0 or self.inputs.rsd.params.frac_vacancies > 1.0:
@@ -552,10 +554,10 @@ class DatasetAugmentationWorkChain(WorkChain):
             #     if self.inputs.rsd.params.vacancies_per_config > len(structure['positions']):
             #         raise ValueError(f'Number of vacancies per configuration is greater than the number of atoms in the structure <{structure.uuid}>.')
             # WARNINGS
-            if self.inputs.rsd.params.rattle_fraction > 0.4:
-                self.report('rattle_fraction is greater than 0.4 (40%), can lead to atoms too close to each other.')
-            if self.inputs.rsd.params.max_sigma_strain > 0.1:
-                self.report('max_sigma_strain is greater than 0.1 (10%), can lead to atoms too close to each other.')
+            # if self.inputs.rsd.params.rattle_fraction > 0.4:
+            #     self.report('rattle_fraction is greater than 0.4 (40%), can lead to atoms too close to each other.')
+            # if self.inputs.rsd.params.max_sigma_strain > 0.1:
+            #     self.report('max_sigma_strain is greater than 0.1 (10%), can lead to atoms too close to each other.')
         
         self.ctx.initial_dataset = self.inputs.structures
         if self.inputs.do_check_vacuum:

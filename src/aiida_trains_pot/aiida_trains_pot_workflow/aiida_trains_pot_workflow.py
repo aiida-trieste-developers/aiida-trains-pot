@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-"""Equation of State WorkChain."""
 from aiida.engine import WorkChain, append_, calcfunction, workfunction, if_, while_
 from aiida import load_profile
 from aiida.orm import Float, Str, StructureData, Int, List, Float, SinglefileData, Bool, Dict, FolderData
@@ -54,11 +53,10 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
                     if inc2.link_label == 'lammps__parameters':
                         params = Dict(dict=inc2.node).get_dict()
                     elif inc2.link_label == 'lammps__structure':
-
                         input_structure = enlarge_vacuum(inc2.node.get_ase(), 
                                                         min_vacuum=min_vacuum, 
                                                         target_vacuum=target_vacuum)
-                        input_structure_node =  inc2.node
+                        input_structure_node = inc2.node
                         masses = []
                         symbols = []
                         symbol = input_structure.get_chemical_symbols()
@@ -69,7 +67,12 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
                             
                         masses, symbols = zip(*sorted(zip(masses, symbols)))
         
-        i = int(thermalization_time/params['control']['timestep']/saving_frequency)
+        # Convert AiiDA objects to Python types
+        thermalization_time_val = thermalization_time.value if hasattr(thermalization_time, 'value') else float(thermalization_time)
+        sampling_time_val = sampling_time.value if hasattr(sampling_time, 'value') else float(sampling_time)
+        saving_frequency_val = saving_frequency.value if hasattr(saving_frequency, 'value') else int(saving_frequency)
+        
+        i = int(thermalization_time_val/params['control']['timestep']/saving_frequency_val)
         
         if i == 0: i=1
         while i < trajectory.number_steps:
@@ -88,7 +91,7 @@ def LammpsFrameExtraction(sampling_time, saving_frequency, thermalization_time=0
             extracted_frames[-1]['timestep'] = params['control']['timestep']
             extracted_frames[-1]['id_lammps'] = lammps_id
 
-            i = i + int(sampling_time/params['control']['timestep']/saving_frequency)
+            i = i + int(sampling_time_val/params['control']['timestep']/saving_frequency_val)
 
     pes_extracted_frames = PESData(extracted_frames)    
     return {'explored_dataset': pes_extracted_frames}
@@ -118,19 +121,6 @@ def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_fra
     pes_selected_dataset = PESData(selected_dataset)
     return {'selected_dataset':pes_selected_dataset, 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
-def validate_inputs(inputs, _):
-    """Validate the top-level inputs."""
-    if inputs.check_vacuum:
-        if "vacuum.min_vacuum" not in inputs:
-            try:
-                inputs["vacuum.min_vacuum"] = Float(inputs.training.mace.train.mace_config.get_dict()['r_max'])
-            except:
-                inputs["vacuum.min_vacuum"] = Float(5.0) # Default value of MACE 0.3.13
-        if "vacuum.target_vacuum" not in inputs:
-            try:
-                inputs["vacuum.target_vacuum"] = inputs.dataset_augmentation.vacuum
-            except:
-                return "The `vacuum.target_vacuum` or `dataset_augmentation.vacuum` input is required when using the 'check_vacuum' option."
 
 class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
@@ -196,7 +186,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('vacuum.min_vacuum', valid_type=Float, help='Minimum vacuum size to consider for enlarging, if not specified NNIP cutoff will be used', required=False)
         spec.input('vacuum.target_vacuum', valid_type=Float, help='Target vacuum size after enlarging, if not specified dataset_augmentation vacuum value will be used', required=False)
 
-        spec.inputs.validator = validate_inputs
+        spec.inputs.validator = cls.validate_inputs
 
         spec.expose_inputs(DatasetAugmentationWorkChain, namespace="dataset_augmentation", exclude=('structures'))
         spec.expose_inputs(AbInitioLabellingWorkChain, namespace="ab_initio_labelling",  exclude=('unlabelled_dataset'), namespace_options={'validator': None})
@@ -238,6 +228,31 @@ class TrainsPotWorkChain(WorkChain):
             ),
             cls.finalize            
         )
+
+    @classmethod
+    def validate_inputs(cls, inputs, namespace):
+        """Validate the top-level inputs."""
+        if 'check_vacuum' not in inputs:
+            inputs['check_vacuum'] = Bool(True)
+        if inputs['check_vacuum']:
+            if "vacuum" not in inputs or "min_vacuum" not in inputs['vacuum']:
+                inputs["vacuum"] = {}
+                try:
+                    inputs["vacuum"]["min_vacuum"] = Float(inputs['training']['mace']['train']['mace_config'].get_dict()['r_max'])
+                    print(f"Warning: `vacuum.min_vacuum` not specified, using user-defined MACE cutoff radius value of {inputs['vacuum']['min_vacuum']} Ang.")
+                except:
+                    inputs["vacuum"]["min_vacuum"] = Float(5.0) # Default value of MACE 0.3.13
+                    print(f"Warning: `vacuum.min_vacuum` not specified, using default MACE default cutoff radius value of {inputs['vacuum']['min_vacuum']} Ang.")
+            if "vacuum" not in inputs or "target_vacuum" not in inputs['vacuum']:
+                try:
+                    inputs["vacuum"]["target_vacuum"] = inputs['dataset_augmentation']['vacuum']
+                except:
+                    return "The `vacuum.target_vacuum` or `dataset_augmentation.vacuum` input is required when using the 'check_vacuum' option."
+                print(f"Warning: `vacuum.target_vacuum` not specified, using `dataset_augmentation.vacuum` value of {inputs['vacuum']['target_vacuum']} Ang.")
+        cls.inputs = AttributeDict(inputs)
+
+
+
 
     @classmethod
     def get_builder(cls, dataset, abinitiolabeling_code, md_code, training_code=None, abinitiolabeling_protocol=None, pseudo_family=None, md_protocol=None, **kwargs):

@@ -15,7 +15,7 @@ def SplitDataset(dataset):
     # data = self.inputs.dataset_list.get_list()
     data = dataset.get_list()
 
-    exclude_list = ["energy", "cell", "stress", "forces", "symbols", "positions", "id_lammps", "input_structure_uuid"]
+    exclude_list = ["energy", "cell", "stress", "forces", "symbols", "positions", "id_lammps", "input_structure_uuid", "sigma_strain"]
     # Define a function to extract the grouping key
     def check_esclude_list(string):
         for el in exclude_list:
@@ -55,7 +55,7 @@ def SplitDataset(dataset):
                 test_set += group_list
                 continue
         total_elements = len(group_list)
-        training_size = int(0.8 * total_elements)
+        training_size = round(0.8 * total_elements)
         
         
         random.seed(int(time.time()))

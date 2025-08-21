@@ -467,7 +467,7 @@ class PESData(Data):
                 
             if 'dft_forces' in config:
                 atm.set_calculator(SinglePointCalculator(atm, forces=config['dft_forces']))
-            
+            print(atm.info.get('stress', None))
             with io.StringIO() as buf, redirect_stdout(buf):
                 write('-', atm, format='extxyz', write_results=True, write_info=True)
                 dataset_txt += buf.getvalue()
