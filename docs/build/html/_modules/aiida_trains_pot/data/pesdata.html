@@ -343,6 +343,7 @@
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
 <span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">ase.data</span> <span class="kn">import</span> <span class="n">atomic_numbers</span>
 
 <span class="k">def</span> <span class="nf">convert_stress</span><span class="p">(</span><span class="n">stress</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">stress</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -368,7 +369,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a unique filename for the list based on the node&#39;s UUID.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;psedata_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="si">}</span><span class="s2">.npz&quot;</span>  <span class="c1"># Unique filename with the node&#39;s UUID</span>
     
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize a PESData instance.</span>
 
@@ -378,7 +379,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># Initialize the parent class</span>
         <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Atoms</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">set_ase</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_ase</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">save_labels</span><span class="o">=</span><span class="n">save_labels</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">set_list</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
@@ -421,10 +422,13 @@
         
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the number of configurations in the dataset.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_list</span><span class="p">())</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dataset_size&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_list</span><span class="p">())</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
 
     <span class="k">def</span> <span class="nf">_extract_config_from_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -451,6 +455,25 @@
             <span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">]]</span>
         
         <span class="k">return</span> <span class="n">config</span>
+
+<div class="viewcode-block" id="PESData.get_atomic_species">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_atomic_species">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_atomic_species</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the list of atomic species in the dataset.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;atomic_species&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while retrieving atomic species: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="PESData.get_atomic_numbers">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_atomic_numbers">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_atomic_numbers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the list of atomic numbers in the dataset.&quot;&quot;&quot;</span>
+        <span class="n">atomic_species</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_atomic_species</span><span class="p">()</span>
+        <span class="n">atomic_nums</span> <span class="o">=</span> <span class="p">[</span><span class="n">atomic_numbers</span><span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">atomic_species</span> <span class="k">if</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">atomic_numbers</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">atomic_nums</span></div>
+
 
 <div class="viewcode-block" id="PESData.get_item">
 <a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_item">[docs]</a>
@@ -528,13 +551,15 @@
 
 <div class="viewcode-block" id="PESData.set_ase">
 <a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.set_ase">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_ase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_ase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">save_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the contents of this node by saving a list of ASE Atoms objects as an HDF5 file.</span>
 
 <span class="sd">        :param data: A list of ASE Atoms objects to save.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">ase.calculators.singlepoint</span> <span class="kn">import</span> <span class="n">SinglePointDFTCalculator</span> <span class="k">as</span> <span class="n">dft_calc</span>
+        <span class="kn">from</span> <span class="nn">ase.calculators.singlepoint</span> <span class="kn">import</span> <span class="n">SinglePointCalculator</span> <span class="k">as</span> <span class="n">single_calc</span>
+
         <span class="c1"># Ensure data is a list of Atoms objects</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input data must be a list of ase.atoms.Atoms.&quot;</span><span class="p">)</span>
@@ -546,13 +571,17 @@
         <span class="n">num_labelled_frames</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">num_unlabelled_frames</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">symb</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        
         <span class="n">save_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">atm</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atm</span><span class="o">.</span><span class="n">calc</span><span class="p">,</span> <span class="n">dft_calc</span><span class="p">):</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">atm</span><span class="o">.</span><span class="n">info</span>
+            <span class="k">if</span> <span class="n">save_labels</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">atm</span><span class="o">.</span><span class="n">calc</span><span class="p">,</span> <span class="n">dft_calc</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">atm</span><span class="o">.</span><span class="n">calc</span><span class="p">,</span> <span class="n">single_calc</span><span class="p">)):</span>
                 <span class="n">num_labelled_frames</span> <span class="o">+=</span> <span class="mi">1</span>
                 
                 <span class="n">save_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="s1">&#39;symbols&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">(),</span> <span class="s1">&#39;positions&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(),</span> <span class="s1">&#39;pbc&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">pbc</span><span class="p">,</span> <span class="s1">&#39;dft_energy&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">],</span> <span class="s1">&#39;dft_forces&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">calc</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;forces&#39;</span><span class="p">]})</span>
+                <span class="n">symb</span> <span class="o">=</span> <span class="n">symb</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">save_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;symbols&#39;</span><span class="p">]))</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="s1">&#39;energy&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                        <span class="n">save_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">stress</span> <span class="o">=</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_stress</span><span class="p">(</span><span class="n">voigt</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                     <span class="n">save_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;dft_stress&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stress</span>
@@ -561,8 +590,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">num_unlabelled_frames</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">save_data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;cell&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">cell</span><span class="p">,</span> <span class="s1">&#39;symbols&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">(),</span> <span class="s1">&#39;positions&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(),</span> <span class="s1">&#39;pbc&#39;</span><span class="p">:</span> <span class="n">atm</span><span class="o">.</span><span class="n">pbc</span><span class="p">})</span>
-
-            <span class="n">symb</span> <span class="o">=</span> <span class="n">symb</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">save_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;symbols&#39;</span><span class="p">]))</span>
+                <span class="n">symb</span> <span class="o">=</span> <span class="n">symb</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">save_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;symbols&#39;</span><span class="p">]))</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="s1">&#39;energy&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
+                        <span class="n">save_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Create a temporary directory to save the file</span>
@@ -781,14 +812,14 @@
             
             <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_params</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">exclude_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span>
             <span class="n">atm</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">],</span> <span class="n">positions</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">],</span> <span class="n">cell</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;cell&#39;</span><span class="p">],</span> <span class="n">pbc</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;pbc&#39;</span><span class="p">])</span>
-            <span class="n">atm</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">]</span>
+            <span class="n">atm</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;pbc&#39;</span><span class="p">]</span>
             <span class="n">atm</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">{}</span>
             
             <span class="k">if</span> <span class="n">write_params</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
                     <span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-                    
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atm</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">atm</span><span class="o">.</span><span class="n">get_chemical_symbols</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">atm</span><span class="o">.</span><span class="n">get_pbc</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
                 <span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;config_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;IsolatedAtom&quot;</span>
                 
             <span class="k">if</span> <span class="s1">&#39;dft_stress&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
@@ -800,7 +831,7 @@
                 
             <span class="k">if</span> <span class="s1">&#39;dft_forces&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
                 <span class="n">atm</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">SinglePointCalculator</span><span class="p">(</span><span class="n">atm</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_forces&#39;</span><span class="p">]))</span>
-            
+            <span class="nb">print</span><span class="p">(</span><span class="n">atm</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stress&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
             <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buf</span><span class="p">,</span> <span class="n">redirect_stdout</span><span class="p">(</span><span class="n">buf</span><span class="p">):</span>
                 <span class="n">write</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">atm</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;extxyz&#39;</span><span class="p">,</span> <span class="n">write_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">write_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">dataset_txt</span> <span class="o">+=</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
@@ -873,6 +904,24 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_items</span><span class="p">():</span>
                 <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_to_ase</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="PESData.get_e0s">
+<a class="viewcode-back" href="../../../module_guide/datatypes.html#aiida_trains_pot.data.pesdata.PESData.get_e0s">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_e0s</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;atomic_numbers&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the energies of isolated atoms from the dataset.</span>
+<span class="sd">        :param format: Format of the atomic species (&#39;atomic_numbers&#39; or &#39;symbols&#39;)</span>
+<span class="sd">        :return: dictionary of isolated atom energies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># e0s = {atomic_numbers[k]: None for k in self.get_atomic_species()}</span>
+        <span class="n">e0s</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_atomic_species</span><span class="p">()}</span>
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;pbc&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="s1">&#39;dft_energy&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">e0s</span><span class="p">[</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;dft_energy&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s1">&#39;atomic_numbers&#39;</span><span class="p">:</span>
+            <span class="n">e0s</span> <span class="o">=</span> <span class="p">{</span><span class="n">atomic_numbers</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">e0s</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="n">e0s</span></div>
 </div>
 
 </pre></div>

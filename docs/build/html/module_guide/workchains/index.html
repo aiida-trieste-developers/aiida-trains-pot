@@ -401,8 +401,10 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration_frame_extraction"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration_frame_extraction()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.finalize_dataset_augmentation"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.finalize_dataset_augmentation()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.get_builder"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.get_builder()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.initialization"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.initialization()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.training"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.training()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.validate_inputs"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.validate_inputs()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain</span></code></a><ul class="nav section-nav flex-column">
@@ -518,6 +520,27 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.get_builder">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abinitiolabeling_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">md_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_code</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abinitiolabeling_protocol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudo_family</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">md_protocol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/aiida_trains_pot/aiida_trains_pot_workflow/aiida_trains_pot_workflow.html#TrainsPotWorkChain.get_builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.get_builder" title="Link to this definition">#</a></dt>
+<dd><p>Return a builder prepopulated with inputs selected according to the chosen protocol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – The dataset to use for the calculation.</p></li>
+<li><p><strong>abinitiolabeling_protocol</strong> – The protocol to use for the ab initio labelling calculation.</p></li>
+<li><p><strong>abinitiolabeling_code</strong> – The code to use for the ab initio labelling calculation.</p></li>
+<li><p><strong>pseudo_family</strong> – The pseudo family to use for the calculation.</p></li>
+<li><p><strong>md_protocol</strong> – The protocol to use for the MD calculation.</p></li>
+<li><p><strong>kwargs</strong> – Additional keyword arguments to pass to the builder.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A builder prepopulated with inputs selected according to the chosen protocol.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.initialization">
 <span class="sig-name descname"><span class="pre">initialization</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/aiida_trains_pot/aiida_trains_pot_workflow/aiida_trains_pot_workflow.html#TrainsPotWorkChain.initialization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.initialization" title="Link to this definition">#</a></dt>
 <dd><p>Initialize variables.</p>
@@ -527,6 +550,12 @@
 <dt class="sig sig-object py" id="aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.training">
 <span class="sig-name descname"><span class="pre">training</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/aiida_trains_pot/aiida_trains_pot_workflow/aiida_trains_pot_workflow.html#TrainsPotWorkChain.training"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.training" title="Link to this definition">#</a></dt>
 <dd><p>Run training calculations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.validate_inputs">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">validate_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/aiida_trains_pot/aiida_trains_pot_workflow/aiida_trains_pot_workflow.html#TrainsPotWorkChain.validate_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.validate_inputs" title="Link to this definition">#</a></dt>
+<dd><p>Validate the top-level inputs.</p>
 </dd></dl>
 
 </dd></dl>
@@ -765,8 +794,10 @@ default namelists for the <code class="docutils literal notranslate"><span class
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.exploration_frame_extraction"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.exploration_frame_extraction()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.finalize_dataset_augmentation"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.finalize_dataset_augmentation()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.get_builder"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.get_builder()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.initialization"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.initialization()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.training"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.training()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow.TrainsPotWorkChain.validate_inputs"><code class="docutils literal notranslate"><span class="pre">TrainsPotWorkChain.validate_inputs()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.DatasetAugmentationWorkChain"><code class="docutils literal notranslate"><span class="pre">DatasetAugmentationWorkChain</span></code></a><ul class="nav section-nav flex-column">
