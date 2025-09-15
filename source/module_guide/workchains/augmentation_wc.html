@@ -1,0 +1,497 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Dataset Augmentation WorkChain &#8212; AiiDA-TrainsPot 1.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/aiida-custom.css?v=6068527c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/aiida-qe-custom.css?v=22becb0f" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=f9c1cefe"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=4398fdc2"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/module_guide/workchains/augmentation_wc';</script>
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within AiiDA-TrainsPot 1.0.0 documentation"
+          href="../../../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
+    <img src="../../../_static/logo.png" class="logo__image only-dark pst-js-only" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../index.html">
+                    AiiDA-TrainsPot
+                </a>
+            </li>
+        </ul>
+        
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/edit/main/docs/source/module_guide/workchains/augmentation_wc.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/issues/new?title=Issue%20on%20page%20%2Fsource/module_guide/workchains/augmentation_wc.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../_sources/source/module_guide/workchains/augmentation_wc.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Dataset Augmentation WorkChain</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="dataset-augmentation-workchain">
+<h1>Dataset Augmentation WorkChain<a class="headerlink" href="#dataset-augmentation-workchain" title="Link to this heading">#</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<dl>
+<dt><strong>Dataset Augmentation WorkChain</strong></dt><dd><dl>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">workchain</span></em><span class="sig-prename descclassname"><span class="pre">aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc.</span></span><span class="sig-name descname"><span class="pre">DatasetAugmentationWorkChain</span></span></dt>
+<dd><p>WorkChain to generate a training dataset.</p>
+<p><strong>Inputs:</strong><ul>
+<li><strong>clusters</strong>, <em>Namespace</em><ul>
+<li><strong>interatomic_distance</strong>, <em>(Int, Float, NoneType)</em>, optional – Interatomic distance. Default: uuid: 9472632f-efb9-4804-8c71-9d3ace2a876b (unstored) value: 1.5</li>
+<li><strong>max_atoms</strong>, <em>(Int, NoneType)</em>, optional – Maximum number of atoms in each cluster. Default: uuid: 741c76fb-bd3d-4d64-922b-8bb441e3c52b (unstored) value: 10</li>
+<li><strong>n_clusters</strong>, <em>(Int, NoneType)</em>, optional – Number of clusters to generate. Default: uuid: 86b55342-9829-42fc-9fe2-efc34876f7e5 (unstored) value: 20</li>
+</ul>
+</li>
+<li><strong>do_check_vacuum</strong>, <em>(Bool, NoneType)</em>, optional – Check if vacuum along non periodic directions is enough and add it if necessary. Default: uuid: 81fff088-6874-4068-b6c4-8694442d78f5 (unstored) value: True</li>
+<li><strong>do_clusters</strong>, <em>(Bool, NoneType)</em>, optional – Add clusters to the dataset. Default: uuid: 40639a29-63d8-4a8e-a997-0cb3c02e5e57 (unstored) value: True</li>
+<li><strong>do_input</strong>, <em>(Bool, NoneType)</em>, optional – Add input structures to the dataset. Default: uuid: 86852a06-9f28-41fa-b1cc-fa62fad2459c (unstored) value: True</li>
+<li><strong>do_isolated</strong>, <em>(Bool, NoneType)</em>, optional – Add isolated atoms configurations to the dataset. Default: uuid: ce511a43-3026-4c02-91f1-7ea4a656020f (unstored) value: True</li>
+<li><strong>do_rattle_strain_defects</strong>, <em>(Bool, NoneType)</em>, optional – Perform rattle calculations (random atomic displacements, cell stretch/compression, vacancies. Permutations and replacements are not yet implemented). Default: uuid: 086f19e7-a149-4c73-a044-ca51f6d1f042 (unstored) value: True</li>
+<li><strong>do_replication</strong>, <em>(Bool, NoneType)</em>, optional – Replicate structures to have a minimum distance between atoms greater than min_dist. Default: uuid: 90a54d9d-de65-4dcd-bede-1ad1652fa1a4 (unstored) value: True</li>
+<li><strong>do_slabs</strong>, <em>(Bool, NoneType)</em>, optional – Add slabs to the dataset. Default: uuid: a7ca8792-7f71-4ed6-8246-e7030a2ae989 (unstored) value: True</li>
+<li><strong>do_substitution</strong>, <em>(Bool, NoneType)</em>, optional – Add substituted structures to the dataset. Default: uuid: db8bf706-363c-437f-92f0-3007899bce63 (unstored) value: True</li>
+<li><strong>metadata</strong>, <em>Namespace</em><ul>
+<li><strong>call_link_label</strong>, <em>str</em>, optional, <em>is_metadata</em> – The label to use for the <cite>CALL</cite> link if the process is called by another process.</li>
+<li><strong>description</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Description to set on the process node.</li>
+<li><strong>disable_cache</strong>, <em>(bool, NoneType)</em>, optional, <em>is_metadata</em> – Do not consider the cache for this process, ignoring all other caching configuration rules.</li>
+<li><strong>label</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Label to set on the process node.</li>
+<li><strong>store_provenance</strong>, <em>bool</em>, optional, <em>is_metadata</em> – If set to <cite>False</cite> provenance will not be stored in the database.</li>
+</ul>
+</li>
+<li><strong>replicate</strong>, <em>Namespace</em><ul>
+<li><strong>max_atoms</strong>, <em>(Int, NoneType)</em>, optional – Maximum number of atoms in the supercell. Stronger criteria respect to min_dist. Default: uuid: 42dfeeb1-2da2-42ad-97d3-9fbcaa07823c (unstored) value: 450</li>
+<li><strong>min_dist</strong>, <em>(Int, Float, NoneType)</em>, optional – Minimum distance between atoms in PBC replicas, unless max_atoms is reached. Default: uuid: 6b1258f0-7356-4ad2-aa73-53cbe2369876 (unstored) value: 18.0</li>
+</ul>
+</li>
+<li><strong>rsd</strong>, <em>Namespace</em><ul>
+<li><strong>params</strong>, <em>Namespace</em><ul>
+<li><strong>frac_vacancies</strong>, <em>(Int, Float, NoneType)</em>, optional – Fraction of configurations with vacancies. Default: uuid: 0ed5b07a-3986-4904-90fa-1dd411bef0a8 (unstored) value: 0.3</li>
+<li><strong>max_compressive_strain</strong>, <em>(Int, Float, NoneType)</em>, optional – Maximum compressive strain factor. Cell can be compressed up to this fraction of cell parameters. Default: uuid: aa6cee35-2f05-4295-9783-34575c272395 (unstored) value: 0.2</li>
+<li><strong>max_tensile_strain</strong>, <em>(Int, Float, NoneType)</em>, optional – Maximum tensile strain factor. Cell can be stretched up to this fraction of cell parameters. Default: uuid: 4aa05e8b-a472-4524-b2c0-26c76b5e57fe (unstored) value: 0.6</li>
+<li><strong>n_configs</strong>, <em>(Int, NoneType)</em>, optional – Number of configurations to generate per each input structure. Default: uuid: d1e15c9f-3c36-4984-9d07-9d80aba21b04 (unstored) value: 50</li>
+<li><strong>rattle_fraction</strong>, <em>(Int, Float, NoneType)</em>, optional – Atoms are displaced by a rattle_fraction of the minimum interatomic distance. Default: uuid: 019d1508-4abd-4ff9-9c58-fa9321cf15ac (unstored) value: 0.3</li>
+<li><strong>vacancies_per_config</strong>, <em>(Int, NoneType)</em>, optional – Number of vacancies per configuration. Default: uuid: e4f0c1ee-cd77-427f-b8fe-eaeade3ba2ce (unstored) value: 2</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>slabs</strong>, <em>Namespace</em><ul>
+<li><strong>max_atoms</strong>, <em>(Int, NoneType)</em>, optional – Maximum number of atoms. Default: uuid: 1df78ee4-a4ad-4385-8209-8911a7d5a505 (unstored) value: 450</li>
+<li><strong>miller_indices</strong>, <em>(List, NoneType)</em>, optional – List of lists with the Miller indices. Default: uuid: aec04ed9-fbf6-4701-87fb-3a221caab0ee (unstored) value: [[1, 1, 1], [1, 1, 0], [1, 0, 0]]</li>
+<li><strong>min_thickness</strong>, <em>(Int, Float, NoneType)</em>, optional – Minimum thickness of the slab. Default: uuid: b2197763-3229-4ec3-9269-ecb5e07b2989 (unstored) value: 10.0</li>
+</ul>
+</li>
+<li><strong>structures</strong>, <em>PESData</em>, required – PESData, dataset containing input structures.</li>
+<li><strong>substitution</strong>, <em>Namespace</em><ul>
+<li><strong>structures_fraction</strong>, <em>(Int, Float, NoneType)</em>, optional – Fraction of structures to be substituted. Default: uuid: c9bf439b-b7ab-4961-b0bf-8b46c2bafa69 (unstored) value: 0.2</li>
+<li><strong>switches_fraction</strong>, <em>(Int, Float, NoneType)</em>, optional – Fraction of atoms to be substituted. Default: uuid: 0c97d4e1-8b29-4a89-8d6b-e4daa0661a05 (unstored) value: 0.2</li>
+</ul>
+</li>
+<li><strong>vacuum</strong>, <em>(Int, Float, NoneType)</em>, optional – Minimum vacuum along non periodic directions. Default: uuid: b4ccd51f-113f-4874-be02-144c0495dd84 (unstored) value: 15.0</li>
+</ul>
+</p>
+<p><strong>Outputs:</strong><ul>
+<li><strong>structures</strong>, <em>Namespace</em> – Augmented datasets.</li>
+</ul>
+</p>
+<p><strong>Outline:</strong><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">check_inputs</span><span class="p">(</span><span class="n">Check</span> <span class="n">inputs</span><span class="o">.</span><span class="p">)</span>
+<span class="k">if</span><span class="p">(</span><span class="n">do_replication</span><span class="p">)</span>
+    <span class="n">replicate</span><span class="p">(</span><span class="n">Replicate</span> <span class="n">structures</span><span class="o">.</span><span class="p">)</span>
+<span class="n">run_dataset_generation</span><span class="p">(</span><span class="n">Generate</span> <span class="n">datasets</span><span class="o">.</span><span class="p">)</span>
+</pre></div>
+</div>
+</p>
+</dd></dl>
+
+</dd>
+</dl>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Nataliia Manko, Davide Bidoggia, Maria Peressi, Antimo Marrazzo
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, Università degli Studi di Trieste and Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

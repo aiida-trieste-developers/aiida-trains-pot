@@ -1,0 +1,600 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Exploration WorkChain &#8212; AiiDA-TrainsPot 1.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/aiida-custom.css?v=6068527c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/aiida-qe-custom.css?v=22becb0f" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../_static/documentation_options.js?v=f9c1cefe"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=4398fdc2"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'module_guide/workchains/exploration_wc';</script>
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within AiiDA-TrainsPot 1.0.0 documentation"
+          href="../../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="MACE Training WorkChain" href="mace_wc.html" />
+    <link rel="prev" title="Training WorkChain" href="training_wc.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
+    <img src="../../_static/logo.png" class="logo__image only-dark pst-js-only" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    AiiDA-TrainsPot
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../user_guide/index.html">User’s guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../user_guide/get_started/index.html">Get Started with aiida-trains-pot</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Workchains</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="trains_pot_wc.html">Main TrainsPot WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="augmentation_wc.html">Dataset Augmentation WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="abinitio_labelling_wc.html">Ab Initio Labelling WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="training_wc.html">Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 current active has-children"><a class="current reference internal" href="#">Exploration WorkChain</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="mace_wc.html">MACE Training WorkChain</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../calculations/index.html">Calculations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../calculations/mace.html">MACE Training Calculation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../calculations/evaluation.html">Evaluation Calculation</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../parsers.html">Parsers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../datatypes.html">Data Types</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../scripts.html">Scripts</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="simple">
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/edit/main/docs/module_guide/workchains/exploration_wc.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/issues/new?title=Issue%20on%20page%20%2Fmodule_guide/workchains/exploration_wc.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/module_guide/workchains/exploration_wc.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Exploration WorkChain</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="exploration-workchain">
+<h1>Exploration WorkChain<a class="headerlink" href="#exploration-workchain" title="Link to this heading">#</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<dl>
+<dt><strong>Exploration WorkChain</strong></dt><dd><dl>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">workchain</span></em><span class="sig-prename descclassname"><span class="pre">aiida_trains_pot.aiida_trains_pot_workflow.exploration_wc.</span></span><span class="sig-name descname"><span class="pre">ExplorationWorkChain</span></span></dt>
+<dd><p>A workchain to loop over structures and submit LammpsWorkChain with retries.</p>
+<p><strong>Inputs:</strong><ul>
+<li><strong>lammps_input_structures</strong>, <em>PESData</em>, required – Input structures for lammps</li>
+<li><strong>md</strong>, <em>Namespace</em><ul>
+<li><strong>clean_workdir</strong>, <em>Bool</em>, optional – If <cite>True</cite>, work directories of all called calculation jobs will be cleaned at the end of execution.</li>
+<li><strong>handler_overrides</strong>, <em>(Dict, NoneType)</em>, optional – Mapping where keys are process handler names and the values are a dictionary, where each dictionary can define the <code class="docutils literal notranslate"><span class="pre">enabled</span></code> and <code class="docutils literal notranslate"><span class="pre">priority</span></code> key, which can be used to toggle the values set on the original process handler declaration.</li>
+<li><strong>lammps</strong>, <em>Namespace</em><ul>
+<li><strong>additional_potential</strong>, <em>(SinglefileData, NoneType)</em>, optional – Additional potential used in the <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> calculation</li>
+<li><strong>code</strong>, <em>(AbstractCode, NoneType)</em>, optional – The <cite>Code</cite> to use for this job. This input is required, unless the <cite>remote_folder</cite> input is specified, which means an existing job is being imported and no code will actually be run.</li>
+<li><strong>input_restartfile</strong>, <em>(SinglefileData, NoneType)</em>, optional – Input restartfile to continue from a previous <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> calculation</li>
+<li><strong>metadata</strong>, <em>Namespace</em><ul>
+<li><strong>call_link_label</strong>, <em>str</em>, optional, <em>is_metadata</em> – The label to use for the <cite>CALL</cite> link if the process is called by another process.</li>
+<li><strong>computer</strong>, <em>(Computer, NoneType)</em>, optional, <em>is_metadata</em> – When using a “local” code, set the computer on which the calculation should be run.</li>
+<li><strong>description</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Description to set on the process node.</li>
+<li><strong>disable_cache</strong>, <em>(bool, NoneType)</em>, optional, <em>is_metadata</em> – Do not consider the cache for this process, ignoring all other caching configuration rules.</li>
+<li><strong>dry_run</strong>, <em>bool</em>, optional, <em>is_metadata</em> – When set to <cite>True</cite> will prepare the calculation job for submission but not actually launch it.</li>
+<li><strong>label</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Label to set on the process node.</li>
+<li><strong>options</strong>, <em>Namespace</em><ul>
+<li><strong>account</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Set the account to use in for the queue on the remote computer</li>
+<li><strong>additional_retrieve_list</strong>, <em>(list, tuple, NoneType)</em>, optional, <em>is_metadata</em> – List of relative file paths that should be retrieved in addition to what the plugin specifies.</li>
+<li><strong>append_text</strong>, <em>str</em>, optional, <em>is_metadata</em> – Set the calculation-specific append text, which is going to be appended in the scheduler-job script, just after the code execution</li>
+<li><strong>custom_scheduler_commands</strong>, <em>str</em>, optional, <em>is_metadata</em> – Set a (possibly multiline) string with the commands that the user wants to manually set for the scheduler. The difference of this option with respect to the <cite>prepend_text</cite> is the position in the scheduler submission file where such text is inserted: with this option, the string is inserted before any non-scheduler command</li>
+<li><strong>environment_variables</strong>, <em>dict</em>, optional, <em>is_metadata</em> – Set a dictionary of custom environment variables for this calculation</li>
+<li><strong>environment_variables_double_quotes</strong>, <em>bool</em>, optional, <em>is_metadata</em> – If set to True, use double quotes instead of single quotes to escape the environment variables specified in <code class="docutils literal notranslate"><span class="pre">environment_variables</span></code>.</li>
+<li><strong>import_sys_environment</strong>, <em>bool</em>, optional, <em>is_metadata</em> – If set to true, the submission script will load the system environment variables</li>
+<li><strong>input_filename</strong>, <em>str</em>, optional, <em>is_metadata</em></li>
+<li><strong>max_memory_kb</strong>, <em>(int, NoneType)</em>, optional, <em>is_metadata</em> – Set the maximum memory (in KiloBytes) to be asked to the scheduler</li>
+<li><strong>max_wallclock_seconds</strong>, <em>(int, NoneType)</em>, optional, <em>is_metadata</em> – Set the wallclock in seconds asked to the scheduler</li>
+<li><strong>mpirun_extra_params</strong>, <em>(list, tuple)</em>, optional, <em>is_metadata</em> – Set the extra params to pass to the mpirun (or equivalent) command after the one provided in computer.mpirun_command. Example: mpirun -np 8 extra_params[0] extra_params[1] … exec.x</li>
+<li><strong>output_filename</strong>, <em>str</em>, optional, <em>is_metadata</em></li>
+<li><strong>parser_name</strong>, <em>str</em>, optional, <em>is_metadata</em></li>
+<li><strong>prepend_text</strong>, <em>str</em>, optional, <em>is_metadata</em> – Set the calculation-specific prepend text, which is going to be prepended in the scheduler-job script, just before the code execution</li>
+<li><strong>priority</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Set the priority of the job to be queued</li>
+<li><strong>qos</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Set the quality of service to use in for the queue on the remote computer</li>
+<li><strong>queue_name</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Set the name of the queue on the remote computer</li>
+<li><strong>rerunnable</strong>, <em>(bool, NoneType)</em>, optional, <em>is_metadata</em> – Determines if the calculation can be requeued / rerun.</li>
+<li><strong>resources</strong>, <em>dict</em>, required, <em>is_metadata</em> – Set the dictionary of resources to be used by the scheduler plugin, like the number of nodes, cpus etc. This dictionary is scheduler-plugin dependent. Look at the documentation of the scheduler for more details.</li>
+<li><strong>restart_filename</strong>, <em>str</em>, optional, <em>is_metadata</em></li>
+<li><strong>scheduler_stderr</strong>, <em>str</em>, optional, <em>is_metadata</em> – Filename to which the content of stderr of the scheduler is written.</li>
+<li><strong>scheduler_stdout</strong>, <em>str</em>, optional, <em>is_metadata</em> – Filename to which the content of stdout of the scheduler is written.</li>
+<li><strong>stash</strong>, <em>Namespace</em> – Optional directives to stash files after the calculation job has completed.<ul>
+<li><strong>source_list</strong>, <em>(tuple, list, NoneType)</em>, optional, <em>is_metadata</em> – Sequence of relative filepaths representing files in the remote directory that should be stashed.</li>
+<li><strong>stash_mode</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Mode with which to perform the stashing, should be value of <cite>aiida.common.datastructures.StashMode</cite>.</li>
+<li><strong>target_base</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – The base location to where the files should be stashd. For example, for the <cite>copy</cite> stash mode, this should be an absolute filepath on the remote computer.</li>
+</ul>
+</li>
+<li><strong>structure_filename</strong>, <em>str</em>, optional, <em>is_metadata</em></li>
+<li><strong>submit_script_filename</strong>, <em>str</em>, optional, <em>is_metadata</em> – Filename to which the job submission script is written.</li>
+<li><strong>trajectory_filename</strong>, <em>str</em>, optional, <em>is_metadata</em></li>
+<li><strong>variables_filename</strong>, <em>str</em>, optional, <em>is_metadata</em></li>
+<li><strong>withmpi</strong>, <em>(bool, NoneType)</em>, optional, <em>is_metadata</em> – Set the calculation to use mpi</li>
+</ul>
+</li>
+<li><strong>store_provenance</strong>, <em>bool</em>, optional, <em>is_metadata</em> – If set to <cite>False</cite> provenance will not be stored in the database.</li>
+</ul>
+</li>
+<li><strong>monitors</strong>, <em>Namespace</em> – Add monitoring functions that can inspect output files while the job is running and decide to prematurely terminate the job.</li>
+<li><strong>parent_folder</strong>, <em>(RemoteData, NoneType)</em>, optional – An optional working directory of a previously completed calculation to restart from.</li>
+<li><strong>remote_folder</strong>, <em>(RemoteData, NoneType)</em>, optional – Remote directory containing the results of an already completed calculation job without AiiDA. The inputs should be passed to the <cite>CalcJob</cite> as normal but instead of launching the actual job, the engine will recreate the input files and then proceed straight to the retrieve step where the files of this <cite>RemoteData</cite> will be retrieved as if it had been actually launched through AiiDA. If a parser is defined in the inputs, the results are parsed and attached as output nodes as usual.</li>
+<li><strong>settings</strong>, <em>(Dict, NoneType)</em>, optional – Additional settings that control the <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> calculation</li>
+</ul>
+</li>
+<li><strong>max_iterations</strong>, <em>Int</em>, optional – Maximum number of iterations the work chain will restart the process to finish successfully.</li>
+<li><strong>metadata</strong>, <em>Namespace</em><ul>
+<li><strong>call_link_label</strong>, <em>str</em>, optional, <em>is_metadata</em> – The label to use for the <cite>CALL</cite> link if the process is called by another process.</li>
+<li><strong>description</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Description to set on the process node.</li>
+<li><strong>disable_cache</strong>, <em>(bool, NoneType)</em>, optional, <em>is_metadata</em> – Do not consider the cache for this process, ignoring all other caching configuration rules.</li>
+<li><strong>label</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Label to set on the process node.</li>
+<li><strong>store_provenance</strong>, <em>bool</em>, optional, <em>is_metadata</em> – If set to <cite>False</cite> provenance will not be stored in the database.</li>
+</ul>
+</li>
+<li><strong>store_restart</strong>, <em>(Bool, NoneType)</em>, optional – <p>Whether to store the restartfile in the repository.</p>
+</li>
+</ul>
+</li>
+<li><strong>metadata</strong>, <em>Namespace</em><ul>
+<li><strong>call_link_label</strong>, <em>str</em>, optional, <em>is_metadata</em> – The label to use for the <cite>CALL</cite> link if the process is called by another process.</li>
+<li><strong>description</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Description to set on the process node.</li>
+<li><strong>disable_cache</strong>, <em>(bool, NoneType)</em>, optional, <em>is_metadata</em> – Do not consider the cache for this process, ignoring all other caching configuration rules.</li>
+<li><strong>label</strong>, <em>(str, NoneType)</em>, optional, <em>is_metadata</em> – Label to set on the process node.</li>
+<li><strong>store_provenance</strong>, <em>bool</em>, optional, <em>is_metadata</em> – If set to <cite>False</cite> provenance will not be stored in the database.</li>
+</ul>
+</li>
+<li><strong>parameters</strong>, <em>Dict</em>, required – Global parameters for lammps</li>
+<li><strong>params_list</strong>, <em>List</em>, required – List of parameters for md</li>
+<li><strong>potential_lammps</strong>, <em>(SinglefileData, NoneType)</em>, optional – One of the potential for MD</li>
+<li><strong>potential_pair_style</strong>, <em>(Str, NoneType)</em>, optional – General potential pair style. Default: uuid: a5d8e855-ca9f-44c3-80de-3d3d7c4652bc (unstored) value: mace no_domain_decomposition</li>
+<li><strong>protocol</strong>, <em>(Str, NoneType)</em>, optional – Protocol for the calculation</li>
+<li><strong>sampling_time</strong>, <em>Float</em>, required – Correlation time for frame extraction</li>
+</ul>
+</p>
+<p><strong>Outputs:</strong><ul>
+<li><strong>md</strong>, <em>Namespace</em> – Exploration outputs</li>
+</ul>
+</p>
+<p><strong>Outline:</strong><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">run_md</span><span class="p">(</span><span class="n">Run</span> <span class="n">MD</span> <span class="n">simulations</span> <span class="k">for</span> <span class="n">each</span> <span class="n">structure</span> <span class="ow">and</span> <span class="n">MD</span> <span class="n">parameter</span> <span class="nb">set</span><span class="p">,</span> <span class="k">with</span> <span class="n">retries</span> <span class="n">on</span> <span class="n">failure</span><span class="o">.</span><span class="p">)</span>
+<span class="k">while</span><span class="p">(</span><span class="n">not_converged</span><span class="p">)</span>
+    <span class="n">run_restart</span>
+<span class="n">finalize_md</span><span class="p">(</span><span class="n">Collect</span> <span class="n">the</span> <span class="n">results</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">completed</span> <span class="n">LAMMPS</span> <span class="n">calculations</span><span class="o">.</span><span class="p">)</span>
+</pre></div>
+</div>
+</p>
+</dd></dl>
+
+</dd>
+</dl>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="training_wc.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Training WorkChain</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="mace_wc.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">MACE Training WorkChain</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Nataliia Manko, Davide Bidoggia, Maria Peressi, Antimo Marrazzo
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, Università degli Studi di Trieste and Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

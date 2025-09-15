@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>AiiDA-TrainsPot &#8212; AiiDA-TrainsPot 1.0.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/aiida-custom.css?v=6068527c" />
+    <link rel="stylesheet" type="text/css" href="../_static/aiida-qe-custom.css?v=22becb0f" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../_static/documentation_options.js?v=f9c1cefe"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=4398fdc2"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'source/index';</script>
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within AiiDA-TrainsPot 1.0.0 documentation"
+          href="../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
+    <img src="../_static/logo.png" class="logo__image only-dark pst-js-only" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    AiiDA-TrainsPot
+                </a>
+            </li>
+        </ul>
+        
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/edit/main/docs/source/index.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/issues/new?title=Issue%20on%20page%20%2Fsource/index.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/source/index.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>AiiDA-TrainsPot</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#remote-machine-requirements">Remote Machine Requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributing">Contributing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="aiida-trainspot">
+<h1>AiiDA-TrainsPot<a class="headerlink" href="#aiida-trainspot" title="Link to this heading">#</a></h1>
+<p>Welcome to AiiDA-TrainsPot, the <a class="reference external" href="http://aiida.net">AiiDA</a> workflow that Trains a Potential for you.</p>
+<p class="center"><a class="reference internal" href="../_images/AiiDA_transparent_logo.png"><img alt="aiida_logo" src="../_images/AiiDA_transparent_logo.png" style="width: 25%;" /></a> <a class="reference internal" href="../_images/qe_logo.jpg"><img alt="qe_logo" src="../_images/qe_logo.jpg" style="width: 25%;" /></a> <a class="reference internal" href="../_images/Lammps-logo.png"><img alt="lammps_logo" src="../_images/Lammps-logo.png" style="width: 25%;" /></a>  <a class="reference internal" href="../_images/MACE_logo.png"><img alt="MACE_logo" src="../_images/MACE_logo.png" style="width: 10%;" /></a></p>
+<section id="remote-machine-requirements">
+<h2>Remote Machine Requirements<a class="headerlink" href="#remote-machine-requirements" title="Link to this heading">#</a></h2>
+<p>AiiDA-TrainsPot requires the following software installed on the remote machine:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.quantum-espresso.org">Quantum ESPRESSO</a> (at least <cite>pw.x</cite> executable)</p></li>
+<li><p><a class="reference external" href="https://github.com/ACEsuit/mace">MACE</a> and <a class="reference external" href="https://github.com/yaml/pyyaml">PyYAML</a> (preferably within a Python environment)</p></li>
+<li><p><a class="reference external" href="https://mace-docs.readthedocs.io/en/latest/guide/lammps.html">LAMMPS</a> with MACE extension</p></li>
+</ul>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>To clone and install the aiida-trains-pot repository:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:aiida-trieste-developers/aiida-trains-pot.git
+<span class="nb">cd</span><span class="w"> </span>aiida-trains-pot
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p>Note that this command will also install the <code class="docutils literal notranslate"><span class="pre">aiida-core</span></code>, <code class="docutils literal notranslate"><span class="pre">aiida-quantumespresso</span></code>, <code class="docutils literal notranslate"><span class="pre">aiida-lammps</span></code> packages as its dependencies.
+For more information on how to install AiiDA and the required services in different environments, we refer to the <a class="reference external" href="https://aiida.readthedocs.io/projects/aiida-core/en/latest/intro/get_started.html"><code class="docutils literal notranslate"><span class="pre">aiida-core</span></code></a> documentation.</p>
+<ol class="arabic simple" start="2">
+<li><p>To clone and install aiida-lammps (the last release of aiida-lammps was not compatible with MACE):</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:aiidaplugins/aiida-lammps.git
+<span class="nb">cd</span><span class="w"> </span>aiida-lammps
+pip<span class="w"> </span>install<span class="w"> </span>.
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Install codes for Quantum ESPRESSO, MACE (pre-process, train, and post-process), and LAMMPS. Examples of configuration YAML files can be found in <cite>examples/setup_codes</cite>.</p></li>
+<li><p>Install <cite>PortableCode</cite> for committee evaluation:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>portable_codes_installation
+</pre></div>
+</div>
+<p>If needed, specify in the prepend command the activation command for the Python environment where MACE was installed.</p>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">#</a></h2>
+<p>We welcome contributions from everyone. Before you start contributing, please make sure you have read and understood our Contributor License Agreement (CLA). By contributing to this project, you agree to the terms and conditions outlined in our <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/CLA.md">CLA.md</a>.</p>
+<p>Please follow our <a class="reference external" href="https://github.com/aiida-trieste-developers/aiida-trains-pot/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> to get started.</p>
+</section>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/index.html">User’s guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/get_started/index.html">Get Started with aiida-trains-pot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_guide/index.html">API reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/workchains/index.html">Workchains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/calculations/index.html">Calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/parsers.html">Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/datatypes.html">Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_guide/scripts.html">Scripts</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="acknowledgments">
+<h2>Acknowledgments<a class="headerlink" href="#acknowledgments" title="Link to this heading">#</a></h2>
+<p>This project was supported by:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://portale.units.it/en">Università degli Studi di Trieste</a>.</p></li>
+<li><p><a class="reference external" href="https://www.sissa.it/it">Scuola Internazionale Superiore di Studi Avanzati</a>.</p></li>
+<li><p><a class="reference external" href="https://www.supercomputing-icsc.it/en/icsc-home/">Centro Nazionale di Ricerca HPC, Big Data e Quantum Computing</a>.</p></li>
+<li><p><a class="reference external" href="https://www.max-centre.eu/">EU Centre of Excellence “MaX – Materials Design at the Exascale”</a></p></li>
+</ul>
+<p align="center">
+  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgTBDFRADTwpIJqho2NDfWrdCgIMTxFnlHBA&s" alt="Università degli Studi di Trieste Logo" width="250" style="filter: invert(1);"/>
+  <img src="https://www.sissa.it/themes/custom/sissa/images/logo-type.svg" alt="SISSA Logo" width="100"/>
+  <img src="https://www.max-centre.eu/sites/default/files/styles/news_responsive/public/MaX_900x600.jpg" alt="MaX Centre Logo" width="250"/>
+  <img src="https://www.supercomputing-icsc.it/wp-content/uploads/2022/10/logoxweb.svg" alt="Centro Nazionale di Ricerca Logo" width="250"/>
+</p></section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#remote-machine-requirements">Remote Machine Requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contributing">Contributing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#contents">Contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#acknowledgments">Acknowledgments</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Nataliia Manko, Davide Bidoggia, Maria Peressi, Antimo Marrazzo
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, Università degli Studi di Trieste and Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
