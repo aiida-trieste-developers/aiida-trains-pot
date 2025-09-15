@@ -25,6 +25,7 @@ dependencies = [
     "ase==3.22.1",
     "numba",
     "aiida-quantumespresso",
+    "aiida-lammps @ git+https://github.com/aiida-trieste-developers/aiida-lammps@9b41ae6e13f7a49c54bebeb31904e6f3e3b6c959",
     "h5py"
 ]
 
