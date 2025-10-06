@@ -411,8 +411,8 @@ class TrainsPotWorkChain(WorkChain):
         
         if "random_input_structures_lammps" in self.inputs:
             if self.inputs.random_input_structures_lammps:
-                if 'dataset_augmentation' in self.ctx:
-                    self.ctx.lammps_input_structures = self.ctx.dataset_augmentation.outputs.structures.global_structures
+                if 'input_lammps_dataset' in self.ctx:
+                    self.ctx.lammps_input_structures = self.ctx.input_lammps_dataset
                 else:
                     self.ctx.lammps_input_structures = self.ctx.dataset
         
@@ -454,6 +454,7 @@ class TrainsPotWorkChain(WorkChain):
     def finalize_dataset_augmentation(self):
         """Finalize dataset augmentation."""
         self.ctx.dataset += self.ctx.dataset_augmentation.outputs.structures.global_structures
+        self.ctx.input_lammps_dataset = self.ctx.dataset
     
     def finalize_ab_initio_labelling(self):
         self.ctx.dataset = self.ctx.dataset.get_labelled() + self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data
