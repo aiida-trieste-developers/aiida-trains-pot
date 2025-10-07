@@ -37,6 +37,7 @@ Source = "https://github.com/aiida-trieste-developers/aiida-trains-pot"
 [project.entry-points.'aiida.workflows']
 "trains_pot.datasetaugmentation"   = "aiida_trains_pot.datasetaugmentation.datasetaugmentation_wc.datasetaugmentation_wc:DatasetAugmentationWorkChain"
 "trains_pot.macetrain"        = "aiida_trains_pot.mace.mace_train_wc.mace_train_wc:MaceTrainWorkChain"
+"trains_pot.metatrain"        = "aiida_trains_pot.meta.meta_train_wc.meta_train_wc:MetaTrainWorkChain"
 "trains_pot.labelling"        = "aiida_trains_pot.aiida_trains_pot_workflow.abinitiolabelling_wc:AbInitioLabellingWorkChain"
 "trains_pot.training"         = "aiida_trains_pot.aiida_trains_pot_workflow.training_wc:TrainingWorkChain"
 "trains_pot.exploration"      = "aiida_trains_pot.aiida_trains_pot_workflow.exploration_wc:ExplorationWorkChain"
@@ -47,11 +48,13 @@ Source = "https://github.com/aiida-trieste-developers/aiida-trains-pot"
 
 [project.entry-points.'aiida.calculations']
 "trains_pot.macetrain"        = "aiida_trains_pot.mace.mace_train_plugin.calculations:MaceTrainCalculation"
+"trains_pot.metatrain"        = "aiida_trains_pot.meta.meta_train_plugin.calculations:MetaTrainCalculation"
 "trains_pot.lammpsmd"         = "aiida_trains_pot.lammps.lammps_plugin.calculations:LammpsBaseCalculation"
 "trains_pot.evaluation"       = "aiida_trains_pot.evaluation.calculations:EvaluationCalculation"
 
 [project.entry-points.'aiida.parsers']
 "trains_pot.macetrain"        = "aiida_trains_pot.mace.mace_train_plugin.parsers:MaceBaseParser"
+"trains_pot.metatrain"        = "aiida_trains_pot.meta.meta_train_plugin.parsers:MetaBaseParser"
 "trains_pot.lammpsmd"         = "aiida_trains_pot.lammps.lammps_plugin.parsers:LammpsBaseParser"
 "trains_pot.evaluation"       = "aiida_trains_pot.evaluation.parsers:EvaluationParser"
 

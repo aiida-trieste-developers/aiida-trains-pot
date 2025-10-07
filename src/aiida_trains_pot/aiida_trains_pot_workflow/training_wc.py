@@ -1,11 +1,13 @@
 from aiida.engine import WorkChain, ToContext, append_, calcfunction
-from aiida.orm import StructureData, Dict, List, Int, Bool, FolderData
+from aiida.orm import StructureData, Dict, List, Int, Bool, FolderData, Str
 from aiida.plugins import WorkflowFactory, DataFactory
 from aiida.common import AttributeDict
 import random
 import itertools
 import time
 
+
+MetaWorkChain   = WorkflowFactory('trains_pot.metatrain')
 MaceWorkChain   = WorkflowFactory('trains_pot.macetrain')
 PESData         = DataFactory('pesdata')
 
@@ -102,9 +104,11 @@ class TrainingWorkChain(WorkChain):
     def define(cls, spec):
         super().define(spec)
         spec.input("num_potentials", valid_type=Int, default=lambda:Int(1), required=False)   
+        spec.input('engine', valid_type=Str, help='Training engine', required=False)
         spec.input("dataset", valid_type=PESData, help="Training dataset",)        
         spec.input_namespace("checkpoints", valid_type=FolderData, required=False, help="Checkpoints file",)
         spec.expose_inputs(MaceWorkChain, namespace="mace",  exclude=('train.training_set', 'train.validation_set', 'train.test_set'), namespace_options={'validator': None})     
+        spec.expose_inputs(MetaWorkChain, namespace="meta",  exclude=('train.training_set', 'train.validation_set', 'train.test_set'), namespace_options={'validator': None})  
         spec.output_namespace("training", dynamic=True, help="Training outputs")
         spec.output("global_splitted", valid_type=PESData,)        
         spec.outline(            
@@ -131,35 +135,72 @@ class TrainingWorkChain(WorkChain):
         self.report(f"Validation set size: {len(validation_set.get_list())}")
         self.report(f"Test set size: {len(test_set.get_list())}") 
 
-        inputs = self.exposed_inputs(MaceWorkChain, namespace="mace")
+        if self.inputs.engine.value == "MACE":
 
-        inputs.train["training_set"] =  train_set
-        inputs.train["validation_set"] =  validation_set
-        inputs.train["test_set"] =  test_set
+            inputs = self.exposed_inputs(MaceWorkChain, namespace="mace")
 
-        
-        if 'checkpoints' in self.inputs:
-            inputs['checkpoints'] = self.inputs.checkpoints
-            inputs.train['restart'] = Bool(True)
+            inputs.train["training_set"] =  train_set
+            inputs.train["validation_set"] =  validation_set
+            inputs.train["test_set"] =  test_set
 
-        if 'checkpoints' in inputs:
-            chkpts = list(dict(inputs.checkpoints).values())
-        
-        for ii in range(self.inputs.num_potentials.value):            
-            if 'checkpoints' in self.inputs and ii < len(chkpts):
-                inputs.train["checkpoints"] = chkpts[ii]
             
-            inputs.train["index_pot"] = Int(ii)
-            future = self.submit(MaceWorkChain, **inputs)
-            self.to_context(mace_wc = append_(future))        
-        pass
+            if 'checkpoints' in self.inputs:
+                inputs['checkpoints'] = self.inputs.checkpoints
+                inputs.train['restart'] = Bool(True)
+
+            if 'checkpoints' in inputs:
+                chkpts = list(dict(inputs.checkpoints).values())
+            
+            for ii in range(self.inputs.num_potentials.value):            
+                if 'checkpoints' in self.inputs and ii < len(chkpts):
+                    inputs.train["checkpoints"] = chkpts[ii]
+                
+                inputs.train["index_pot"] = Int(ii)
+                future = self.submit(MaceWorkChain, **inputs)
+                self.to_context(mace_wc = append_(future))        
+            pass
+
+        if self.inputs.engine.value == "META":
+
+            inputs = self.exposed_inputs(MetaWorkChain, namespace="meta")
+
+            inputs.train["training_set"] =  train_set
+            inputs.train["validation_set"] =  validation_set
+            inputs.train["test_set"] =  test_set
+
+            
+            if 'checkpoints' in self.inputs:
+                inputs['checkpoints'] = self.inputs.checkpoints
+                inputs.train['restart'] = Bool(True)
+
+            if 'checkpoints' in inputs:
+                chkpts = list(dict(inputs.checkpoints).values())
+            
+            for ii in range(self.inputs.num_potentials.value):            
+                if 'checkpoints' in self.inputs and ii < len(chkpts):
+                    inputs.train["checkpoints"] = chkpts[ii]
+                
+                inputs.train["index_pot"] = Int(ii)
+                future = self.submit(MetaWorkChain, **inputs)
+                self.to_context(meta_wc = append_(future))        
+            pass
 
     def finalize(self):        
         results = {}
-        for ii, calc in enumerate(self.ctx.mace_wc):
-            results[f'mace_{ii}']={}
-            for el in calc.outputs:       
-                results[f'mace_{ii}'][el] = calc.outputs[el]
-                
-            self.out('training', results)
+
+        if self.inputs.engine.value == "MACE":
+            for ii, calc in enumerate(self.ctx.mace_wc):
+                results[f'mace_{ii}']={}
+                for el in calc.outputs:       
+                    results[f'mace_{ii}'][el] = calc.outputs[el]
+                    
+                self.out('training', results)
+
+        if self.inputs.engine.value == "META":
+            for ii, calc in enumerate(self.ctx.meta_wc):
+                results[f'meta_{ii}']={}
+                for el in calc.outputs:       
+                    results[f'meta_{ii}'][el] = calc.outputs[el]
+                    
+                self.out('training', results)
         

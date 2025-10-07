@@ -23,6 +23,7 @@ PESData                         = DataFactory('pesdata')
 
 PwBaseWorkChain                 = WorkflowFactory('quantumespresso.pw.base')
 
+ALLOWED_ENGINES = ["MACE", "META"]
 
 @calcfunction
 def SaveRMSE(rmse):
@@ -122,6 +123,11 @@ def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_fra
     return {'selected_dataset':pes_selected_dataset, 'min_energy_deviation':Float(min(energy_deviation)), 'max_energy_deviation':Float(max(energy_deviation)), 'min_forces_deviation':Float(min(forces_deviation)), 'max_forces_deviation':Float(max(forces_deviation)), 'min_stress_deviation':Float(min(stress_deviation)), 'max_stress_deviation':Float(max(stress_deviation))}
 
 
+def validate_engine(value, _):
+    if value.value not in ALLOWED_ENGINES:
+        return f"Invalid training engine: {value.value}. Must be one of {ALLOWED_ENGINES}."
+    return None
+
 class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
 
@@ -148,6 +154,7 @@ class TrainsPotWorkChain(WorkChain):
 
         DEFAULT_do_dataset_augmentation         = Bool(True)
         DEFAULT_do_ab_initio_labelling          = Bool(True)
+        DEFAULT_training_engine                 = Str("MACE")
         DEFAULT_do_training                     = Bool(True)
         DEFAULT_do_exploration                  = Bool(True)
 
@@ -155,9 +162,12 @@ class TrainsPotWorkChain(WorkChain):
         ######################################################
         
         
+        
         super().define(spec)
         spec.input('do_dataset_augmentation', valid_type=Bool, default=lambda: DEFAULT_do_dataset_augmentation, help='Do data generation', required=False)
         spec.input('do_ab_initio_labelling', valid_type=Bool, default=lambda: DEFAULT_do_ab_initio_labelling, help='Do ab_initio_labelling calculations', required=False)
+        spec.input('training_engine', valid_type=Str, default=lambda: DEFAULT_training_engine, help=f"Training engine (allowed values: {ALLOWED_ENGINES})", required=False, validator=validate_engine)
+        #spec.input('training_engine', valid_type=Str, default=lambda: DEFAULT_training_engine, help='Training engine', required=False)
         spec.input('do_training', valid_type=Bool, default=lambda: DEFAULT_do_training, help='Do MACE calculations', required=False)
         spec.input('do_exploration', valid_type=Bool, default=lambda: DEFAULT_do_exploration, help='Do exploration calculations', required=False)
         spec.input('max_loops', valid_type=Int, default=lambda: DEFAULT_max_loops, help='Maximum number of active learning workflow loops', required=False)
@@ -363,9 +373,7 @@ class TrainsPotWorkChain(WorkChain):
         for specie in atomic_species:
             if specie not in self.inputs.ab_initio_labelling.quantumespresso.pw.pseudos.keys():
                 return self.exit_codes.MISSING_PSEUDOS
-        
-                 
-
+     
     def dataset_augmentation(self):
         """Generate data for the dataset."""
         
@@ -395,6 +403,7 @@ class TrainsPotWorkChain(WorkChain):
 
         inputs = self.exposed_inputs(TrainingWorkChain, namespace="training")
         inputs.dataset = self.ctx.dataset.get_labelled()
+        inputs.engine = self.inputs.training_engine
         if 'potential_checkpoints' in self.ctx:
             inputs['checkpoints'] = {f"chkpt_{ii+1}": self.ctx.potential_checkpoints[-ii] for ii in range(min(len(self.ctx.potential_checkpoints), self.inputs.training.num_potentials.value))}
       
@@ -442,7 +451,6 @@ class TrainsPotWorkChain(WorkChain):
                                 **self.ctx.trajectories)['explored_dataset']
         self.ctx.explored_dataset = explored_dataset
       
-
     def run_committee_evaluation(self):
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="committee_evaluation")
         inputs['mace_potentials'] = {f"pot_{ii}": self.ctx.potentials_ase[ii] for ii in range(len(self.ctx.potentials_ase))}

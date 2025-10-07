@@ -8,7 +8,7 @@ from pathlib import Path
 import tempfile
 import random  # to change seed for each retry
 from aiida_quantumespresso.workflows.protocols.utils import recursive_merge
-from aiida_trains_pot.utils.lammps_pair_coeffs import get_dftd2_pair_coeffs, get_mace_pair_coeff
+from aiida_trains_pot.utils.lammps_pair_coeffs import get_dftd2_pair_coeffs, get_mace_pair_coeff, get_meta_pair_coeff
 
 LammpsWorkChain = WorkflowFactory('lammps.base')
 PESData         = DataFactory('pesdata')
@@ -148,13 +148,16 @@ class ExplorationWorkChain(WorkChain):
                 if self.inputs.protocol == 'vdw_d2':
                     if 'potential' in self.inputs.parameters:
                         if 'potential_style_options' not in self.inputs.parameters['potential']:
-                            input_parameters['potential']['potential_style_options'] = 'mace no_domain_decomposition momb 20.0 0.75 20.0'
+                            input_parameters['potential']['potential_style_options'] = str(self.inputs.potential_pair_style.value) + ' momb 20.0 0.75 20.0'
                     else:
-                        input_parameters['potential'] = {'potential_style_options': 'mace no_domain_decomposition momb 20.0 0.75 20.0'}
+                        input_parameters['potential'] = {'potential_style_options': str(self.inputs.potential_pair_style.value) + ' momb 20.0 0.75 20.0'}
                     if generate_pair_coeff:
                         # Generate DFT-D2 pair coefficients, it overwrites the MACE pair_coeff generated above
                         pair_coeffs = get_dftd2_pair_coeffs(inputs.lammps.structure)
-                        pair_coeffs.append(get_mace_pair_coeff(inputs.lammps.structure, hybrid=True))
+                        if 'mace' in self.inputs.potential_pair_style.value:
+                            pair_coeffs.append(get_mace_pair_coeff(inputs.lammps.structure, hybrid=True))
+                        if 'metatomic/kk' in self.inputs.potential_pair_style.value:
+                            pair_coeffs.append(get_meta_pair_coeff(inputs.lammps.structure, hybrid=True))                        
             input_parameters['potential']['pair_coeff_list'] = pair_coeffs
 
             parameters = recursive_merge(DEFAULT_parameters.get_dict(), input_parameters)

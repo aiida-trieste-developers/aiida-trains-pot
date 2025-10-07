@@ -1,0 +1,13 @@
+architecture:
+  name: pet
+  training:
+    num_epochs: 5  # a very short training run
+    batch_size: 10
+training_set:
+  systems: "qm9_reduced_100_1.xyz"  # file where the positions are stored
+  targets:
+    energy:
+      key: "U0"      # name of the target value
+      unit: "eV"     # unit of the target value
+test_set: 0.1        # 10% of the training_set are randomly split for test
+validation_set: 0.1  # 10% of the training_set are randoml
