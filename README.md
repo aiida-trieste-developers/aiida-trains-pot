@@ -44,6 +44,12 @@ We welcome contributions from everyone. Before you start contributing, please ma
 
 Please follow our [contributing guidelines](CONTRIBUTING.md) to get started.
 
+## How to Cite
+
+If you use this plugin in your research, please cite:
+
+**D. Bidoggia, N. Manko, M. Peressi and A. Marrazzo,**  *Automated training of neural-network interatomic potentials*  [_arXiv:2509.11703_ (physics.comp-ph), 2025](https://doi.org/10.48550/arXiv.2509.11703)
+
 ## Acknowledgments
 
 This project was supported by:
@@ -56,6 +62,6 @@ This project was supported by:
 <p align="center">
   <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgTBDFRADTwpIJqho2NDfWrdCgIMTxFnlHBA&s" alt="Università degli Studi di Trieste Logo" width="250" style="filter: invert(1);"/>
   <img src="https://www.sissa.it/themes/custom/sissa/images/logo-type.svg" alt="SISSA Logo" width="100"/>
-  <img src="https://www.max-centre.eu/sites/default/files/styles/news_responsive/public/MaX_900x600.jpg" alt="MaX Centre Logo" width="250"/> 
+  <img src="https://max-centre.eu/wp-content/uploads/2024/02/banner_2.png" alt="MaX Centre Logo" width="250"/> 
   <img src="https://www.supercomputing-icsc.it/wp-content/uploads/2022/10/logoxweb.svg" alt="Centro Nazionale di Ricerca Logo" width="250"/>
 </p>
