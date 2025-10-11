@@ -116,8 +116,8 @@ input_structures = PESData([read(os.path.join(script_dir, 'gr8x8.xyz'))])
 ###############################################
 
 builder                             = TrainsPot.get_builder(abinitiolabeling_code     = QE_code,
-                                                            abinitiolabeling_protocol = 'stringent',
-                                                            pseudo_family             = 'SSSP/1.3/PBE/precision',
+                                                            abinitiolabeling_protocol = 'fast',
+                                                            pseudo_family             = 'SSSP/1.3/PBE/efficiency',
                                                             md_code                   = LAMMPS_code,
                                                             md_protocol               = 'vdw_d2',
                                                             dataset                   = input_structures,
@@ -160,19 +160,20 @@ builder.dataset_augmentation.do_check_vacuum                    = Bool(True)
 builder.dataset_augmentation.do_substitution                    = Bool(True)
 
 builder.dataset_augmentation.rsd.params.rattle_fraction         = Float(0.6)
-builder.dataset_augmentation.rsd.params.max_sigma_strain        = Float(0.3)
-builder.dataset_augmentation.rsd.params.n_configs               = Int(80)
+builder.dataset_augmentation.rsd.params.max_compressive_strain  = Float(0.3)
+builder.dataset_augmentation.rsd.params.max_tensile_strain      = Float(0.3)
+builder.dataset_augmentation.rsd.params.n_configs               = Int(8)
 builder.dataset_augmentation.rsd.params.frac_vacancies          = Float(0.2)
 builder.dataset_augmentation.rsd.params.vacancies_per_config    = Int(1)
-builder.dataset_augmentation.clusters.n_clusters                = Int(80)
-builder.dataset_augmentation.clusters.max_atoms                 = Int(30)
+builder.dataset_augmentation.clusters.n_clusters                = Int(8)
+builder.dataset_augmentation.clusters.max_atoms                 = Int(3)
 builder.dataset_augmentation.clusters.interatomic_distance      = Float(1.5)
 builder.dataset_augmentation.slabs.miller_indices               = List([[1, 0, 0], [1, 1, 0], [1, 1, 1], [0, 0, 1], [0, 1, 1], [0, 1, 0], [1, 0, 1]])
 builder.dataset_augmentation.slabs.min_thickness                = Float(10)
-builder.dataset_augmentation.slabs.max_atoms                    = Int(600)
+builder.dataset_augmentation.slabs.max_atoms                    = Int(6)
 builder.dataset_augmentation.replicate.min_dist                 = Float(24)
-builder.dataset_augmentation.replicate.max_atoms                = Int(600)
-builder.dataset_augmentation.vacuum                             = Float(15)
+builder.dataset_augmentation.replicate.max_atoms                = Int(6)
+builder.dataset_augmentation.vacuum                             = Float(10)
 builder.dataset_augmentation.substitution.switches_fraction     = Float(0.2)
 builder.dataset_augmentation.substitution.structures_fraction   = Float(0.1)
 
@@ -273,7 +274,7 @@ builder.exploration.md.lammps.metadata.options.custom_scheduler_commands    = f"
 
 
 
-builder.frame_extraction.sampling_time                                      = Float(1.0) # in ps how often frames are written to the trajectory file
+builder.frame_extraction.sampling_time                                      = Float(0.2) # in ps how often frames are written to the trajectory file
 builder.frame_extraction.thermalization_time                                = Float(0.0) # in ps how long the thermalization time is. Frames in that time are not considered
 
 
