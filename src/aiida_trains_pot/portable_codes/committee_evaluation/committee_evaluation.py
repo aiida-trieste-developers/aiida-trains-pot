@@ -242,6 +242,15 @@ def maximum_deviation(data):
         data = np.linalg.norm(data, axis=2)
         return np.mean(np.max(data, axis=0) - np.min(data, axis=0))
 
+def remove_nan(data):
+    cleaned = {}
+    for k, el in data.items():
+        if isinstance(el, dict):
+            cleaned[k] = remove_nan(el)
+        else:
+            if not np.isnan(el):
+                cleaned[k] = el
+    return cleaned
 
 def main(log_freq=100):
 
@@ -362,6 +371,7 @@ def main(log_freq=100):
 
             logging.info("Error-table:\n" + str(rmse_table(RMSE)))
             logging.info(f'Saving global RMSE for dataset {jj+1}...')
+            RMSE = remove_nan(RMSE)
             np.savez(f'{dataset_name}_rmse.npz', rmse = RMSE)
             logging.info(f'Saving data for parity plots for dataset {jj+1}...')
             np.savez(f'{dataset_name}_parity.npz', parity = PARITY)
