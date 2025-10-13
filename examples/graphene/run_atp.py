@@ -34,7 +34,7 @@ MACE_train_code         = load_code('mace_train_func_312@leo1_scratch_mace')
 MACE_preprocess_code    = load_code('mace_preprocess@leo1_scratch_mace')
 MACE_postprocess_code   = load_code('mace_postprocess@leo1_scratch_mace')
 #LAMMPS_code             = load_code('lmp4mace@leo1_scratch')
-LAMMPS_code             = load_code('lmp4mace_func@leo1_scratch')
+LAMMPS_code             = load_code('lmp4meta@leo1_scratch')
 EVALUATION_code         = load_code('committee_evaluation_portable_312')
 
 
@@ -147,7 +147,7 @@ builder                             = TrainsPot.get_builder(abinitiolabeling_cod
                                                             abinitiolabeling_protocol = 'fast',
                                                             pseudo_family             = 'SSSP/1.3/PBE/efficiency',
                                                             md_code                   = LAMMPS_code,
-                                                            md_protocol               = 'vdw_d2',
+                                                            #md_protocol               = 'vdw_d2',
                                                             #dataset                   = input_structures,
                                                             dataset                   = load_node(1810107),
                                                             )
@@ -162,7 +162,8 @@ builder.max_loops                   = Int(2)
 
 #builder.explored_dataset = load_node(748569) ## Dataset to be passed to the committe evaluation
 #builder.dataset = load_node(85953) ## Dataset selected to be labelled or already labelled (both labelled and unlabelled datasets are accepted in the same dataset)
-builder = models_from_trainingwc(builder, 1896245, get_labelled_dataset=True, get_config=True) ## populates builder with
+#builder = models_from_trainingwc(builder, 1896245, get_labelled_dataset=True, get_config=True) ## populates builder with
+builder = models_from_trainingwc(builder, 1906060, get_labelled_dataset=True, get_config=True) 
 #builder = models_from_trainingwc(builder, 87443, get_labelled_dataset=True, get_config=True) ## populates builder with models (and eventually dataset and MACE parameters) from a previous training workflow
 #builder.models_lammps = {"pot_1":load_node(85984), "pot_2":load_node(85995), "pot_3":load_node(86006), "pot_4":load_node(86017)} ## MACE potentials compiled for LAMMPS
 #builder.models_ase = {"pot_1":load_node(85985), "pot_2":load_node(85996), "pot_3":load_node(86007), "pot_4":load_node(86018)} ## MACE potentials compiled for ASE
@@ -323,14 +324,14 @@ builder.num_random_structures_lammps = Int(1)
 # Generate the simple configuration of md parameters for LAMMPS
 temperatures = [300]
 pressures = [0]
-steps = [500]
+steps = [100]
 styles =  ["npt"]
 timestep = 0.001
 builder.exploration.params_list = generate_lammps_md_config(temperatures, pressures, steps, styles, timestep)
-builder.exploration.parameters = Dict({'control':{'timestep': timestep,}, 'potential':{'neighbor_modify': ['one', '20000', 'page', '200000']}})
-builder.exploration.potential_pair_style = Str("metatomic/kk")
+builder.exploration.parameters = Dict({'control':{'timestep': timestep,}, 'potential':{'neighbor_modify': ['one', '20000', 'page', '200000'], }})
+builder.exploration.potential_pair_style = Str("metatomic")
 
-builder.exploration.md.lammps.settings = Dict({"additional_cmdline_params": ["-k", "on", "g", "1", "-sf", "kk"]})
+#builder.exploration.md.lammps.settings = Dict({"additional_cmdline_params": ["-k", "on", "g", "1", "-sf", "kk"]})
 builder.exploration.md.lammps.metadata.options.resources = {
     'num_machines': LAMMPS_machine['nodes'],
     'num_mpiprocs_per_machine': LAMMPS_machine['taskpn'],

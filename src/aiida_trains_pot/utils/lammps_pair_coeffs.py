@@ -111,13 +111,15 @@ def get_mace_pair_coeff(structure, hybrid=False) -> str:
 
 def get_meta_pair_coeff(structure, hybrid=False) -> str:
     """
-    Get the MACE pair coefficient for a given structure.
+    Get the METATrain pair coefficient for a given structure.
     Args:
-        structure (StructureData): The structure for which to get the MACE pair coefficient.
+        structure (StructureData): The structure for which to get the METATrain pair coefficient.
         hybrid (bool): Whether is used hybrid/overlay pair style or not.
     Returns:
-        str: The MACE pair coefficient.
+        str: The METATrain pair coefficient.
     """
-    if hybrid:
-        return "* * metatomic/kk potential.dat " + " ".join(structure.get_symbols_set())
-    return "* * potential.dat " + " ".join(structure.get_symbols_set())
+    #if hybrid:
+    #    return "* * metatomic potential.dat " + " ".join(structure.get_symbols_set())
+    symbols = sorted(structure.get_symbols_set())
+    numbers = [str(atomic_numbers[s]) for s in symbols]
+    return "* * " + " ".join(numbers)
