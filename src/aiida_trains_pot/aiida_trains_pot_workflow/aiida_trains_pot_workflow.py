@@ -146,6 +146,7 @@ class TrainsPotWorkChain(WorkChain):
 
         DEFAULT_max_selected_frames             = Int(1000)
         DEFAULT_random_input_structures_lammps  = Bool(True)
+        DEFAULT_num_random_structures_lammps    = Int(20)
 
         DEFAULT_thermalization_time             = Float(0.0)
         DEFAULT_sampling_time                   = Float(1.0)
@@ -173,7 +174,7 @@ class TrainsPotWorkChain(WorkChain):
         spec.input('max_loops', valid_type=Int, default=lambda: DEFAULT_max_loops, help='Maximum number of active learning workflow loops', required=False)
 
         spec.input('random_input_structures_lammps', valid_type=Bool, help='If true, input structures for LAMMPS are randomly selected from the dataset', default=lambda: DEFAULT_random_input_structures_lammps, required=False)
-        spec.input('num_random_structures_lammps', valid_type=Int, help='Number of random structures for LAMMPS', required=False)
+        spec.input('num_random_structures_lammps', valid_type=Int, help='Number of random structures for LAMMPS', default=lambda: DEFAULT_num_random_structures_lammps, required=False)
         spec.input('lammps_input_structures', valid_type=PESData, help='Input structures for lammps, if not specified input structures are used', required=False)
         spec.input('dataset', valid_type=PESData, help='Dataset containing labelled structures and structures to be labelled', required=True)
 
@@ -205,15 +206,17 @@ class TrainsPotWorkChain(WorkChain):
         spec.expose_inputs(EvaluationCalculation, namespace="committee_evaluation", exclude=('mace_potentials', 'datasetlist'))
         
         spec.output("dataset", valid_type=PESData, help="Final dataset containing all structures labelled and selected to be labelled")
-        spec.output_namespace("models_ase", valid_type=SinglefileData, help="Last committee of trained potentials compiled for ASE")
-        spec.output_namespace("models_lammps", valid_type=SinglefileData, help="Last committee of trained potentials compiled for LAMMPS")
-        spec.output_namespace("checkpoints", valid_type=FolderData, help="Last checkpoints of trained potentials")
-        spec.output("RMSE", valid_type=List, help="RMSE on the final dataset computed with the last committee of potentials")               
+        spec.output_namespace("models_ase", required = False, valid_type=SinglefileData, help="Last committee of trained potentials compiled for ASE")
+        spec.output_namespace("models_lammps", required = False, valid_type=SinglefileData, help="Last committee of trained potentials compiled for LAMMPS")
+        spec.output_namespace("checkpoints", required = False, valid_type=FolderData, help="Last checkpoints of trained potentials")
+        spec.output("RMSE", required = False, valid_type=List, help="RMSE on the final dataset computed with the last committee of potentials")
 
-        spec.exit_code(308, "LESS_THAN_2_POTENTIALS", message="Calculation didn't produce more tha 1 expected potentials.",)
-        spec.exit_code(309, "NO_MD_CALCULATIONS", message="Calculation didn't produce any MD calculations.",)
         spec.exit_code(200, "NO_LABELLED_STRUCTURES", message="No labelled structures in the dataset.",)
         spec.exit_code(201, "MISSING_PSEUDOS", message="Missing pseudopotentials for some atomic species in the input dataset.",)
+        
+        spec.exit_code(308, "LESS_THAN_2_POTENTIALS", message="Calculation didn't produce more tha 1 expected potentials.",)
+        spec.exit_code(309, "NO_MD_CALCULATIONS", message="Calculation didn't produce any MD calculations.",)
+        spec.exit_code(310, "EMPTY_EXPLORATION_DATASET", message="The exploration dataset is empty.",)
 
         
         spec.outline(
@@ -420,14 +423,32 @@ class TrainsPotWorkChain(WorkChain):
         
         if "random_input_structures_lammps" in self.inputs:
             if self.inputs.random_input_structures_lammps:
-                if 'dataset_augmentation' in self.ctx:
-                    self.ctx.lammps_input_structures = self.ctx.dataset_augmentation.outputs.structures.global_structures
+                if 'input_lammps_dataset' in self.ctx:
+                    self.ctx.lammps_input_structures = self.ctx.input_lammps_dataset
                 else:
                     self.ctx.lammps_input_structures = self.ctx.dataset
+
         
-        if "num_random_structures_lammps" in self.inputs:
-                id_selected = np.random.choice(range(len(self.ctx.lammps_input_structures)), self.inputs.num_random_structures_lammps.value, replace=False)
-                self.ctx.lammps_input_structures = PESData([self.ctx.lammps_input_structures.get_item(key) for key in id_selected])
+        # Select random input structures for LAMMPS avoiding isolated atoms
+        discarded = set()
+        selected = []
+        num_structures = self.inputs.num_random_structures_lammps.value
+        while len(selected) < num_structures:
+            # If choosed all non-discarded unique values, break
+            remaining_capacity = len(self.ctx.lammps_input_structures) - len(discarded)
+            if remaining_capacity == len(selected):
+                self.report(f'Only {len(selected)} random input structures for LAMMPS are selected ({num_structures} where requested).')
+                break
+
+            x = random.choice(range(len(self.ctx.lammps_input_structures)))
+            if len(self.ctx.lammps_input_structures.get_ase_item(x)) < 2:
+                discarded.add(x)
+                continue  # reject isolated atoms
+            if x in selected:
+                continue  # reject duplicate
+            selected.append(x)
+        
+        self.ctx.lammps_input_structures = PESData([self.ctx.lammps_input_structures.get_item(key) for key in selected])
             
         inputs.lammps_input_structures = self.ctx.lammps_input_structures
         inputs.sampling_time = self.inputs.frame_extraction.sampling_time
@@ -449,6 +470,9 @@ class TrainsPotWorkChain(WorkChain):
                                 min_vacuum = self.inputs.vacuum.min_vacuum,
                                 target_vacuum = self.inputs.vacuum.target_vacuum,
                                 **self.ctx.trajectories)['explored_dataset']
+        if len(explored_dataset) == 0:
+            self.finalize()
+            return self.exit_codes.EMPTY_EXPLORATION_DATASET
         self.ctx.explored_dataset = explored_dataset
       
     def run_committee_evaluation(self):
@@ -462,6 +486,7 @@ class TrainsPotWorkChain(WorkChain):
     def finalize_dataset_augmentation(self):
         """Finalize dataset augmentation."""
         self.ctx.dataset += self.ctx.dataset_augmentation.outputs.structures.global_structures
+        self.ctx.input_lammps_dataset = self.ctx.dataset
     
     def finalize_ab_initio_labelling(self):
         self.ctx.dataset = self.ctx.dataset.get_labelled() + self.ctx.ab_initio_labelling.outputs.ab_initio_labelling_data
@@ -517,10 +542,12 @@ class TrainsPotWorkChain(WorkChain):
         self.report(f'Min stress deviation: {round(selected["min_stress_deviation"].value,2)} kbar, Max stress deviation: {round(selected["max_stress_deviation"].value,2)} kbar')
 
     def finalize(self):
-        
-        self.out('RMSE', SaveRMSE(self.ctx.rmse))
+        if 'rmse' in self.ctx:
+            self.out('RMSE', SaveRMSE(self.ctx.rmse))
         self.out('dataset', self.ctx.dataset)
-        self.out('models_ase', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_ase)})
-        self.out('models_lammps', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_lammps)}) 
-        self.out('checkpoints', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potential_checkpoints)})            
-           
+        if 'potentials_ase' in self.ctx:
+            self.out('models_ase', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_ase)})
+        if 'potentials_lammps' in self.ctx:
+            self.out('models_lammps', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potentials_lammps)})
+        if 'potential_checkpoints' in self.ctx:
+            self.out('checkpoints', {f"model_{ii+1}": pot for ii, pot in enumerate(self.ctx.potential_checkpoints)})

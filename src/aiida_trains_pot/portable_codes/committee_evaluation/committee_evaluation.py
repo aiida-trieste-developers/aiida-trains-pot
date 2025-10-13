@@ -49,28 +49,33 @@ def get_parity_data(dataset):
     std_pot_s = []
 
     for frame in dataset:
-        pot_e.append([frame[key]/len(frame['positions']) for key in frame.keys() if 'pot' in key and 'energy' in key and not 'rmse' in key])
-        std_pot_e.append(np.std(pot_e[-1]))
-        pot_e[-1] = np.mean(pot_e[-1])
-        dft_e.append(frame['dft_energy']/len(frame['positions']))
-        
-        pot_f.append([frame[key] for key in frame.keys() if 'pot' in key and 'forces' in key and not 'rmse' in key])
-        std_pot_f.append(np.std(pot_f[-1], axis=0))
-        pot_f[-1] = np.mean(pot_f[-1], axis=0)
-        dft_f.append(frame['dft_forces'])
+        if 'dft_energy' in frame:
+            pot_e.append([frame[key]/len(frame['positions']) for key in frame.keys() if 'pot' in key and 'energy' in key and not 'rmse' in key])
+            std_pot_e.append(np.std(pot_e[-1]))
+            pot_e[-1] = np.mean(pot_e[-1])
+            dft_e.append(frame['dft_energy']/len(frame['positions']))
 
-        pot_s.append([frame[key] for key in frame.keys() if 'pot' in key and 'stress' in key and not 'rmse' in key])
-        std_pot_s.append(np.std(pot_s[-1], axis=0))
-        pot_s[-1] = np.mean(pot_s[-1], axis=0)
-        dft_s.append(frame['dft_stress'])
+        if 'dft_forces' in frame:
+            pot_f.append([frame[key] for key in frame.keys() if 'pot' in key and 'forces' in key and not 'rmse' in key])
+            std_pot_f.append(np.std(pot_f[-1], axis=0))
+            pot_f[-1] = np.mean(pot_f[-1], axis=0)
+            dft_f.append(frame['dft_forces'])
 
-    dft_f = np.concatenate(dft_f)
-    pot_f = np.concatenate(pot_f)
-    std_pot_f = np.concatenate(std_pot_f)
-    dft_s = np.concatenate(dft_s)
-    pot_s = np.concatenate(pot_s).ravel()
-    std_pot_s = np.concatenate(std_pot_s).ravel()
-    
+        if 'dft_stress' in frame:
+            pot_s.append([frame[key] for key in frame.keys() if 'pot' in key and 'stress' in key and not 'rmse' in key])
+            std_pot_s.append(np.std(pot_s[-1], axis=0))
+            pot_s[-1] = np.mean(pot_s[-1], axis=0)
+            dft_s.append(frame['dft_stress'])
+
+    if len(dft_f) > 0:
+        dft_f = np.concatenate(dft_f)
+        pot_f = np.concatenate(pot_f)
+        std_pot_f = np.concatenate(std_pot_f)
+    if len(dft_s) > 0:
+        dft_s = np.concatenate(dft_s)
+        pot_s = np.concatenate(pot_s).ravel()
+        std_pot_s = np.concatenate(std_pot_s).ravel()
+
     return {
         'dft_e': np.array(dft_e),
         'pot_e': np.array(pot_e),
@@ -98,9 +103,9 @@ def rmse_table(RMSE) -> PrettyTable:
                         [
                             key,
                             key2,
-                            f"{RMSE[key][key2]['rmse_e'] * 1000:8.1f} ± {RMSE[key][key2]['std_e'] * 1000:<8.1f}",
-                            f"{RMSE[key][key2]['rmse_f'] * 1000:8.1f} ± {RMSE[key][key2]['std_f'] * 1000:<8.1f}",
-                            f"{RMSE[key][key2]['rmse_s'] * 1000:8.2f} ± {RMSE[key][key2]['std_s'] * 1000:<8.2f}",
+                            f"{RMSE[key][key2]['rmse_e'] * 1000:8.1f} ± {RMSE[key][key2]['std_e'] * 1000:<8.1f}" if 'rmse_e' in RMSE[key][key2] else 'N/A',
+                            f"{RMSE[key][key2]['rmse_f'] * 1000:8.1f} ± {RMSE[key][key2]['std_f'] * 1000:<8.1f}" if 'rmse_f' in RMSE[key][key2] else 'N/A',
+                            f"{RMSE[key][key2]['rmse_s'] * 1000:8.2f} ± {RMSE[key][key2]['std_s'] * 1000:<8.2f}" if 'rmse_s' in RMSE[key][key2] else 'N/A',
                         ]
                     )
             else:
@@ -108,9 +113,9 @@ def rmse_table(RMSE) -> PrettyTable:
                     [
                         '',
                         key2.split('_')[-1],
-                        f"{RMSE[key][key2]['rmse_e'] * 1000:8.1f}",
-                        f"{RMSE[key][key2]['rmse_f'] * 1000:8.1f}",
-                        f"{RMSE[key][key2]['rmse_s'] * 1000:8.2f}",
+                        f"{RMSE[key][key2]['rmse_e'] * 1000:8.1f}" if 'rmse_e' in RMSE[key][key2] else 'N/A',
+                        f"{RMSE[key][key2]['rmse_f'] * 1000:8.1f}" if 'rmse_f' in RMSE[key][key2] else 'N/A',
+                        f"{RMSE[key][key2]['rmse_s'] * 1000:8.2f}" if 'rmse_s' in RMSE[key][key2] else 'N/A',
                     ]
                 )
     return table
@@ -148,35 +153,42 @@ def global_rmse(dataset):
             dnn_f.append([])
             for frame in dataset:
                 dnn_f[-1].extend(frame[key].ravel())
-        elif re.fullmatch(r'pot_\d+_energy',key):
+        if re.fullmatch(r'pot_\d+_energy',key):
             dnn_e.append([])
             for frame in dataset:
                 dnn_e[-1].append(frame[key]/len(frame['positions']))
-        elif re.fullmatch(r'pot_\d+_stress',key):
+        if re.fullmatch(r'pot_\d+_stress',key):
             dnn_s.append([])
             for frame in dataset:
                 dnn_s[-1].extend(frame[key].ravel())
-        elif 'dft_energy' in key:
+        if 'dft_energy' in key:
             for frame in dataset:
                 dft_e.append(frame[key]/len(frame['positions']))
-        elif 'dft_forces' in key:
+        if 'dft_forces' in key:
             for frame in dataset:
                 dft_f.extend(frame[key].ravel())
-        elif 'dft_stress' in key:
+        if 'dft_stress' in key:
             for frame in dataset:
                 dft_s.extend(frame[key].ravel())
-    
-    rmse_e = np.array([calc_rmse(dft_e, dnn) for dnn in dnn_e])
-    rmse_f = np.array([calc_rmse(dft_f, dnn) for dnn in dnn_f])
-    rmse_s = np.array([calc_rmse(dft_s, dnn) for dnn in dnn_s])
+                
+    rmse_e = []
+    rmse_f = []
+    rmse_s = []
+    if len(dft_e) > 0:
+        rmse_e = np.array([calc_rmse(dft_e, dnn) for dnn in dnn_e])
+    if len(dft_f) > 0:
+        rmse_f = np.array([calc_rmse(dft_f, dnn) for dnn in dnn_f])
+    if len(dft_s) > 0:
+        rmse_s = np.array([calc_rmse(dft_s, dnn) for dnn in dnn_s])
 
-    
     for ii, _ in enumerate(dnn_e):
-        RMSE[f'pot_{ii+1}'] = {
-            'rmse_e': rmse_e[ii],
-            'rmse_f': rmse_f[ii],
-            'rmse_s': rmse_s[ii],
-        }
+        RMSE[f'pot_{ii+1}'] = {}
+        if len(rmse_e) > ii:
+            RMSE[f'pot_{ii+1}']['rmse_e'] = rmse_e[ii]
+        if len(rmse_f) > ii:
+            RMSE[f'pot_{ii+1}']['rmse_f'] = rmse_f[ii]
+        if len(rmse_s) > ii:
+            RMSE[f'pot_{ii+1}']['rmse_s'] = rmse_s[ii]
     if len(dnn_e) > 1:
         RMSE['committee'] = {
             'rmse_e': np.mean(rmse_e),
@@ -219,7 +231,7 @@ def model_deviation(data):
         return np.std(data)
     else:
         mean = np.mean(data, axis=0)
-        return np.mean(np.mean(np.sqrt(np.mean((data - mean[np.newaxis, :, :]) ** 2, axis=0))))
+        return np.max(np.mean(np.linalg.norm(data - mean, axis=2)**2, axis=0)**0.5)
 
 
 def maximum_deviation(data):
@@ -230,6 +242,15 @@ def maximum_deviation(data):
         data = np.linalg.norm(data, axis=2)
         return np.mean(np.max(data, axis=0) - np.min(data, axis=0))
 
+def remove_nan(data):
+    cleaned = {}
+    for k, el in data.items():
+        if isinstance(el, dict):
+            cleaned[k] = remove_nan(el)
+        else:
+            if not np.isnan(el):
+                cleaned[k] = el
+    return cleaned
 
 def main(log_freq=100):
 
@@ -267,7 +288,13 @@ def main(log_freq=100):
             evaluated_dataset[-1]['pbc'] = atm.get_pbc()
             try:
                 evaluated_dataset[-1]['dft_energy'] = atm.get_potential_energy()
+            except:
+                pass
+            try:
                 evaluated_dataset[-1]['dft_stress'] = np.array(atm.get_stress(voigt=False).ravel())
+            except:
+                pass
+            try:
                 evaluated_dataset[-1]['dft_forces'] = np.array(atm.get_forces())
             except:
                 pass
@@ -278,7 +305,7 @@ def main(log_freq=100):
 
             for calculator in calculators:
                 n_pot += 1
-                atm.set_calculator(calculator)
+                atm.calc = calculator
 
                 energy.append(atm.get_potential_energy())
                 forces.append(np.array(atm.get_forces()))
@@ -344,6 +371,7 @@ def main(log_freq=100):
 
             logging.info("Error-table:\n" + str(rmse_table(RMSE)))
             logging.info(f'Saving global RMSE for dataset {jj+1}...')
+            RMSE = remove_nan(RMSE)
             np.savez(f'{dataset_name}_rmse.npz', rmse = RMSE)
             logging.info(f'Saving data for parity plots for dataset {jj+1}...')
             np.savez(f'{dataset_name}_parity.npz', parity = PARITY)

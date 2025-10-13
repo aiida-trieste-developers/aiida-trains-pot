@@ -237,7 +237,6 @@ class ExplorationWorkChain(WorkChain):
         md_out = {}
         for ii, calc in enumerate(self.ctx.md_wc):
             if calc.exit_status == 0:
-                self.report(f'md_{ii} exit0')
                 md_out[f'md_{ii}'] = {el: calc.outputs[el] for el in calc.outputs}
         
         self.out('md', md_out)
