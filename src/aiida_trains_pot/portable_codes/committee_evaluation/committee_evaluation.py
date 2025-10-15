@@ -163,23 +163,42 @@ def global_rmse(dataset):
                 dnn_s[-1].extend(frame[key].ravel())
         if 'dft_energy' in key:
             for frame in dataset:
-                dft_e.append(frame[key]/len(frame['positions']))
+                try:
+                    dft_e.append(frame[key]/len(frame['positions']))
+                except:
+                    pass                
         if 'dft_forces' in key:
             for frame in dataset:
-                dft_f.extend(frame[key].ravel())
+                try:
+                    dft_f.extend(frame[key].ravel())
+                except:
+                    pass                
         if 'dft_stress' in key:
             for frame in dataset:
-                dft_s.extend(frame[key].ravel())
+                try:
+                    dft_s.extend(frame[key].ravel())
+                except:
+                    pass
+                
                 
     rmse_e = []
     rmse_f = []
     rmse_s = []
     if len(dft_e) > 0:
-        rmse_e = np.array([calc_rmse(dft_e, dnn) for dnn in dnn_e])
+        try:
+            rmse_e = np.array([calc_rmse(dft_e, dnn) for dnn in dnn_e])
+        except:
+            pass
     if len(dft_f) > 0:
-        rmse_f = np.array([calc_rmse(dft_f, dnn) for dnn in dnn_f])
+        try:
+            rmse_f = np.array([calc_rmse(dft_f, dnn) for dnn in dnn_f])
+        except:
+            pass
     if len(dft_s) > 0:
-        rmse_s = np.array([calc_rmse(dft_s, dnn) for dnn in dnn_s])
+        try:
+            rmse_s = np.array([calc_rmse(dft_s, dnn) for dnn in dnn_s])
+        except:
+            pass
 
     for ii, _ in enumerate(dnn_e):
         RMSE[f'pot_{ii+1}'] = {}
