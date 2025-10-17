@@ -35,7 +35,8 @@ MACE_preprocess_code    = load_code('mace_preprocess@leo1_scratch_mace')
 MACE_postprocess_code   = load_code('mace_postprocess@leo1_scratch_mace')
 #LAMMPS_code             = load_code('lmp4mace@leo1_scratch')
 LAMMPS_code             = load_code('lmp4meta@leo1_scratch')
-EVALUATION_code         = load_code('committee_evaluation_portable_312')
+#EVALUATION_code         = load_code('committee_evaluation_portable_312')
+EVALUATION_code         = load_code('committee_evaluation_portable_meta2')
 
 
 QE_machine = {
@@ -145,7 +146,7 @@ input_structures = PESData([read(os.path.join(script_dir, 'gr8x8.xyz'))])
 
 builder                             = TrainsPot.get_builder(abinitiolabeling_code     = QE_code,
                                                             abinitiolabeling_protocol = 'fast',
-                                                            pseudo_family             = 'SSSP/1.3/PBE/efficiency',
+                                                            pseudo_family             = 'SSSP/1.3/PBEsol/precision',
                                                             md_code                   = LAMMPS_code,
                                                             #md_protocol               = 'vdw_d2',
                                                             #dataset                   = input_structures,
@@ -163,7 +164,7 @@ builder.max_loops                   = Int(2)
 #builder.explored_dataset = load_node(748569) ## Dataset to be passed to the committe evaluation
 #builder.dataset = load_node(85953) ## Dataset selected to be labelled or already labelled (both labelled and unlabelled datasets are accepted in the same dataset)
 #builder = models_from_trainingwc(builder, 1896245, get_labelled_dataset=True, get_config=True) ## populates builder with
-builder = models_from_trainingwc(builder, 1906060, get_labelled_dataset=True, get_config=True) 
+builder = models_from_trainingwc(builder, 1910124, get_labelled_dataset=True, get_config=True) 
 #builder = models_from_trainingwc(builder, 87443, get_labelled_dataset=True, get_config=True) ## populates builder with models (and eventually dataset and MACE parameters) from a previous training workflow
 #builder.models_lammps = {"pot_1":load_node(85984), "pot_2":load_node(85995), "pot_3":load_node(86006), "pot_4":load_node(86017)} ## MACE potentials compiled for LAMMPS
 #builder.models_ase = {"pot_1":load_node(85985), "pot_2":load_node(85996), "pot_3":load_node(86007), "pot_4":load_node(86018)} ## MACE potentials compiled for ASE
@@ -175,7 +176,7 @@ builder = models_from_trainingwc(builder, 1906060, get_labelled_dataset=True, ge
 builder.thr_energy          = Float(2e-3)
 builder.thr_forces          = Float(5e-2)
 builder.thr_stress          = Float(1e-2)
-builder.max_selected_frames = Int(1000)
+builder.max_selected_frames = Int(10)
 
 
 ###############################################
@@ -258,7 +259,6 @@ with open(MACE_config, 'r') as yaml_file:
     mace_config = yaml.safe_load(yaml_file)
 builder.training.mace.train.mace_config = Dict(mace_config)
 
-builder.training.num_potentials = Int(5)
 builder.training.mace.train.metadata.options.withmpi=False
 builder.training.mace.train.metadata.options.resources = {
     'num_machines': MACE_machine['nodes'],
@@ -318,11 +318,11 @@ builder.training.meta.train.metadata.options.custom_scheduler_commands  = f"#SBA
 # Setup LAMMPS
 ###############################################
 builder.random_input_structures_lammps = Bool(False)
-builder.num_random_structures_lammps = Int(1)
+builder.num_random_structures_lammps = Int(5)
 # builder.lammps_input_structures = load_node(933377)
 
 # Generate the simple configuration of md parameters for LAMMPS
-temperatures = [300]
+temperatures = [3000]
 pressures = [0]
 steps = [100]
 styles =  ["npt"]
@@ -347,7 +347,7 @@ builder.exploration.md.lammps.metadata.options.custom_scheduler_commands = f"#SB
 
 
 
-builder.frame_extraction.sampling_time                                      = Float(0.2) # in ps how often frames are written to the trajectory file
+builder.frame_extraction.sampling_time                                      = Float(0.02) # in ps how often frames are written to the trajectory file
 builder.frame_extraction.thermalization_time                                = Float(0.0) # in ps how long the thermalization time is. Frames in that time are not considered
 
 

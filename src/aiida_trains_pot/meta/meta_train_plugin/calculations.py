@@ -95,48 +95,12 @@ class MetaTrainCalculation(CalcJob):
         """
 
         meta_config_dict = self.inputs.meta_config.get_dict()
-        do_preprocess = self.inputs.do_preprocess.value
-        if do_preprocess:
-            if 'preprocess_code' not in self.inputs:
-                raise ValueError("Preprocess code is required if do_preprocess is True")
-            preprocess_code = self.inputs.preprocess_code
         
-        
-
-        
-        if do_preprocess:
-            codeinfo_preprocess = datastructures.CodeInfo()
-            codeinfo_preprocess.code_uuid = preprocess_code.uuid
-            
-            #codeinfo_preprocess.cmdline_params = [
-            #    '--train_file', "training.xyz",
-            #    '--valid_file', "validation.xyz",
-            #    '--test_file', "test.xyz",
-            #    '--energy_key', "dft_energy",
-            #    '--forces_key', "dft_forces",
-            #    '--stress_key', "dft_stress",
-            #    '--compute_statistics',
-            #    '--h5_prefix', "processed_data/",
-            #    '--seed', str(random.randint(0, 10000))
-            #]
-            #if 'r_max' in meta_config_dict:
-            #    codeinfo_preprocess.cmdline_params += ['--r_max', str(meta_config_dict['r_max'])]
-
-        # for MACE < 0.3.7
-        #codeinfo_postprocess1 = datastructures.CodeInfo()
-        #codeinfo_postprocess1.code_uuid = self.inputs.postprocess_code.uuid
-        #codeinfo_postprocess1.cmdline_params = ["aiida_swa.model"]
-        # for MACE >= 0.3.7
-        #codeinfo_postprocess1b = datastructures.CodeInfo()
-        #codeinfo_postprocess1b.code_uuid = self.inputs.postprocess_code.uuid
-        #codeinfo_postprocess1b.cmdline_params = ["aiida_stagetwo.model"]
-        
-        #codeinfo_postprocess2 = datastructures.CodeInfo()
-        #codeinfo_postprocess2.code_uuid = self.inputs.postprocess_code.uuid
-        #codeinfo_postprocess2.cmdline_params = ["aiida.model"]
 
         codeinfo = datastructures.CodeInfo()
-        codeinfo.cmdline_params =f"""train config.yml""".split()                 
+        codeinfo.cmdline_params =f"""train config.yml""".split()    
+
+        
 
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = "meta.out"
@@ -204,33 +168,7 @@ class MetaTrainCalculation(CalcJob):
         meta_config_dict['validation_set']['targets']['energy']['forces']['read_from'] = "validation.xyz"
         meta_config_dict['validation_set']['targets']['energy']['stress']['read_from'] = "validation.xyz"
 
-        #meta_config_dict['seed'] = random.randint(0, 10000)
-        #if do_preprocess:
-        #    meta_config_dict['train_file'] = "processed_data/train/"   
-        #    meta_config_dict['valid_file'] = "processed_data/val/"
-        #    meta_config_dict['test_file'] = "processed_data/test/"    
-        #    meta_config_dict['statistics_file'] = "processed_data/statistics.json"
-        #else:
-        #    meta_config_dict['train_file'] = "training.xyz"   
-        #    meta_config_dict['valid_file'] = "validation.xyz"
-        #    meta_config_dict['test_file'] = "test.xyz"
-
-        #meta_config_dict['energy_key'] = "dft_energy" 
-        #meta_config_dict['forces_key'] = "dft_forces" 
-        #meta_config_dict['stress_key'] = "dft_stress"  
-
-        #if 'E0s' not in meta_config_dict:
-        #    e0s = self.inputs.training_set.get_e0s()
-        #    if None not in e0s.values():
-        #        meta_config_dict['E0s'] = str(e0s)
-        #    else:
-        #        atomic_numbers = self.inputs.training_set.get_atomic_numbers()
-        #        if do_preprocess:
-        #            codeinfo_preprocess.cmdline_params += ['--E0s=average']
-        #            codeinfo_preprocess.cmdline_params += [f'--atomic_numbers={str(atomic_numbers)}']
-        #        else:
-        #            meta_config_dict['E0s'] = "average"
-        #            meta_config_dict['atomic_numbers'] = f'"{str(atomic_numbers)}"'
+        
 
         #finetune = False
         #if 'protocol' in self.inputs:
@@ -249,8 +187,7 @@ class MetaTrainCalculation(CalcJob):
         #            del meta_config_dict['E0s']
 
 
-        #if 'checkpoints' in self.inputs:
-        #    meta_config_dict['restart_latest'] = True
+        
 
         # for training_structure in self.inputs.training_set:
         #     training_dict = dict(training_structure)
@@ -264,17 +201,22 @@ class MetaTrainCalculation(CalcJob):
         #if not meta_config_dict.get('distributed', False) and self.inputs["metadata"]["options"]["resources"].get('num_mpiprocs_per_machine') > 1:
         #    meta_config_dict['distributed'] = True
 
-        #if 'checkpoints' in self.inputs:                      
-        #    codeinfo.cmdline_params = [
-        #        '--restart', "model.ckpt"           
-        #    ]
+                   
+
+        #if 'checkpoints' in self.inputs:
+        #   codeinfo.cmdline_params =f"""train config.yml --restart checkpoints/model.ckpt""".split()
 
         # Save the checkpoints folder
-        #if 'checkpoints' in self.inputs and self.inputs.restart.value==True:
-        #    meta_config_dict['restart_latest'] = True
-        #    checkpoints_folder = self.inputs.checkpoints
-        #    folder.get_subfolder('checkpoints', create=True)  # Create the checkpoints directory
-        #    for checkpoint_file in checkpoints_folder.list_object_names():
+        if 'checkpoints' in self.inputs:
+
+            codeinfo.cmdline_params =f"""train config.yml --restart checkpoints/model.ckpt""".split()   
+            
+            checkpoints_folder = self.inputs.checkpoints
+            folder.get_subfolder('checkpoints', create=True)  # Create the checkpoints directory
+            for checkpoint_file in checkpoints_folder.list_object_names():
+                with checkpoints_folder.open(checkpoint_file, 'rb') as source:                    
+                    with folder.open(f'checkpoints/model.ckpt', 'wb') as destination:
+                        destination.write(source.read())
 
         #        if '_epoch' in checkpoint_file and '_swa':
         #            with checkpoints_folder.open(checkpoint_file, 'rb') as source:
@@ -315,12 +257,8 @@ class MetaTrainCalculation(CalcJob):
         #            self.inputs.finetune_model.filename,
         #            "finetune_model.dat",
         #        ),]
-        if do_preprocess:
-            #calcinfo.codes_info = [codeinfo_preprocess, codeinfo, codeinfo_postprocess1, codeinfo_postprocess1b, codeinfo_postprocess2]
-            calcinfo.codes_info = [codeinfo_preprocess, codeinfo]
-        else:
-            #calcinfo.codes_info = [codeinfo, codeinfo_postprocess1, codeinfo_postprocess1b, codeinfo_postprocess2]
-            calcinfo.codes_info = [codeinfo]
+        
+        calcinfo.codes_info = [codeinfo]
         calcinfo.retrieve_list = ['model.ckpt', 'meta.out', 'model.pt', '_scheduler-std*', 'outputs']
 
         return calcinfo

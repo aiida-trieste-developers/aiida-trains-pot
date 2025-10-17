@@ -34,7 +34,7 @@ class EvaluationCalculation(CalcJob):
         spec.inputs["metadata"]["options"]["parser_name"].default = "trains_pot.evaluation"
 
         # new ports
-        spec.input_namespace("mace_potentials", valid_type=SinglefileData, required=True, help="Mace potentials",)
+        spec.input_namespace("ase_potentials", valid_type=SinglefileData, required=True, help="Potentials for use in ASE",)        
         spec.input_namespace("datasets", valid_type=PESData, required=True, help="Datasets to evaluate with the potentials.",)
         spec.output_namespace("evaluated_datasets", valid_type=PESData, help="Dataset of evaluated configurations.",)
         spec.output_namespace("rmse", valid_type=Dict, help="Root mean square errors between DFT and DNN quantities for the different sets and potentials.")
@@ -61,7 +61,7 @@ class EvaluationCalculation(CalcJob):
         
         
         n_pot = 0
-        for _, pot in self.inputs.mace_potentials.items():
+        for _, pot in self.inputs.ase_potentials.items():
             n_pot += 1
             calcinfo.local_copy_list.append((pot.uuid, pot.filename, f"potential_{n_pot}.dat"))
 

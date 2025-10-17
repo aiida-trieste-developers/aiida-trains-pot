@@ -3,13 +3,14 @@
 from ase.io import read
 import glob
 import numpy as np
-from mace.calculators import MACECalculator
+
 from prettytable import PrettyTable
 import torch
 import re
 import logging
 import sys
 import time
+
 
 def get_parity_data(dataset):
     """Get data for parity plots from dataset
@@ -121,6 +122,33 @@ def rmse_table(RMSE) -> PrettyTable:
     return table
 
 
+def load_potentials(potential_files):
+    calculators = []
+
+    # --- Try loading as MACE potentials ---
+    try:
+        from mace.calculators import MACECalculator
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        calculators = [MACECalculator(pot, device=device) for pot in potential_files]
+        logging.info(f"Loaded {len(calculators)} MACE potentials using {device}.")
+        return calculators  # ✅ success, return here
+
+    except Exception as e:
+        logging.warning(f"Failed to load MACE potentials: {e}")
+
+    # --- Try loading as METAtomic potentials ---
+    try:
+        from metatomic.torch.ase_calculator import MetatomicCalculator
+        calculators = [MetatomicCalculator(pot, extensions_directory='extensions/') for pot in potential_files]
+        logging.info(f"Loaded {len(calculators)} METAtomic potentials.")
+        return calculators  # ✅ success, return here
+
+    except Exception as e:
+        logging.error(f"Failed to load METAtomic potentials: {e}")
+
+    # --- If both failed ---
+    logging.error("❌ Unable to load any potential (MACE or METAtomic).")
+    return None
 
 def global_rmse(dataset):
     """Calculate global root mean square error between DFT and DNN
@@ -282,14 +310,8 @@ def main(log_freq=100):
     datasets = glob.glob('dataset*xyz')
 
     logging.info('Loading potentials...')
-    if torch.cuda.is_available():
-        calculators = [MACECalculator(potential_file, device='cuda') for potential_file in potential_files]
-    else:
-        calculators = [MACECalculator(potential_file, device='cpu') for potential_file in potential_files]
-    
-    logging.info(f'Loaded {len(calculators)} potentials.\n')
 
-   
+    calculators =load_potentials(potential_files)    
 
     for jj, dataset in enumerate(datasets):
         dataset_name = dataset.replace('.xyz','')
