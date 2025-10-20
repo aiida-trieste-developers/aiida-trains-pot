@@ -54,7 +54,7 @@ class MetaTrainCalculation(CalcJob):
         spec.input("training_set", valid_type=PESData, help="Training dataset list",)
         spec.input("validation_set", valid_type=PESData, help="Validation dataset list",)
         spec.input("test_set", valid_type=PESData, help="Test dataset list",)
-        spec.input("meta_config", valid_type=Dict, help="Config parameters for METATrain",)
+        spec.input("meta_config", valid_type=Dict, help="Config parameters for METATrain", required=False)
         spec.input("checkpoints", valid_type=FolderData, help="Checkpoints file", required=False)
         spec.input("do_preprocess", valid_type=Bool, help="Perform preprocess", required=False, default=lambda:Bool(False))
         spec.input("preprocess_code", valid_type=Code, help="Preprocess code, required if do_preprocess is True", required=False)

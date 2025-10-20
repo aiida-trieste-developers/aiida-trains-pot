@@ -118,6 +118,7 @@ class ExplorationWorkChain(WorkChain):
             ),
             cls.finalize_md,            
         )     
+    
 
     def run_md(self):
         """Run MD simulations for each structure and MD parameter set, with retries on failure."""
@@ -139,11 +140,11 @@ class ExplorationWorkChain(WorkChain):
                     generate_pair_coeff = False
             
             # Pair coefficients for MACE potential without hybrid/overlay is always generated, if needed it is overwritten
-            if generate_pair_coeff:
-                if 'mace' in self.inputs.potential_pair_style.value:
-                    pair_coeffs = [get_mace_pair_coeff(inputs.lammps.structure, hybrid=False)]
+            if generate_pair_coeff:               
                 if 'metatomic' in self.inputs.potential_pair_style.value:
                     pair_coeffs = [get_meta_pair_coeff(inputs.lammps.structure, hybrid=False)]
+                else:
+                    pair_coeffs = [get_mace_pair_coeff(inputs.lammps.structure, hybrid=False)]
                 
             params_list = self.inputs.params_list.get_list()
             input_parameters = self.inputs.parameters.get_dict()
@@ -155,14 +156,13 @@ class ExplorationWorkChain(WorkChain):
                 if self.inputs.protocol == 'vdw_d2':
                     if 'potential' in self.inputs.parameters:
                         if 'potential_style_options' not in self.inputs.parameters['potential']:
-                            input_parameters['potential']['potential_style_options'] = str(self.inputs.potential_pair_style.value) + ' momb 20.0 0.75 20.0'
+                            input_parameters['potential']['potential_style_options'] = 'mace no_domain_decomposition momb 20.0 0.75 20.0'
                     else:
-                        input_parameters['potential'] = {'potential_style_options': str(self.inputs.potential_pair_style.value) + ' momb 20.0 0.75 20.0'}
+                        input_parameters['potential'] = {'potential_style_options': 'mace no_domain_decomposition momb 20.0 0.75 20.0'}
                     if generate_pair_coeff:
                         # Generate DFT-D2 pair coefficients, it overwrites the MACE pair_coeff generated above
-                        pair_coeffs = get_dftd2_pair_coeffs(inputs.lammps.structure)
-                        if 'mace' in self.inputs.potential_pair_style.value:
-                            pair_coeffs.append(get_mace_pair_coeff(inputs.lammps.structure, hybrid=True))
+                        pair_coeffs = get_dftd2_pair_coeffs(inputs.lammps.structure)                        
+                        pair_coeffs.append(get_mace_pair_coeff(inputs.lammps.structure, hybrid=True))
                         #if 'metatomic' in self.inputs.potential_pair_style.value:
                         #    pair_coeffs.append(get_meta_pair_coeff(inputs.lammps.structure, hybrid=True))                        
             input_parameters['potential']['pair_coeff_list'] = pair_coeffs
