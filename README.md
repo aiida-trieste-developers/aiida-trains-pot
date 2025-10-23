@@ -30,7 +30,7 @@ pip install .
 
 3. Install codes for Quantum ESPRESSO, MACE (pre-process, train and post-process), LAMMPS. Examples of configuration yaml file can be found in examples/setup_codes.
 
-4. Install `PortableCode` for committee evalution:
+1. Install `PortableCode` for committee evalution:
 
 ```
 portable_codes_installation
@@ -62,6 +62,6 @@ This project was supported by:
 <p align="center">
   <img src="docs/Università degli Studi di Trieste Logo.jpeg" alt="Università degli Studi di Trieste Logo" height="110" style="filter: invert(1);"/>
   <img src="docs/sissa-logo.png" alt="SISSA Logo" width="100"/>
-  <img src="docs/MAX.png" alt="MaX Centre Logo" height="110"/> 
+  <img src="docs/MAX.png" alt="MaX Centre Logo" height="110"/>
   <img src="docs/icsc-logo.png" alt="Centro Nazionale di Ricerca Logo" height="110"/>
 </p>

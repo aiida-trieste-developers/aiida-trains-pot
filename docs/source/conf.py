@@ -1,5 +1,5 @@
-#
-# aiida-wannier90-workflows documentation build configuration file.
+"""Sphinx configuration file for AiiDA-TrainsPot-workflow documentation."""
+
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -9,32 +9,29 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-import time
 import os
 import sys
-import aiida
-
-import aiida_trains_pot
-
-from aiida.manage.configuration import Profile, load_profile
 
 sys.path.insert(0, os.path.abspath("../"))  # Adjust as necessary
 from aiida import load_profile
+
 try:
     load_profile()
 except Exception as e:
     print(f"Error loading AiiDA profile: {e}")
-#aiida.load_profile()
+# aiida.load_profile()
 
-#load_profile(Profile("docs", {"process_control": {}, "storage": {}}))
+# load_profile(Profile("docs", {"process_control": {}, "storage": {}}))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'AiiDA-TrainsPot'
-copyright = '2024, Università degli Studi di Trieste and Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy'
-author = 'Nataliia Manko, Davide Bidoggia, Maria Peressi, Antimo Marrazzo'
-release = '1.0.0'
+project = "AiiDA-TrainsPot"
+copyright = (
+    "2024, Università degli Studi di Trieste and Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy"
+)
+author = "Nataliia Manko, Davide Bidoggia, Maria Peressi, Antimo Marrazzo"
+release = "1.0.0"
 
 # -- General configuration ------------------------------------------------
 
@@ -44,7 +41,7 @@ release = '1.0.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-autodoc_mock_imports = [ ]
+autodoc_mock_imports = []
 
 
 extensions = [
@@ -69,9 +66,7 @@ intersphinx_mapping = {
 
 # Settings for the `sphinx_copybutton` extension
 copybutton_selector = "div:not(.no-copy)>div.highlight pre"
-copybutton_prompt_text = (
-    r">>> |\.\.\. |(?:\(.*\) )?\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
-)
+copybutton_prompt_text = r">>> |\.\.\. |(?:\(.*\) )?\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
 
 # Add any paths that contain templates here, relative to this directory.

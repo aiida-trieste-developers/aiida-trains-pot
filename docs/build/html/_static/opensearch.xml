@@ -6,5 +6,5 @@
   <Url type="text/html" method="get"
        template="https://aiida.readthedocs.io/projects/aiida-core/en/latest/search.html?q={searchTerms}"/>
   <LongName>AiiDA-TrainsPot 1.0.0 documentation</LongName>
-  
+
 </OpenSearchDescription>
