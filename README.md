@@ -60,8 +60,8 @@ This project was supported by:
 - **[EU Centre of Excellence "MaX – Materials Design at the Exascale"](https://www.max-centre.eu/)**
 
 <p align="center">
-  <img src="docs/Università degli Studi di Trieste Logo.jpeg" alt="Università degli Studi di Trieste Logo" width="250" style="filter: invert(1);"/>
+  <img src="docs/Università degli Studi di Trieste Logo.jpeg" alt="Università degli Studi di Trieste Logo" height="110" style="filter: invert(1);"/>
   <img src="docs/sissa-logo.png" alt="SISSA Logo" width="100"/>
-  <img src="docs/MAX.png" alt="MaX Centre Logo" width="250"/> 
-  <img src="docs/icsc-logo.png" alt="Centro Nazionale di Ricerca Logo" width="250"/>
+  <img src="docs/MAX.png" alt="MaX Centre Logo" height="110"/> 
+  <img src="docs/icsc-logo.png" alt="Centro Nazionale di Ricerca Logo" height="110"/>
 </p>
