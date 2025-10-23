@@ -11,4 +11,3 @@ The following data type is included to store potential, energy, stress data:
 **PES Data**
   .. autoclass:: aiida_trains_pot.data.pesdata.PESData
      :members:
-

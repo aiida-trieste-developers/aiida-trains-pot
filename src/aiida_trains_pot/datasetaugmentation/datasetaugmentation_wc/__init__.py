@@ -1,5 +1,4 @@
-"""
-DataGenerationWorkChain
+"""DataGenerationWorkChain.
 
 AiiDA workchain to generate data for training and testing of neural networks.
 """

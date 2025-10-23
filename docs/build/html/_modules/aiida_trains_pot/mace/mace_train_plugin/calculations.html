@@ -8,15 +8,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>aiida_trains_pot.mace.mace_train_plugin.calculations &#8212; AiiDA-TrainsPot 1.0.0 documentation</title>
-  
-  
-  
+
+
+
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!-- 
-    this give us a css class that will be invisible only if js is disabled 
+  <!--
+    this give us a css class that will be invisible only if js is disabled
   -->
   <noscript>
     <style>
@@ -24,7 +24,7 @@
 
     </style>
   </noscript>
-  
+
   <!-- Loaded before other Sphinx assets -->
   <link href="../../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
@@ -34,7 +34,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/aiida-custom.css?v=6068527c" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/aiida-qe-custom.css?v=22becb0f" />
-  
+
   <!-- So that users can add custom icons -->
   <script src="../../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -57,22 +57,22 @@
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   </head>
-  
-  
+
+
   <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  
-  
+
+
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
-  
+
   <div id="pst-scroll-pixel-helper"></div>
-  
+
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-  
+
   <dialog id="pst-search-dialog">
-    
+
 <form class="bd-search d-flex align-items-center"
       action="../../../../search.html"
       method="get">
@@ -94,52 +94,52 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-  
+
     <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
     </header>
-  
+
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
-      
-      
-      
-        
-      
+
+
+
+
+
       <dialog id="pst-primary-sidebar-modal"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
-        
 
-  
+
+
   <div class="sidebar-header-items sidebar-primary__section">
-    
-    
-    
-    
+
+
+
+
   </div>
-  
+
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
-  
-    
-  
+
+
+
 
 <a class="navbar-brand logo" href="../../../../index.html">
-  
-  
-  
-  
-  
-    
-    
-      
-    
-    
+
+
+
+
+
+
+
+
+
+
     <img src="../../../../_static/logo.png" class="logo__image only-light" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
     <img src="../../../../_static/logo.png" class="logo__image only-dark pst-js-only" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
-  
-  
+
+
 </a></div>
         <div class="sidebar-primary-item">
 
@@ -150,7 +150,7 @@
 </button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        
+
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../../../../index.html">
@@ -210,39 +210,39 @@
     </div>
 </nav></div>
     </div>
-  
-  
+
+
   <div class="sidebar-primary-items__end sidebar-primary__section">
   </div>
-  
+
   <div id="rtd-footer-container"></div>
 
 
       </div>
-      
+
       <main id="main-content" class="bd-main" role="main">
-        
-        
+
+
 
 <div class="sbt-scroll-pixel-helper"></div>
 
           <div class="bd-content">
             <div class="bd-article-container">
-              
+
               <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
-  
+
     <div class="header-article-items__start">
-      
+
         <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
 </button></div>
-      
+
     </div>
-  
-  
+
+
     <div class="header-article-items__end">
-      
+
         <div class="header-article-item">
 
 <div class="article-header-buttons">
@@ -256,15 +256,15 @@
     <i class="fab fa-github"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fab fa-github"></i>
@@ -272,16 +272,16 @@
 <span class="btn__text-container">Repository</span>
 </a>
 </li>
-      
-      
-      
-      
+
+
+
+
       <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/issues/new?title=Issue%20on%20page%20%2F_modules/aiida_trains_pot/mace/mace_train_plugin/calculations.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-lightbulb"></i>
@@ -289,7 +289,7 @@
 <span class="btn__text-container">Open issue</span>
 </a>
 </li>
-      
+
   </ul>
 </div>
 
@@ -307,29 +307,29 @@
 </button>
 
 </div></div>
-      
+
     </div>
-  
+
 </div>
 </div>
-              
-              
+
+
 
 <div id="jb-print-docs-body" class="onlyprint">
     <h1></h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
-            
+
         </div>
     </div>
 </div>
 
-              
-                
+
+
 <div id="searchbox"></div>
                 <article class="bd-article">
-                  
+
   <h1>Source code for aiida_trains_pot.mace.mace_train_plugin.calculations</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">AiiDA calculation plugin for the MACE training code.</span>
@@ -400,7 +400,7 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s2">&quot;protocol&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">Str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Protocol for the calculation {&#39;naive-finetune&#39; or &#39;replay-finetune&#39;}&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">validator</span><span class="o">=</span><span class="n">validate_protocol</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s2">&quot;finetune_model&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">SinglefileData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Model to finetune&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="s2">&quot;finetune_replay_dataset&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">PESData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Dataset for replay finetune&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">validator</span> <span class="o">=</span> <span class="n">validate_inputs</span>     
+        <span class="n">spec</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">validator</span> <span class="o">=</span> <span class="n">validate_inputs</span>
 
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;model_stage1_lammps&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">SinglefileData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Stage 1 model compiled for LAMMPS&quot;</span><span class="p">,)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;model_stage1_ase&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">SinglefileData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Stage 1 model compiled for ASE&quot;</span><span class="p">,)</span>
@@ -409,19 +409,19 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;model_stage2_lammps&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">SinglefileData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Stage 2 model compiled for LAMMPS&quot;</span><span class="p">,)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;model_stage2_ase&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">SinglefileData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Stage 2 model compiled for ASE&quot;</span><span class="p">,)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;model_stage2_pytorch&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">SinglefileData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Stage 2 model not compiled&quot;</span><span class="p">,)</span>
-        
-        <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;mace_out&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">SinglefileData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Mace output file&quot;</span><span class="p">,)</span>       
+
+        <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;mace_out&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">SinglefileData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Mace output file&quot;</span><span class="p">,)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;logs&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">FolderData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Logs file&quot;</span><span class="p">,)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;checkpoints&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">FolderData</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Checkpoints file&quot;</span><span class="p">,)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;RMSE&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">List</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;List of the checkpoints result table&quot;</span><span class="p">,)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="s2">&quot;results&quot;</span><span class="p">,</span> <span class="n">valid_type</span><span class="o">=</span><span class="n">List</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;List of the results of log file&quot;</span><span class="p">,)</span>
-        
+
 
         <span class="n">spec</span><span class="o">.</span><span class="n">exit_code</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s2">&quot;ERROR_MISSING_OUTPUT_FILES&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Calculation did not produce all expected output files.&quot;</span><span class="p">,)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">exit_code</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;ERROR_OUT_OF_WALLTIME&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;The calculation stopped prematurely because it ran out of walltime.&quot;</span><span class="p">,</span> <span class="p">)</span></div>
 
-        
-    
+
+
 <div class="viewcode-block" id="MaceTrainCalculation.prepare_for_submission">
 <a class="viewcode-back" href="../../../../module_guide/calculations/index.html#aiida_trains_pot.mace.mace_train_plugin.calculations.MaceTrainCalculation.prepare_for_submission">[docs]</a>
     <span class="k">def</span> <span class="nf">prepare_for_submission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder</span><span class="p">):</span>
@@ -439,9 +439,9 @@
             <span class="k">if</span> <span class="s1">&#39;preprocess_code&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Preprocess code is required if do_preprocess is True&quot;</span><span class="p">)</span>
             <span class="n">preprocess_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">preprocess_code</span>
-        
 
-        
+
+
         <span class="k">if</span> <span class="n">do_preprocess</span><span class="p">:</span>
             <span class="n">codeinfo_preprocess</span> <span class="o">=</span> <span class="n">datastructures</span><span class="o">.</span><span class="n">CodeInfo</span><span class="p">()</span>
             <span class="n">codeinfo_preprocess</span><span class="o">.</span><span class="n">code_uuid</span> <span class="o">=</span> <span class="n">preprocess_code</span><span class="o">.</span><span class="n">uuid</span>
@@ -467,17 +467,17 @@
         <span class="n">codeinfo_postprocess1b</span> <span class="o">=</span> <span class="n">datastructures</span><span class="o">.</span><span class="n">CodeInfo</span><span class="p">()</span>
         <span class="n">codeinfo_postprocess1b</span><span class="o">.</span><span class="n">code_uuid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">postprocess_code</span><span class="o">.</span><span class="n">uuid</span>
         <span class="n">codeinfo_postprocess1b</span><span class="o">.</span><span class="n">cmdline_params</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;aiida_stagetwo.model&quot;</span><span class="p">]</span>
-        
+
         <span class="n">codeinfo_postprocess2</span> <span class="o">=</span> <span class="n">datastructures</span><span class="o">.</span><span class="n">CodeInfo</span><span class="p">()</span>
         <span class="n">codeinfo_postprocess2</span><span class="o">.</span><span class="n">code_uuid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">postprocess_code</span><span class="o">.</span><span class="n">uuid</span>
         <span class="n">codeinfo_postprocess2</span><span class="o">.</span><span class="n">cmdline_params</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;aiida.model&quot;</span><span class="p">]</span>
 
         <span class="n">codeinfo</span> <span class="o">=</span> <span class="n">datastructures</span><span class="o">.</span><span class="n">CodeInfo</span><span class="p">()</span>
-        <span class="n">codeinfo</span><span class="o">.</span><span class="n">cmdline_params</span> <span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;--config config.yml&quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>                 
+        <span class="n">codeinfo</span><span class="o">.</span><span class="n">cmdline_params</span> <span class="o">=</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;--config config.yml&quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
 
         <span class="n">codeinfo</span><span class="o">.</span><span class="n">code_uuid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">uuid</span>
         <span class="n">codeinfo</span><span class="o">.</span><span class="n">stdout_name</span> <span class="o">=</span> <span class="s2">&quot;mace.out&quot;</span>
-        
+
         <span class="n">training_txt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">training_set</span><span class="o">.</span><span class="n">get_txt</span><span class="p">(</span><span class="n">write_params</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">key_prefix</span><span class="o">=</span><span class="s1">&#39;dft&#39;</span><span class="p">)</span>
         <span class="n">validation_txt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">validation_set</span><span class="o">.</span><span class="n">get_txt</span><span class="p">(</span><span class="n">write_params</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">key_prefix</span><span class="o">=</span><span class="s1">&#39;dft&#39;</span><span class="p">)</span>
         <span class="n">test_txt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">test_set</span><span class="o">.</span><span class="n">get_txt</span><span class="p">(</span><span class="n">write_params</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">key_prefix</span><span class="o">=</span><span class="s1">&#39;dft&#39;</span><span class="p">)</span>
@@ -489,22 +489,22 @@
         <span class="k">with</span> <span class="n">folder</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;test.xyz&#39;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
             <span class="n">handle</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">test_txt</span><span class="p">)</span>
 
-        
-        
+
+
         <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;seed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">do_preprocess</span><span class="p">:</span>
-            <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;train_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;processed_data/train/&quot;</span>   
+            <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;train_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;processed_data/train/&quot;</span>
             <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;valid_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;processed_data/val/&quot;</span>
-            <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;test_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;processed_data/test/&quot;</span>    
+            <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;test_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;processed_data/test/&quot;</span>
             <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;statistics_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;processed_data/statistics.json&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;train_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;training.xyz&quot;</span>   
+            <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;train_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;training.xyz&quot;</span>
             <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;valid_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;validation.xyz&quot;</span>
             <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;test_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;test.xyz&quot;</span>
 
-        <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;energy_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dft_energy&quot;</span> 
-        <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;forces_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dft_forces&quot;</span> 
-        <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;stress_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dft_stress&quot;</span>  
+        <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;energy_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dft_energy&quot;</span>
+        <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;forces_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dft_forces&quot;</span>
+        <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;stress_key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dft_stress&quot;</span>
 
         <span class="k">if</span> <span class="s1">&#39;E0s&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mace_config_dict</span><span class="p">:</span>
             <span class="n">e0s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">training_set</span><span class="o">.</span><span class="n">get_e0s</span><span class="p">()</span>
@@ -579,11 +579,11 @@
                     <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;-(\d+)_&#39;</span><span class="p">,</span> <span class="n">checkpoint_file</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
                         <span class="n">mace_config_dict</span><span class="p">[</span><span class="s1">&#39;seed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-                    <span class="k">with</span> <span class="n">checkpoints_folder</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">source</span><span class="p">:</span>                        
+                    <span class="k">with</span> <span class="n">checkpoints_folder</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">source</span><span class="p">:</span>
                         <span class="k">with</span> <span class="n">folder</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;checkpoints/</span><span class="si">{</span><span class="n">checkpoint_file</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">destination</span><span class="p">:</span>
                             <span class="n">destination</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
                 <span class="k">elif</span> <span class="s1">&#39;_epoch&#39;</span> <span class="ow">in</span> <span class="n">checkpoint_file</span><span class="p">:</span>
-                    <span class="k">with</span> <span class="n">checkpoints_folder</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">source</span><span class="p">:</span>                        
+                    <span class="k">with</span> <span class="n">checkpoints_folder</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">checkpoint_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">source</span><span class="p">:</span>
                         <span class="k">with</span> <span class="n">folder</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;checkpoints/</span><span class="si">{</span><span class="n">checkpoint_file</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">destination</span><span class="p">:</span>
                             <span class="n">destination</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
 
@@ -609,64 +609,64 @@
 </pre></div>
 
                 </article>
-              
 
-              
-              
-              
-              
+
+
+
+
+
                 <footer class="prev-next-footer d-print-none">
-                  
+
 <div class="prev-next-area">
 </div>
                 </footer>
-              
+
             </div>
-            
-            
-              
-            
+
+
+
+
           </div>
           <footer class="bd-footer-content">
-            
+
 <div class="bd-footer-content__inner container">
-  
+
   <div class="footer-item">
-    
+
 <p class="component-author">
 By Nataliia Manko, Davide Bidoggia, Maria Peressi, Antimo Marrazzo
 </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
 
   <p class="copyright">
-    
+
       © Copyright 2024, Università degli Studi di Trieste and Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
       <br/>
-    
+
   </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
 </div>
           </footer>
-        
+
 
       </main>
     </div>
   </div>
-  
+
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
   <script defer src="../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
 <script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>

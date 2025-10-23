@@ -20,14 +20,14 @@ Welcome to AiiDA-TrainsPot, the AiiDA_ workflow that Trains a Potential for you.
 
 .. |MACE_logo| image:: images/MACE_logo.png
     :width: 10%
-    
+
 Remote Machine Requirements
 ===========================
 
 AiiDA-TrainsPot requires the following software installed on the remote machine:
 
-- |Quantum ESPRESSO|_ (at least `pw.x` executable) 
-- MACE_ and PyYAML_ (preferably within a Python environment) 
+- |Quantum ESPRESSO|_ (at least `pw.x` executable)
+- MACE_ and PyYAML_ (preferably within a Python environment)
 - LAMMPS_ with MACE extension
 
 
@@ -52,7 +52,7 @@ For more information on how to install AiiDA and the required services in differ
    git clone git@github.com:aiidaplugins/aiida-lammps.git
    cd aiida-lammps
    pip install .
-   
+
 3. Install codes for Quantum ESPRESSO, MACE (pre-process, train, and post-process), and LAMMPS. Examples of configuration YAML files can be found in `examples/setup_codes`.
 
 4. Install `PortableCode` for committee evaluation:
@@ -60,7 +60,7 @@ For more information on how to install AiiDA and the required services in differ
 .. code-block:: bash
 
    portable_codes_installation
-   
+
 If needed, specify in the prepend command the activation command for the Python environment where MACE was installed.
 
 Contributing
@@ -94,12 +94,12 @@ This project was supported by:
    <p align="center">
      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgTBDFRADTwpIJqho2NDfWrdCgIMTxFnlHBA&s" alt="Università degli Studi di Trieste Logo" width="250" style="filter: invert(1);"/>
      <img src="https://www.sissa.it/themes/custom/sissa/images/logo-type.svg" alt="SISSA Logo" width="100"/>
-     <img src="https://www.max-centre.eu/sites/default/files/styles/news_responsive/public/MaX_900x600.jpg" alt="MaX Centre Logo" width="250"/> 
+     <img src="https://www.max-centre.eu/sites/default/files/styles/news_responsive/public/MaX_900x600.jpg" alt="MaX Centre Logo" width="250"/>
      <img src="https://www.supercomputing-icsc.it/wp-content/uploads/2022/10/logoxweb.svg" alt="Centro Nazionale di Ricerca Logo" width="250"/>
    </p>
 
 
-    
+
 .. |aiida-core| replace:: ``aiida-core``
 .. _aiida-core: https://aiida.readthedocs.io/projects/aiida-core/en/latest/intro/get_started.html
 
@@ -137,4 +137,3 @@ This project was supported by:
 .. _NCCR MARVEL: http://nccr-marvel.ch/
 .. _MaX – Materials Design at the Exascale: http://www.max-centre.eu/
 .. _`swissuniversities P-5 project "Materials Cloud"`: https://www.materialscloud.org/swissuniversities
-

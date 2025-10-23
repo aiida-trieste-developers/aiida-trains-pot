@@ -6,12 +6,9 @@ This section describes the various workchains, calculations, parsers, and data t
 
 .. toctree::
     :maxdepth: 3
-    
+
     ./workchains/index
     ./calculations/index
     parsers
     datatypes
     scripts
-    
-    
-
