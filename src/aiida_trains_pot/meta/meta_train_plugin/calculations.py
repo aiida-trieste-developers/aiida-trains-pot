@@ -116,96 +116,48 @@ class MetaTrainCalculation(CalcJob):
         with folder.open('test.xyz', "w") as handle:
             handle.write(test_txt)
 
-        if 'training_set' not in meta_config_dict:
-            meta_config_dict['training_set'] = {}
+        if 'finetune_model' not in self.inputs:
+            if 'training_set' not in meta_config_dict:
+                meta_config_dict['training_set'] = {}            
+            
+            if 'systems' not in meta_config_dict['training_set']:
+                meta_config_dict['training_set']['systems'] = {}
+
+            if 'targets' not in meta_config_dict['training_set']:
+                meta_config_dict['training_set']['targets'] = {}
+
+            if 'energy' not in meta_config_dict['training_set']['targets']:
+                meta_config_dict['training_set']['targets']['energy'] = {}
+
+            meta_config_dict['training_set']['systems']['read_from'] = "training.xyz"
+            meta_config_dict['training_set']['systems']['reader'] = "ase"
+            meta_config_dict['training_set']['systems']['length_unit'] = "angstrom"
+
+            meta_config_dict['training_set']['targets']['energy']['read_from'] = "training.xyz"
+            meta_config_dict['training_set']['targets']['energy']['reader'] = "ase"
+            meta_config_dict['training_set']['targets']['energy']['key'] = "dft_energy"
+            meta_config_dict['training_set']['targets']['energy']['unit'] = "eV"
+
+            if 'test_set' not in meta_config_dict:
+                meta_config_dict['test_set'] = copy.deepcopy(meta_config_dict['training_set'])
+
+            meta_config_dict['test_set']['systems']['read_from'] = "test.xyz"
+            meta_config_dict['test_set']['targets']['energy']['read_from'] = "test.xyz"
+
+            if 'validation_set' not in meta_config_dict:
+                meta_config_dict['validation_set'] = copy.deepcopy(meta_config_dict['training_set'])
+
+            meta_config_dict['validation_set']['systems']['read_from'] = "validation.xyz"
+            meta_config_dict['validation_set']['targets']['energy']['read_from'] = "validation.xyz"
+       
+
+        finetune = False
+        if 'finetune_model' in self.inputs:
+            finetune = True
         
-        
-        if 'systems' not in meta_config_dict['training_set']:
-            meta_config_dict['training_set']['systems'] = {}
-
-        if 'targets' not in meta_config_dict['training_set']:
-            meta_config_dict['training_set']['targets'] = {}
-
-        if 'energy' not in meta_config_dict['training_set']['targets']:
-            meta_config_dict['training_set']['targets']['energy'] = {}
-
-        if 'forces' not in meta_config_dict['training_set']['targets']['energy']:
-            meta_config_dict['training_set']['targets']['energy']['forces'] = {}
-
-        if 'stress' not in meta_config_dict['training_set']['targets']['energy']:
-            meta_config_dict['training_set']['targets']['energy']['stress'] = {}
-
-
-        meta_config_dict['training_set']['systems']['read_from'] = "training.xyz"
-        meta_config_dict['training_set']['systems']['reader'] = "ase"
-        meta_config_dict['training_set']['systems']['length_unit'] = None
-
-        meta_config_dict['training_set']['targets']['energy']['quantity'] = "energy"
-        meta_config_dict['training_set']['targets']['energy']['read_from'] = "training.xyz"
-        meta_config_dict['training_set']['targets']['energy']['reader'] = "ase"
-        meta_config_dict['training_set']['targets']['energy']['key'] = "dft_energy"
-        meta_config_dict['training_set']['targets']['energy']['unit'] = None
-        meta_config_dict['training_set']['targets']['energy']['forces']['read_from'] = "training.xyz"
-        meta_config_dict['training_set']['targets']['energy']['forces']['reader'] = "ase"
-        meta_config_dict['training_set']['targets']['energy']['forces']['key'] = "dft_forces"
-        meta_config_dict['training_set']['targets']['energy']['stress']['read_from'] = "training.xyz"
-        meta_config_dict['training_set']['targets']['energy']['stress']['reader'] = "ase"
-        meta_config_dict['training_set']['targets']['energy']['stress']['key'] = "dft_stress"
-
-
-        meta_config_dict['test_set'] = copy.deepcopy(meta_config_dict['training_set'])
-
-        meta_config_dict['test_set']['systems']['read_from'] = "test.xyz"
-        meta_config_dict['test_set']['targets']['energy']['read_from'] = "test.xyz"
-        meta_config_dict['test_set']['targets']['energy']['forces']['read_from'] = "test.xyz"
-        meta_config_dict['test_set']['targets']['energy']['stress']['read_from'] = "test.xyz"
-
-
-        meta_config_dict['validation_set'] = copy.deepcopy(meta_config_dict['training_set'])
-
-        meta_config_dict['validation_set']['systems']['read_from'] = "validation.xyz"
-        meta_config_dict['validation_set']['targets']['energy']['read_from'] = "validation.xyz"
-        meta_config_dict['validation_set']['targets']['energy']['forces']['read_from'] = "validation.xyz"
-        meta_config_dict['validation_set']['targets']['energy']['stress']['read_from'] = "validation.xyz"
-
-        
-
-        #finetune = False
-        #if 'protocol' in self.inputs:
-        #    finetune = True
-        #    if self.inputs.protocol.value == "naive-finetune":
-        #        meta_config_dict['foundation_model'] = "finetune_model.dat"
-        #        meta_config_dict['multiheads_finetuning'] = False
-        #    if self.inputs.protocol.value == "replay-finetune":
-        #        meta_config_dict['foundation_model'] = "finetune_model.dat"
-        #        meta_config_dict['multiheads_finetuning'] = True
-        #        replay_txt = self.inputs.finetune_replay_dataset.get_txt(write_params=False, key_prefix='dft')
-        #        with folder.open('replay.xyz', "w") as handle:
-        #            handle.write(replay_txt)
-        #        meta_config_dict['pt_train_file'] = "replay.xyz"
-        #        if 'E0s' in meta_config_dict and meta_config_dict['E0s'] == "average":
-        #            del meta_config_dict['E0s']
-
-
-        
-
-        # for training_structure in self.inputs.training_set:
-        #     training_dict = dict(training_structure)
-        #     if len(training_dict['symbols']) != 1:
-        #         meta_config_dict['E0s'] = "average"
-        #         break
 
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(meta_config_dict, yaml_file, default_flow_style=False)
-
-        #if not meta_config_dict.get('distributed', False) and self.inputs["metadata"]["options"]["resources"].get('num_mpiprocs_per_machine') > 1:
-        #    meta_config_dict['distributed'] = True
-
-                   
-
-        #if 'checkpoints' in self.inputs:
-        #   codeinfo.cmdline_params =f"""train config.yml --restart checkpoints/model.ckpt""".split()
-
         # Save the checkpoints folder
         if 'checkpoints' in self.inputs:
 
@@ -218,45 +170,16 @@ class MetaTrainCalculation(CalcJob):
                     with folder.open(f'checkpoints/model.ckpt', 'wb') as destination:
                         destination.write(source.read())
 
-        #        if '_epoch' in checkpoint_file and '_swa':
-        #            with checkpoints_folder.open(checkpoint_file, 'rb') as source:
-        #                new_checkpoint_file = f"aiida_run-{str(meta_config_dict['seed'])}_epoch-0_swa.pt"
-        #                with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
-        #                    destination.write(source.read())
-        #        elif '_epoch' in checkpoint_file:
-        #            with checkpoints_folder.open(checkpoint_file, 'rb') as source:
-        #                new_checkpoint_file = f"aiida_run-{str(meta_config_dict['seed'])}_epoch-0.pt"
-        #                with folder.open(f'checkpoints/{new_checkpoint_file}', 'wb') as destination:
-        #                    destination.write(source.read())
-
-        #if 'checkpoints_restart' in self.inputs:
-        #    meta_config_dict['restart_latest'] = True
-        #    checkpoints_folder = self.inputs.checkpoints_restart
-        #    folder.get_subfolder('checkpoints', create=True)  # Create the checkpoints directory
-        #    for checkpoint_file in checkpoints_folder.list_object_names():
-        #        if '_epoch' in checkpoint_file and '_swa':
-        #            # Regular expression to extract the seed (assumed to be numeric after the first '-')
-        #            match = re.search(r'-(\d+)_', checkpoint_file)
-        #            if match:
-        #                meta_config_dict['seed'] = int(match.group(1))
-        #            with checkpoints_folder.open(checkpoint_file, 'rb') as source:                        
-        #                with folder.open(f'checkpoints/{checkpoint_file}', 'wb') as destination:
-        #                    destination.write(source.read())
-        #        elif '_epoch' in checkpoint_file:
-        #            with checkpoints_folder.open(checkpoint_file, 'rb') as source:                        
-        #                with folder.open(f'checkpoints/{checkpoint_file}', 'wb') as destination:
-        #                    destination.write(source.read())
-
         with folder.open('config.yml', 'w') as yaml_file:
             yaml.dump(meta_config_dict, yaml_file, default_flow_style=False)
         calcinfo = datastructures.CalcInfo()
-        #if finetune:
-        #    calcinfo.local_copy_list = [
-        #        (
-        #            self.inputs.finetune_model.uuid,
-        #            self.inputs.finetune_model.filename,
-        #            "finetune_model.dat",
-        #        ),]
+        if finetune:            
+            calcinfo.local_copy_list = [
+                (
+                    self.inputs.finetune_model.uuid,
+                    self.inputs.finetune_model.filename,
+                    "finetune_model.ckpt",
+                ),]
         
         calcinfo.codes_info = [codeinfo]
         calcinfo.retrieve_list = ['model.ckpt', 'meta.out', 'model.pt', '_scheduler-std*', 'outputs']
