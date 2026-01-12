@@ -376,7 +376,6 @@ class TrainsPotWorkChain(WorkChain):
         for specie in atomic_species:
             if specie not in self.inputs.ab_initio_labelling.quantumespresso.pw.pseudos.keys():
                 return self.exit_codes.MISSING_PSEUDOS
-     
     def dataset_augmentation(self):
         """Generate data for the dataset."""
         
