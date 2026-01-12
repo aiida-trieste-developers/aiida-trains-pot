@@ -255,17 +255,6 @@ class MetaBaseParser(Parser):
                 # Simplify model detection logic
                 if "model.pt" in output_filename:
                     self.out("model_stage2_lammps", output_node)
-                #elif "model.pt" in output_filename:
-                #    self.out("model_stage2_ase", output_node)
-                #elif "model.pt" in output_filename:
-                #    self.out("model_stage2_pytorch", output_node)
-
-                #elif 'model.pt' in output_filename:
-                #    self.out("model_stage1_lammps", output_node)
-                #elif 'model.pt' in output_filename:
-                #   self.out("model_stage1_ase", output_node)
-                #elif 'model.pt' in output_filename:
-                #    self.out("model_stage1_pytorch", output_node)                  
                 
                 elif output_filename.endswith("model.ckpt"):
                     folder_node = FolderData()
