@@ -8,15 +8,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>aiida_trains_pot.mace.mace_train_plugin.parsers &#8212; AiiDA-TrainsPot 1.0.0 documentation</title>
-  
-  
-  
+
+
+
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!-- 
-    this give us a css class that will be invisible only if js is disabled 
+  <!--
+    this give us a css class that will be invisible only if js is disabled
   -->
   <noscript>
     <style>
@@ -24,7 +24,7 @@
 
     </style>
   </noscript>
-  
+
   <!-- Loaded before other Sphinx assets -->
   <link href="../../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
@@ -34,7 +34,7 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/aiida-custom.css?v=6068527c" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/aiida-qe-custom.css?v=22becb0f" />
-  
+
   <!-- So that users can add custom icons -->
   <script src="../../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -57,22 +57,22 @@
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
   </head>
-  
-  
+
+
   <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  
-  
+
+
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
-  
+
   <div id="pst-scroll-pixel-helper"></div>
-  
+
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-  
+
   <dialog id="pst-search-dialog">
-    
+
 <form class="bd-search d-flex align-items-center"
       action="../../../../search.html"
       method="get">
@@ -94,52 +94,52 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-  
+
     <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
     </header>
-  
+
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
-      
-      
-      
-        
-      
+
+
+
+
+
       <dialog id="pst-primary-sidebar-modal"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
-        
 
-  
+
+
   <div class="sidebar-header-items sidebar-primary__section">
-    
-    
-    
-    
+
+
+
+
   </div>
-  
+
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
-  
-    
-  
+
+
+
 
 <a class="navbar-brand logo" href="../../../../index.html">
-  
-  
-  
-  
-  
-    
-    
-      
-    
-    
+
+
+
+
+
+
+
+
+
+
     <img src="../../../../_static/logo.png" class="logo__image only-light" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
     <img src="../../../../_static/logo.png" class="logo__image only-dark pst-js-only" alt="AiiDA-TrainsPot 1.0.0 documentation - Home"/>
-  
-  
+
+
 </a></div>
         <div class="sidebar-primary-item">
 
@@ -150,7 +150,7 @@
 </button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        
+
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../../../../index.html">
@@ -210,39 +210,39 @@
     </div>
 </nav></div>
     </div>
-  
-  
+
+
   <div class="sidebar-primary-items__end sidebar-primary__section">
   </div>
-  
+
   <div id="rtd-footer-container"></div>
 
 
       </div>
-      
+
       <main id="main-content" class="bd-main" role="main">
-        
-        
+
+
 
 <div class="sbt-scroll-pixel-helper"></div>
 
           <div class="bd-content">
             <div class="bd-article-container">
-              
+
               <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
-  
+
     <div class="header-article-items__start">
-      
+
         <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
 </button></div>
-      
+
     </div>
-  
-  
+
+
     <div class="header-article-items__end">
-      
+
         <div class="header-article-item">
 
 <div class="article-header-buttons">
@@ -256,15 +256,15 @@
     <i class="fab fa-github"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fab fa-github"></i>
@@ -272,16 +272,16 @@
 <span class="btn__text-container">Repository</span>
 </a>
 </li>
-      
-      
-      
-      
+
+
+
+
       <li><a href="https://github.com/aiida-trieste-developers/aiida-trains-pot/issues/new?title=Issue%20on%20page%20%2F_modules/aiida_trains_pot/mace/mace_train_plugin/parsers.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-lightbulb"></i>
@@ -289,7 +289,7 @@
 <span class="btn__text-container">Open issue</span>
 </a>
 </li>
-      
+
   </ul>
 </div>
 
@@ -307,29 +307,29 @@
 </button>
 
 </div></div>
-      
+
     </div>
-  
+
 </div>
 </div>
-              
-              
+
+
 
 <div id="jb-print-docs-body" class="onlyprint">
     <h1></h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
-            
+
         </div>
     </div>
 </div>
 
-              
-                
+
+
 <div id="searchbox"></div>
                 <article class="bd-article">
-                  
+
   <h1>Source code for aiida_trains_pot.mace.mace_train_plugin.parsers</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Parsers provided by aiida_diff.</span>
@@ -359,7 +359,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">    list of dict: A list containing dictionaries for each parsed table with epoch information.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">SinglefileData</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Node </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s1"> is not a SinglefileData node.&#39;</span><span class="p">)</span>
 
@@ -383,7 +383,7 @@
         <span class="n">epoch_match</span> <span class="o">=</span> <span class="n">epoch_pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">epoch_match</span><span class="p">:</span>
             <span class="n">current_epoch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">epoch_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
-    
+
 
         <span class="c1"># Parse table rows       </span>
         <span class="n">row_match</span> <span class="o">=</span> <span class="n">table_row_pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
@@ -415,7 +415,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">    list: A list of string</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">SinglefileData</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Node </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s1"> is not a SinglefileData node.&#39;</span><span class="p">)</span>
 
@@ -428,14 +428,14 @@
 
     <span class="c1"># Regular expression patterns</span>
     <span class="n">start_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Started training&#39;</span><span class="p">)</span>
-    
+
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
         <span class="c1"># Check for epoch information</span>
         <span class="n">epoch_match</span> <span class="o">=</span> <span class="n">start_pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">epoch_match</span><span class="p">:</span>
             <span class="n">parsed_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-            
+
     <span class="k">return</span> <span class="n">parsed_data</span>
 
 <span class="k">def</span> <span class="nf">parse_complete_from_singlefiledata</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
@@ -448,7 +448,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">    list: A list of string</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">SinglefileData</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Node </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s1"> is not a SinglefileData node.&#39;</span><span class="p">)</span>
 
@@ -461,14 +461,14 @@
 
     <span class="c1"># Regular expression patterns</span>
     <span class="n">start_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Training complete&#39;</span><span class="p">)</span>
-    
+
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
         <span class="c1"># Check for epoch information</span>
         <span class="n">epoch_match</span> <span class="o">=</span> <span class="n">start_pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="n">epoch_match</span><span class="p">:</span>
             <span class="n">parsed_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-            
+
     <span class="k">return</span> <span class="n">parsed_data</span>
 
 <span class="k">def</span> <span class="nf">parse_log_file</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
@@ -502,12 +502,12 @@
                 <span class="n">entry</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
                 <span class="k">continue</span>  <span class="c1"># Skip lines that aren&#39;t valid JSON</span>
-            
+
             <span class="c1"># Check if the entry contains all required keys</span>
             <span class="k">if</span> <span class="n">required_keys</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
                 <span class="c1"># Add the entry to the list</span>
                 <span class="n">parsed_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
-    
+
     <span class="k">return</span> <span class="n">parsed_data</span>
 
 <div class="viewcode-block" id="MaceBaseParser">
@@ -538,16 +538,16 @@
 
 <span class="sd">        :returns: an exit code, if parsing fails (or nothing if parsing succeeds)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        
+
 
         <span class="c1"># Check that folder content is as expected</span>
         <span class="n">files_retrieved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieved</span><span class="o">.</span><span class="n">list_object_names</span><span class="p">()</span>
         <span class="n">files_expected</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;aiida.model&#39;</span><span class="p">]</span>
-        
+
         <span class="c1"># add error of out of walltime</span>
         <span class="k">if</span> <span class="s1">&#39;mace.out&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieved</span><span class="o">.</span><span class="n">list_object_names</span><span class="p">():</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieved</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;mace.out&#39;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
-                <span class="n">output_node</span> <span class="o">=</span> <span class="n">SinglefileData</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">handle</span><span class="p">)</span> 
+                <span class="n">output_node</span> <span class="o">=</span> <span class="n">SinglefileData</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">handle</span><span class="p">)</span>
                 <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parse_start_from_singlefiledata</span><span class="p">(</span><span class="n">output_node</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parse_complete_from_singlefiledata</span><span class="p">(</span><span class="n">output_node</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
                     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_codes</span><span class="o">.</span><span class="n">ERROR_OUT_OF_WALLTIME</span>
 
@@ -562,15 +562,15 @@
         <span class="c1"># add output file</span>
         <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files_retrieved</span><span class="p">:</span>
             <span class="n">output_filename</span> <span class="o">=</span> <span class="n">file</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parsing &#39;</span><span class="si">{</span><span class="n">output_filename</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>         
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parsing &#39;</span><span class="si">{</span><span class="n">output_filename</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="s1">&#39;checkpoint&#39;</span> <span class="ow">in</span> <span class="n">output_filename</span> <span class="ow">or</span> <span class="s1">&#39;logs&#39;</span> <span class="ow">in</span> <span class="n">output_filename</span> <span class="ow">or</span> <span class="s1">&#39;results&#39;</span> <span class="ow">in</span> <span class="n">output_filename</span><span class="p">:</span>
                 <span class="k">if</span> <span class="s1">&#39;results&#39;</span> <span class="ow">in</span> <span class="n">output_filename</span><span class="p">:</span>
                     <span class="n">folder_contents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieved</span><span class="o">.</span><span class="n">list_object_names</span><span class="p">(</span><span class="n">output_filename</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">file_in_folder</span> <span class="ow">in</span> <span class="n">folder_contents</span><span class="p">:</span>
                         <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">file_in_folder</span><span class="p">)</span>
-                        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieved</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>                                           
+                        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieved</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
                             <span class="n">parsed_results</span> <span class="o">=</span> <span class="n">parse_log_file</span><span class="p">(</span><span class="n">SinglefileData</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">handle</span><span class="p">))</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s2">&quot;results&quot;</span><span class="p">,</span> <span class="n">List</span><span class="p">(</span><span class="n">parsed_results</span><span class="p">))</span>    
+                            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s2">&quot;results&quot;</span><span class="p">,</span> <span class="n">List</span><span class="p">(</span><span class="n">parsed_results</span><span class="p">))</span>
                 <span class="k">if</span> <span class="s1">&#39;logs&#39;</span> <span class="ow">in</span> <span class="n">output_filename</span><span class="p">:</span>
                     <span class="n">folder_data</span> <span class="o">=</span> <span class="n">FolderData</span><span class="p">()</span>
                     <span class="n">folder_contents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieved</span><span class="o">.</span><span class="n">list_object_names</span><span class="p">(</span><span class="n">output_filename</span><span class="p">)</span>
@@ -589,7 +589,7 @@
                         <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">file_in_folder</span><span class="p">)</span>
                         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieved</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
                             <span class="n">folder_data</span><span class="o">.</span><span class="n">put_object_from_filelike</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">file_in_folder</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">folder_data</span><span class="p">)</span>       
+                    <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">folder_data</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieved</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
                     <span class="n">output_node</span> <span class="o">=</span> <span class="n">SinglefileData</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">handle</span><span class="p">)</span>
@@ -607,74 +607,74 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s2">&quot;model_stage1_ase&quot;</span><span class="p">,</span> <span class="n">output_node</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="s1">&#39;aiida.model&#39;</span> <span class="ow">in</span> <span class="n">output_filename</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s2">&quot;model_stage1_pytorch&quot;</span><span class="p">,</span> <span class="n">output_node</span><span class="p">)</span>
-                    
+
                 <span class="k">elif</span> <span class="s1">&#39;mace&#39;</span> <span class="ow">in</span> <span class="n">output_filename</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">output_filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.out&#39;</span><span class="p">,</span><span class="s1">&#39;_out&#39;</span><span class="p">),</span> <span class="n">output_node</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s2">&quot;RMSE&quot;</span><span class="p">,</span> <span class="n">List</span><span class="p">(</span><span class="n">parse_tables_from_singlefiledata</span><span class="p">(</span><span class="n">output_node</span><span class="p">)))</span>         
+                    <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="s2">&quot;RMSE&quot;</span><span class="p">,</span> <span class="n">List</span><span class="p">(</span><span class="n">parse_tables_from_singlefiledata</span><span class="p">(</span><span class="n">output_node</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">ExitCode</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
 
                 </article>
-              
 
-              
-              
-              
-              
+
+
+
+
+
                 <footer class="prev-next-footer d-print-none">
-                  
+
 <div class="prev-next-area">
 </div>
                 </footer>
-              
+
             </div>
-            
-            
-              
-            
+
+
+
+
           </div>
           <footer class="bd-footer-content">
-            
+
 <div class="bd-footer-content__inner container">
-  
+
   <div class="footer-item">
-    
+
 <p class="component-author">
 By Nataliia Manko, Davide Bidoggia, Maria Peressi, Antimo Marrazzo
 </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
 
   <p class="copyright">
-    
+
       © Copyright 2024, Università degli Studi di Trieste and Scuola Internazionale Superiore di Studi Avanzati (SISSA), Italy.
       <br/>
-    
+
   </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
 </div>
           </footer>
-        
+
 
       </main>
     </div>
   </div>
-  
+
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
   <script defer src="../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
 <script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>

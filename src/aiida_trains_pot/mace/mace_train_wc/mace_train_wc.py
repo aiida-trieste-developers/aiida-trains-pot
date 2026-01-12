@@ -1,26 +1,16 @@
-# -*- coding: utf-8 -*-
 """Equation of State WorkChain."""
-from aiida.engine import WorkChain, append_, calcfunction, workfunction
-from aiida import load_profile
-from aiida.orm import Code, Dict, Int, List, FolderData, SinglefileData
-from aiida.plugins import CalculationFactory
-from aiida.common.extendeddicts import AttributeDict
-from ase.io import write
+
 import os
-import io
-from contextlib import redirect_stdout
-from aiida.engine import (
-    BaseRestartWorkChain,
-    ProcessHandlerReport,
-    process_handler,
-    while_,
-)
+
+from aiida import load_profile
+from aiida.common.extendeddicts import AttributeDict
+from aiida.engine import BaseRestartWorkChain, ProcessHandlerReport, process_handler, while_
+from aiida.orm import FolderData
+from aiida.plugins import CalculationFactory
 
 load_profile()
 
-MaceCalculation = CalculationFactory('trains_pot.macetrain')
-
-
+MaceCalculation = CalculationFactory("trains_pot.macetrain")
 
 
 class MaceTrainWorkChain(BaseRestartWorkChain):
@@ -33,9 +23,14 @@ class MaceTrainWorkChain(BaseRestartWorkChain):
         """Specify inputs and outputs."""
         super().define(spec)
 
-        spec.expose_inputs(MaceCalculation, namespace="train", namespace_options={'validator': None})
+        spec.expose_inputs(MaceCalculation, namespace="train", namespace_options={"validator": None})
         spec.expose_outputs(MaceCalculation)
-        spec.input_namespace("checkpoints", valid_type=FolderData, required=False, help="Checkpoints file",)
+        spec.input_namespace(
+            "checkpoints",
+            valid_type=FolderData,
+            required=False,
+            help="Checkpoints file",
+        )
         spec.outline(
             cls.setup,
             while_(cls.should_run_process)(
@@ -44,7 +39,7 @@ class MaceTrainWorkChain(BaseRestartWorkChain):
             ),
             cls.results,
         )
-        
+
     def report_error_handled(self, calculation, action):
         """Report an action taken for a calculation that has failed.
 
@@ -60,19 +55,18 @@ class MaceTrainWorkChain(BaseRestartWorkChain):
         self.report(f"Action taken: {action}")
 
     def set_restart(self, calculation):
-        """
-        Set the parameters to run the restart calculation
+        """Set the parameters to run the restart calculation.
 
         Depending on the type of restart several variables of the input parameters
         will be changed to try to ensure that the calculation can resume from
         the last stored structure
-        
+
         :param calculation: node from the previous calculation
         """
         files_retrieved = calculation.outputs.retrieved.list_object_names()
         for file in files_retrieved:
-            output_filename = file         
-            if 'checkpoint' in output_filename:                
+            output_filename = file
+            if "checkpoint" in output_filename:
                 folder_data = FolderData()
                 folder_contents = calculation.outputs.retrieved.list_object_names(output_filename)
                 for file_in_folder in folder_contents:
@@ -80,10 +74,10 @@ class MaceTrainWorkChain(BaseRestartWorkChain):
                     with calculation.outputs.retrieved.open(file_path, "rb") as handle:
                         folder_data.put_object_from_filelike(handle, file_in_folder)
                 self.ctx.inputs.checkpoints_restart = folder_data
-                
+
         if "checkpoints" in calculation.outputs:
-            self.ctx.inputs.checkpoints_restart = calculation.outputs.checkpoints        
-            
+            self.ctx.inputs.checkpoints_restart = calculation.outputs.checkpoints
+
     def setup(self):
         """Call the ``setup`` of the ``BaseRestartWorkChain`` and create the inputs dictionary in ``self.ctx.inputs``.
 
@@ -103,24 +97,22 @@ class MaceTrainWorkChain(BaseRestartWorkChain):
         ],
     )
     def handle_out_of_walltime(self, calculation):
-        """
-        Handle calculations where the walltime was reached.
+        """Handle calculations where the walltime was reached.
 
         The handler will try to find a configuration to restart from with the
         following priority
 
-        Use a stored restart file in the repository from the previous calculation.        
+        Use a stored restart file in the repository from the previous calculation.
         """
         self.report("Walltime reached attempting restart")
 
-        
         if "retrieved" in calculation.outputs:
-            self.set_restart(                
+            self.set_restart(
                 calculation=calculation,
             )
             self.report_error_handled(
                 calculation,
                 "restarting from the stored checkpoints",
             )
-        
+
         return ProcessHandlerReport(True)

@@ -1,0 +1,51 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+    -   id: end-of-file-fixer
+    -   id: mixed-line-ending
+    -   id: trailing-whitespace
+        exclude: &exclude_files >-
+            (?x)^(
+                tests/.*.*out|
+                tests/.*.in$
+            )$
+
+-   repo: https://github.com/ikamensh/flynt/
+    rev: '1.0.6'
+    hooks:
+    -   id: flynt
+
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.2
+    hooks:
+    -   id: ruff
+    -   id: ruff-format
+
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v3.19.0
+    hooks:
+    -   id: pyupgrade
+        args: ["--py310-plus"]
+
+# -   repo: local
+#     hooks:
+#     -   id: pylint
+#         name: pylint
+#         entry: pylint
+#         language: system
+#         types: [python]
+#         files: ^src/aiida_trains_pot/.*\.py$
+#         exclude: *exclude_files
+#         args:
+#         - --enable=E,F
+#         - --disable=E0401
+#         - -rn
+
+- repo: https://github.com/executablebooks/mdformat
+  rev: 0.7.17
+  hooks:
+    - id: mdformat
+      additional_dependencies:
+        - mdformat-gfm
+        - mdformat-toc

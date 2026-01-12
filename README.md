@@ -30,7 +30,7 @@ pip install .
 
 3. Install codes for Quantum ESPRESSO, MACE (pre-process, train and post-process), LAMMPS. Examples of configuration yaml file can be found in examples/setup_codes.
 
-4. Install `PortableCode` for committee evalution:
+1. Install `PortableCode` for committee evalution:
 
 ```
 portable_codes_installation
@@ -60,8 +60,8 @@ This project was supported by:
 - **[EU Centre of Excellence "MaX – Materials Design at the Exascale"](https://www.max-centre.eu/)**
 
 <p align="center">
-  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgTBDFRADTwpIJqho2NDfWrdCgIMTxFnlHBA&s" alt="Università degli Studi di Trieste Logo" width="250" style="filter: invert(1);"/>
-  <img src="https://www.sissa.it/themes/custom/sissa/images/logo-type.svg" alt="SISSA Logo" width="100"/>
-  <img src="https://max-centre.eu/wp-content/uploads/2024/02/banner_2.png" alt="MaX Centre Logo" width="250"/> 
-  <img src="https://www.supercomputing-icsc.it/wp-content/uploads/2022/10/logoxweb.svg" alt="Centro Nazionale di Ricerca Logo" width="250"/>
+  <img src="docs/Università degli Studi di Trieste Logo.jpeg" alt="Università degli Studi di Trieste Logo" height="110" style="filter: invert(1);"/>
+  <img src="docs/sissa-logo.png" alt="SISSA Logo" width="100"/>
+  <img src="docs/MAX.png" alt="MaX Centre Logo" height="110"/>
+  <img src="docs/icsc-logo.png" alt="Centro Nazionale di Ricerca Logo" height="110"/>
 </p>

@@ -224,5 +224,3 @@ Once everything is set up, submit the workflow:
 ---
 
 This guide should help you get started with `aiida-trains-pot <https://github.com/aiida-trieste-developers/aiida-trains-pot>`_! For more information on AiiDA workflows, check the AiiDA documentation.
-
-
