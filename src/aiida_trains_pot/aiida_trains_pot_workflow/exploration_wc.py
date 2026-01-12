@@ -163,8 +163,6 @@ class ExplorationWorkChain(WorkChain):
                         # Generate DFT-D2 pair coefficients, it overwrites the MACE pair_coeff generated above
                         pair_coeffs = get_dftd2_pair_coeffs(inputs.lammps.structure)                        
                         pair_coeffs.append(get_mace_pair_coeff(inputs.lammps.structure, hybrid=True))
-                        #if 'metatomic' in self.inputs.potential_pair_style.value:
-                        #    pair_coeffs.append(get_meta_pair_coeff(inputs.lammps.structure, hybrid=True))                        
             input_parameters['potential']['pair_coeff_list'] = pair_coeffs
 
    
