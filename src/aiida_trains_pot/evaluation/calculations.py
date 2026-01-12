@@ -32,13 +32,39 @@ class EvaluationCalculation(CalcJob):
         spec.inputs["metadata"]["options"]["parser_name"].default = "trains_pot.evaluation"
 
         # new ports
-        spec.input_namespace("ase_potentials", valid_type=SinglefileData, required=True, help="Potentials for use in ASE",)        
-        spec.input_namespace("datasets", valid_type=PESData, required=True, help="Datasets to evaluate with the potentials.",)
-        spec.output_namespace("evaluated_datasets", valid_type=PESData, help="Dataset of evaluated configurations.",)
-        spec.output_namespace("rmse", valid_type=Dict, help="Root mean square errors between DFT and DNN quantities for the different sets and potentials.")
-        spec.output_namespace("parity_data", valid_type=ArrayData, help="Data for parity plots between DFT and DNN quantities for the different sets.")
+        spec.input_namespace(
+            "ase_potentials",
+            valid_type=SinglefileData,
+            required=True,
+            help="Potentials for use in ASE",
+        )
+        spec.input_namespace(
+            "datasets",
+            valid_type=PESData,
+            required=True,
+            help="Datasets to evaluate with the potentials.",
+        )
+        spec.output_namespace(
+            "evaluated_datasets",
+            valid_type=PESData,
+            help="Dataset of evaluated configurations.",
+        )
+        spec.output_namespace(
+            "rmse",
+            valid_type=Dict,
+            help="Root mean square errors between DFT and DNN quantities for the different sets and potentials.",
+        )
+        spec.output_namespace(
+            "parity_data",
+            valid_type=ArrayData,
+            help="Data for parity plots between DFT and DNN quantities for the different sets.",
+        )
 
-        spec.exit_code(300, "ERROR_MISSING_OUTPUT_FILES", message="Calculation did not produce all expected output files.",)
+        spec.exit_code(
+            300,
+            "ERROR_MISSING_OUTPUT_FILES",
+            message="Calculation did not produce all expected output files.",
+        )
 
     def prepare_for_submission(self, folder):
         """Create input files.

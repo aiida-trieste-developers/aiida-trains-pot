@@ -2,15 +2,16 @@
 """Evaluate the dataset with a committee of MACE potentials and compute RMSE."""
 
 import glob
-import numpy as np
-
-from prettytable import PrettyTable
-import torch
-import re
 import logging
 import re
 import sys
 import time
+
+import numpy as np
+import torch
+
+from ase.io import read
+from prettytable import PrettyTable
 
 
 def get_parity_data(dataset):
@@ -150,12 +151,18 @@ def rmse_table(RMSE) -> PrettyTable:
 
 
 def load_potentials(potential_files):
+    """Load potentials from files.
+
+    :param potential_files: List of potential file paths
+    :return: List of loaded calculator instances or None if loading failed
+    """
     calculators = []
 
     # --- Try loading as MACE potentials ---
     try:
         from mace.calculators import MACECalculator
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
         calculators = [MACECalculator(pot, device=device) for pot in potential_files]
         logging.info(f"Loaded {len(calculators)} MACE potentials using {device}.")
         return calculators  # ✅ success, return here
@@ -166,7 +173,8 @@ def load_potentials(potential_files):
     # --- Try loading as METAtomic potentials ---
     try:
         from metatomic.torch.ase_calculator import MetatomicCalculator
-        calculators = [MetatomicCalculator(pot, extensions_directory='extensions/') for pot in potential_files]
+
+        calculators = [MetatomicCalculator(pot, extensions_directory="extensions/") for pot in potential_files]
         logging.info(f"Loaded {len(calculators)} METAtomic potentials.")
         return calculators  # ✅ success, return here
 
@@ -176,6 +184,7 @@ def load_potentials(potential_files):
     # --- If both failed ---
     logging.error("❌ Unable to load any potential (MACE or METAtomic).")
     return None
+
 
 def global_rmse(dataset):
     """Calculate global root mean square error between DFT and DNN quantities.
@@ -337,9 +346,9 @@ def main(log_freq=100):  # noqa: PLR0912
     potential_files = glob.glob("potential*")
     datasets = glob.glob("dataset*xyz")
 
-    logging.info('Loading potentials...')
+    logging.info("Loading potentials...")
 
-    calculators =load_potentials(potential_files)    
+    calculators = load_potentials(potential_files)
 
     for jj, dataset in enumerate(datasets):
         dataset_name = dataset.replace(".xyz", "")

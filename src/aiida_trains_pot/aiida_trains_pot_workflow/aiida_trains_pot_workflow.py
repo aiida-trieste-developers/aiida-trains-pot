@@ -26,6 +26,7 @@ PwBaseWorkChain = WorkflowFactory("quantumespresso.pw.base")
 
 ALLOWED_ENGINES = ["MACE", "META"]
 
+
 @calcfunction
 def SaveRMSE(rmse):
     """A calcfunction to save RMSE values stored in a list of dictionaries as an AiiDA output.
@@ -163,9 +164,11 @@ def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_fra
 
 
 def validate_engine(value, _):
+    """Validate the training engine input."""
     if value.value not in ALLOWED_ENGINES:
         return f"Invalid training engine: {value.value}. Must be one of {ALLOWED_ENGINES}."
     return None
+
 
 class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
@@ -189,36 +192,98 @@ class TrainsPotWorkChain(WorkChain):
 
         DEFAULT_max_loops = Int(10)
 
-        DEFAULT_do_dataset_augmentation         = Bool(True)
-        DEFAULT_do_ab_initio_labelling          = Bool(True)
-        DEFAULT_training_engine                 = Str("MACE")
-        DEFAULT_do_training                     = Bool(True)
-        DEFAULT_do_exploration                  = Bool(True)
+        DEFAULT_do_dataset_augmentation = Bool(True)
+        DEFAULT_do_ab_initio_labelling = Bool(True)
+        DEFAULT_training_engine = Str("MACE")
+        DEFAULT_do_training = Bool(True)
+        DEFAULT_do_exploration = Bool(True)
 
         DEFAULT_check_vacuum = Bool(True)
         ######################################################
-        
-        
-        
+
         super().define(spec)
-        spec.input('do_dataset_augmentation', valid_type=Bool, default=lambda: DEFAULT_do_dataset_augmentation, help='Do data generation', required=False)
-        spec.input('do_ab_initio_labelling', valid_type=Bool, default=lambda: DEFAULT_do_ab_initio_labelling, help='Do ab_initio_labelling calculations', required=False)
-        spec.input('training_engine', valid_type=Str, default=lambda: DEFAULT_training_engine, help=f"Training engine (allowed values: {ALLOWED_ENGINES})", required=False, validator=validate_engine)
-        #spec.input('training_engine', valid_type=Str, default=lambda: DEFAULT_training_engine, help='Training engine', required=False)
-        spec.input('do_training', valid_type=Bool, default=lambda: DEFAULT_do_training, help='Do MACE calculations', required=False)
-        spec.input('do_exploration', valid_type=Bool, default=lambda: DEFAULT_do_exploration, help='Do exploration calculations', required=False)
-        spec.input('max_loops', valid_type=Int, default=lambda: DEFAULT_max_loops, help='Maximum number of active learning workflow loops', required=False)
+        spec.input(
+            "do_dataset_augmentation",
+            valid_type=Bool,
+            default=lambda: DEFAULT_do_dataset_augmentation,
+            help="Do data generation",
+            required=False,
+        )
+        spec.input(
+            "do_ab_initio_labelling",
+            valid_type=Bool,
+            default=lambda: DEFAULT_do_ab_initio_labelling,
+            help="Do ab_initio_labelling calculations",
+            required=False,
+        )
+        spec.input(
+            "training_engine",
+            valid_type=Str,
+            default=lambda: DEFAULT_training_engine,
+            help=f"Training engine (allowed values: {ALLOWED_ENGINES})",
+            required=False,
+            validator=validate_engine,
+        )
+        spec.input(
+            "do_training",
+            valid_type=Bool,
+            default=lambda: DEFAULT_do_training,
+            help="Do MACE calculations",
+            required=False,
+        )
+        spec.input(
+            "do_exploration",
+            valid_type=Bool,
+            default=lambda: DEFAULT_do_exploration,
+            help="Do exploration calculations",
+            required=False,
+        )
+        spec.input(
+            "max_loops",
+            valid_type=Int,
+            default=lambda: DEFAULT_max_loops,
+            help="Maximum number of active learning workflow loops",
+            required=False,
+        )
 
-        spec.input('random_input_structures_lammps', valid_type=Bool, help='If true, input structures for LAMMPS are randomly selected from the dataset', default=lambda: DEFAULT_random_input_structures_lammps, required=False)
-        spec.input('num_random_structures_lammps', valid_type=Int, help='Number of random structures for LAMMPS', default=lambda: DEFAULT_num_random_structures_lammps, required=False)
-        spec.input('lammps_input_structures', valid_type=PESData, help='Input structures for lammps, if not specified input structures are used', required=False)
-        spec.input('dataset', valid_type=PESData, help='Dataset containing labelled structures and structures to be labelled', required=True)
+        spec.input(
+            "random_input_structures_lammps",
+            valid_type=Bool,
+            help="If true, input structures for LAMMPS are randomly selected from the dataset",
+            default=lambda: DEFAULT_random_input_structures_lammps,
+            required=False,
+        )
+        spec.input(
+            "num_random_structures_lammps",
+            valid_type=Int,
+            help="Number of random structures for LAMMPS",
+            default=lambda: DEFAULT_num_random_structures_lammps,
+            required=False,
+        )
+        spec.input(
+            "lammps_input_structures",
+            valid_type=PESData,
+            help="Input structures for lammps, if not specified input structures are used",
+            required=False,
+        )
+        spec.input(
+            "dataset",
+            valid_type=PESData,
+            help="Dataset containing labelled structures and structures to be labelled",
+            required=True,
+        )
 
-        spec.input_namespace('models_lammps', valid_type=SinglefileData, help='MACE potential for md exploration', required=False)
-        spec.input_namespace('models_ase', valid_type=SinglefileData, help='MACE potential for Evaluation', required=False) 
-        spec.input('exploration.parameters', valid_type=Dict, help='List of parameters for md exploration', required=False)
-        spec.input('explored_dataset', valid_type=PESData, help='List of structures from exploration', required=False)
-        
+        spec.input_namespace(
+            "models_lammps", valid_type=SinglefileData, help="MACE potential for md exploration", required=False
+        )
+        spec.input_namespace(
+            "models_ase", valid_type=SinglefileData, help="MACE potential for Evaluation", required=False
+        )
+        spec.input(
+            "exploration.parameters", valid_type=Dict, help="List of parameters for md exploration", required=False
+        )
+        spec.input("explored_dataset", valid_type=PESData, help="List of structures from exploration", required=False)
+
         # spec.input('potential', valid_type=SinglefileData, help='MACE potential for exploration', required=False)
 
         spec.input(
@@ -674,8 +739,10 @@ class TrainsPotWorkChain(WorkChain):
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="committee_evaluation")
         if len(self.ctx.potentials_ase) == 0:
             self.ctx.potentials_ase = self.ctx.potentials_lammps
-        inputs['ase_potentials'] = {f"pot_{ii}": self.ctx.potentials_ase[ii] for ii in range(len(self.ctx.potentials_ase))}
-        inputs['datasets'] = {"labelled": self.ctx.dataset, "exploration": self.ctx.explored_dataset}
+        inputs["ase_potentials"] = {
+            f"pot_{ii}": self.ctx.potentials_ase[ii] for ii in range(len(self.ctx.potentials_ase))
+        }
+        inputs["datasets"] = {"labelled": self.ctx.dataset, "exploration": self.ctx.explored_dataset}
 
         future = self.submit(EvaluationCalculation, **inputs)
         self.to_context(committee_evaluation=future)

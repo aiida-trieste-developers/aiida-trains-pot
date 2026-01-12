@@ -1,24 +1,21 @@
-"""
-Parsers provided by aiida_diff.
+"""Parser class for parsing output of MetaTrainCalculation."""
 
-Register parsers via the "aiida.parsers" entry point in setup.json.
-"""
-from aiida.common import exceptions
-from aiida.engine import ExitCode
-from aiida.orm import SinglefileData, FolderData, List, Dict
-from aiida.parsers.parser import Parser
-from aiida.plugins import CalculationFactory
-import re
+import csv
 import json
 import os
-import csv
+import re
 
+from aiida.common import exceptions
+from aiida.engine import ExitCode
+from aiida.orm import FolderData, List, SinglefileData
+from aiida.parsers.parser import Parser
+from aiida.plugins import CalculationFactory
 
 MetaTrainCalculation = CalculationFactory("trains_pot.metatrain")
 
+
 def parse_tables_from_singlefiledata(node):
-    """
-    Parse a CSV training log from a SinglefileData node and convert it into
+    """Parse a CSV training log from a SinglefileData node and convert it into
     an AiiDA-compatible list of dictionaries with RMSE-style fields.
 
     Expected CSV columns:
@@ -50,7 +47,11 @@ def parse_tables_from_singlefiledata(node):
 
             # Try to collect all relevant columns if present
             if "training energy RMSE (per atom)" in row:
-                train_data["RMSE_E/meV/atom"] = float(row["training energy RMSE (per atom)"]) * 1000 if float(row["training energy RMSE (per atom)"]) < 10 else float(row["training energy RMSE (per atom)"])
+                train_data["RMSE_E/meV/atom"] = (
+                    float(row["training energy RMSE (per atom)"]) * 1000
+                    if float(row["training energy RMSE (per atom)"]) < 10  # noqa: PLR2004
+                    else float(row["training energy RMSE (per atom)"])
+                )
             if "training forces RMSE" in row:
                 train_data["RMSE_F/meV/A"] = float(row["training forces RMSE"])
             if "training energy MAE (per atom)" in row:
@@ -72,19 +73,19 @@ def parse_tables_from_singlefiledata(node):
         parsed_list.append(parsed_entry)
 
     return parsed_list
+
+
 def parse_start_from_singlefiledata(node):
-    """
-    Parses tables from a SinglefileData node in AiiDA and returns the list with start training line 
+    """Parses tables from a SinglefileData node in AiiDA and returns the list with start training line.
 
     Args:
-    node_uuid (str): The UUID of the SinglefileData node containing the tables.
- 
+    node (SinglefileData): The SinglefileData node containing the tables.
+
     Returns:
     list: A list of string
     """
-    
     if not isinstance(node, SinglefileData):
-        raise TypeError(f'Node {node} is not a SinglefileData node.')
+        raise TypeError(f"Node {node} is not a SinglefileData node.")
 
     # List to store the parsed data
     parsed_data = []
@@ -94,30 +95,29 @@ def parse_start_from_singlefiledata(node):
         lines = file.readlines()
 
     # Regular expression patterns
-    start_pattern = re.compile(r'Starting training')
-    
+    start_pattern = re.compile(r"Starting training")
+
     for line in lines:
         # Check for epoch information
         epoch_match = start_pattern.search(line)
-        
+
         if epoch_match:
             parsed_data.append(line)
-            
+
     return parsed_data
+
 
 def parse_complete_from_singlefiledata(node):
-    """
-    Parses tables from a SinglefileData node in AiiDA and returns the list with complete training line 
+    """Parses tables from a SinglefileData node in AiiDA and returns the list with complete training line.
 
     Args:
-    node_uuid (str): The UUID of the SinglefileData node containing the tables.
- 
+    node (SinglefileData): The SinglefileData node containing the tables.
+
     Returns:
     list: A list of string
     """
-    
     if not isinstance(node, SinglefileData):
-        raise TypeError(f'Node {node} is not a SinglefileData node.')
+        raise TypeError(f"Node {node} is not a SinglefileData node.")
 
     # List to store the parsed data
     parsed_data = []
@@ -127,38 +127,56 @@ def parse_complete_from_singlefiledata(node):
         lines = file.readlines()
 
     # Regular expression patterns
-    start_pattern = re.compile(r'Training finished!')
-    
+    start_pattern = re.compile(r"Training finished!")
+
     for line in lines:
         # Check for epoch information
         epoch_match = start_pattern.search(line)
-        
+
         if epoch_match:
             parsed_data.append(line)
-            
+
     return parsed_data
 
+
 def parse_log_file(node):
-    """
-    Parses a log file containing JSON-like entries and returns a list of parsed JSON objects
-    that match the required format.
+    """Parses a log file containing JSON-like entries.
+
+    It returns a list of parsed JSON objects that match the required format.
 
     Args:
-    file_path (str): The path to the log file.
+    node (SinglefileData): The SinglefileData node containing the log file.
 
     Returns:
     list: A list of parsed JSON objects.
     """
     if not isinstance(node, SinglefileData):
-        raise TypeError(f'Node {node} is not a SinglefileData node.')
+        raise TypeError(f"Node {node} is not a SinglefileData node.")
 
     # Define the required keys
     required_keys = {
-        "loss", "mae_e", "mae_e_per_atom", "rmse_e", "rmse_e_per_atom",
-        "q95_e", "mae_f", "rel_mae_f", "rmse_f", "rel_rmse_f", "q95_f",
-        "mae_stress", "rmse_stress", "rmse_stress_per_atom", "q95_stress",
-        "mae_virials", "rmse_virials", "rmse_virials_per_atom", "q95_virials",
-        "time", "mode", "epoch"
+        "loss",
+        "mae_e",
+        "mae_e_per_atom",
+        "rmse_e",
+        "rmse_e_per_atom",
+        "q95_e",
+        "mae_f",
+        "rel_mae_f",
+        "rmse_f",
+        "rel_rmse_f",
+        "q95_f",
+        "mae_stress",
+        "rmse_stress",
+        "rmse_stress_per_atom",
+        "q95_stress",
+        "mae_virials",
+        "rmse_virials",
+        "rmse_virials_per_atom",
+        "q95_virials",
+        "time",
+        "mode",
+        "epoch",
     }
 
     parsed_data = []
@@ -169,22 +187,20 @@ def parse_log_file(node):
                 entry = json.loads(line)
             except json.JSONDecodeError:
                 continue  # Skip lines that aren't valid JSON
-            
+
             # Check if the entry contains all required keys
             if required_keys.issubset(entry.keys()):
                 # Add the entry to the list
                 parsed_data.append(entry)
-    
+
     return parsed_data
 
+
 class MetaBaseParser(Parser):
-    """
-    Parser class for parsing output of calculation.
-    """
+    """Parser class for parsing output of calculation."""
 
     def __init__(self, node):
-        """
-        Initialize Parser instance
+        """Initialize Parser instance.
 
         Checks that the ProcessNode being passed was produced by a DiffCalculation.
 
@@ -196,36 +212,33 @@ class MetaBaseParser(Parser):
             raise exceptions.ParsingError("Can only parse MetaTrainCalculation")
 
     def parse(self, **kwargs):
-        """
-        Parse outputs, store results in database.
+        """Parse outputs, store results in database.
 
         :returns: an exit code, if parsing fails (or nothing if parsing succeeds)
         """
-        
-
         # Check that folder content is as expected
         files_retrieved = self.retrieved.list_object_names()
-        files_expected = ['model.pt']
-        
+        files_expected = ["model.pt"]
+
         # add error of out of walltime
-        if 'meta.out' in self.retrieved.list_object_names():
-            with self.retrieved.open('meta.out', "rb") as handle:
-                output_node = SinglefileData(file=handle) 
-                if (len(parse_start_from_singlefiledata(output_node)) > 0) and (len(parse_complete_from_singlefiledata(output_node)) == 0):
+        if "meta.out" in self.retrieved.list_object_names():
+            with self.retrieved.open("meta.out", "rb") as handle:
+                output_node = SinglefileData(file=handle)
+                if (len(parse_start_from_singlefiledata(output_node)) > 0) and (
+                    len(parse_complete_from_singlefiledata(output_node)) == 0
+                ):
                     return self.exit_codes.ERROR_OUT_OF_WALLTIME
 
         # Note: set(A) <= set(B) checks whether A is a subset of B
         if not set(files_expected) <= set(files_retrieved):
-            self.logger.error(
-                f"Found files '{files_retrieved}', expected to find '{files_expected}'"
-            )
+            self.logger.error(f"Found files '{files_retrieved}', expected to find '{files_expected}'")
             return self.exit_codes.ERROR_MISSING_OUTPUT_FILES
 
         for output_filename in files_retrieved:
             self.logger.info(f"Parsing '{output_filename}'")
 
             # Case 1: It’s an 'outputs' folder
-            if output_filename.startswith('outputs'):
+            if output_filename.startswith("outputs"):
                 # Recursively walk inside outputs directory
                 def walk_folder(base_path):
                     """Yield all file paths recursively from retrieved folder."""
@@ -255,14 +268,13 @@ class MetaBaseParser(Parser):
                 # Simplify model detection logic
                 if "model.pt" in output_filename:
                     self.out("model_stage2_lammps", output_node)
-                
+
                 elif output_filename.endswith("model.ckpt"):
                     folder_node = FolderData()
                     with self.retrieved.open(output_filename, "rb") as handle:
                         folder_node.put_object_from_filelike(handle, output_filename)
                     self.out("checkpoints", folder_node)
                 elif output_filename.endswith(".out"):
-                    self.out(output_filename.replace('.out', '_out'), output_node)
-
+                    self.out(output_filename.replace(".out", "_out"), output_node)
 
         return ExitCode(0)

@@ -24,24 +24,24 @@ def models_from_trainingwc(builder, identifier, get_labelled_dataset=False, get_
         builder.dataset = outputs["global_splitted"]
     if get_config:
         inputs = load_node(identifier).inputs
-        builder.training.mace.train.mace_config = inputs['mace']['train']['mace_config']
-    for trainings in outputs['training']:
-        if trainings.startswith('mace'):
-            if "model_stage2_ase" in outputs['training'][trainings]:
-                models_ase[trainings] = outputs['training'][trainings]["model_stage2_ase"]
-            elif "model_stage1_ase" in outputs['training'][trainings]:
-                models_ase[trainings] = outputs['training'][trainings]["model_stage1_ase"]
-            if "model_stage2_lammps" in outputs['training'][trainings]:
-                models_lammps[trainings] = outputs['training'][trainings]["model_stage2_lammps"]
-            elif "model_stage1_lammps" in outputs['training'][trainings]:
-                models_lammps[trainings] = outputs['training'][trainings]["model_stage1_lammps"]
-            if "checkpoints" in outputs['training'][trainings]:
-                models_checkpoints[trainings] = outputs['training'][trainings]["checkpoints"]
-        if trainings.startswith('meta'):            
-            if "model_stage2_lammps" in outputs['training'][trainings]:
-                models_lammps[trainings] = outputs['training'][trainings]["model_stage2_lammps"]            
-            if "checkpoints" in outputs['training'][trainings]:
-                models_checkpoints[trainings] = outputs['training'][trainings]["checkpoints"]
+        builder.training.mace.train.mace_config = inputs["mace"]["train"]["mace_config"]
+    for trainings in outputs["training"]:
+        if trainings.startswith("mace"):
+            if "model_stage2_ase" in outputs["training"][trainings]:
+                models_ase[trainings] = outputs["training"][trainings]["model_stage2_ase"]
+            elif "model_stage1_ase" in outputs["training"][trainings]:
+                models_ase[trainings] = outputs["training"][trainings]["model_stage1_ase"]
+            if "model_stage2_lammps" in outputs["training"][trainings]:
+                models_lammps[trainings] = outputs["training"][trainings]["model_stage2_lammps"]
+            elif "model_stage1_lammps" in outputs["training"][trainings]:
+                models_lammps[trainings] = outputs["training"][trainings]["model_stage1_lammps"]
+            if "checkpoints" in outputs["training"][trainings]:
+                models_checkpoints[trainings] = outputs["training"][trainings]["checkpoints"]
+        if trainings.startswith("meta"):
+            if "model_stage2_lammps" in outputs["training"][trainings]:
+                models_lammps[trainings] = outputs["training"][trainings]["model_stage2_lammps"]
+            if "checkpoints" in outputs["training"][trainings]:
+                models_checkpoints[trainings] = outputs["training"][trainings]["checkpoints"]
 
     builder.models_ase = models_ase
     builder.models_lammps = models_lammps

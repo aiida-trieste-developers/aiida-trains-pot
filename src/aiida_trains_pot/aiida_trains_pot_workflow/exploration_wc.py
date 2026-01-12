@@ -10,6 +10,7 @@ from aiida.orm import Dict, Float, List, SinglefileData, Str, StructureData
 from aiida.plugins import DataFactory, WorkflowFactory
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_quantumespresso.workflows.protocols.utils import recursive_merge
+
 from aiida_trains_pot.utils.lammps_pair_coeffs import get_dftd2_pair_coeffs, get_mace_pair_coeff, get_meta_pair_coeff
 
 LammpsWorkChain = WorkflowFactory("lammps.base")
@@ -178,20 +179,21 @@ class ExplorationWorkChain(WorkChain):
             if "potential" in self.inputs.parameters:
                 if "pair_coeff_list" in self.inputs.parameters["potential"]:
                     generate_pair_coeff = False
-            
-            # Pair coefficients for MACE potential without hybrid/overlay is always generated, if needed it is overwritten
-            if generate_pair_coeff:               
-                if 'metatomic' in self.inputs.potential_pair_style.value:
+
+            # Pair coefficients for MACE potential without hybrid/overlay is always generated,
+            # if needed it is overwritten
+            if generate_pair_coeff:
+                if "metatomic" in self.inputs.potential_pair_style.value:
                     pair_coeffs = [get_meta_pair_coeff(inputs.lammps.structure, hybrid=False)]
                 else:
                     pair_coeffs = [get_mace_pair_coeff(inputs.lammps.structure, hybrid=False)]
-                
+
             params_list = self.inputs.params_list.get_list()
             input_parameters = self.inputs.parameters.get_dict()
-            if 'metatomic' in self.inputs.potential_pair_style.value:
-                if 'potential' in self.inputs.parameters:
-                    if 'potential_style_options' not in self.inputs.parameters['potential']:
-                        input_parameters['potential']['potential_style_options'] = str('potential.dat')              
+            if "metatomic" in self.inputs.potential_pair_style.value:
+                if "potential" in self.inputs.parameters:
+                    if "potential_style_options" not in self.inputs.parameters["potential"]:
+                        input_parameters["potential"]["potential_style_options"] = "potential.dat"
             if self.inputs.protocol is not None:
                 if self.inputs.protocol == "vdw_d2":
                     if "potential" in self.inputs.parameters:
@@ -205,15 +207,16 @@ class ExplorationWorkChain(WorkChain):
                         }
                     if generate_pair_coeff:
                         # Generate DFT-D2 pair coefficients, it overwrites the MACE pair_coeff generated above
-                        pair_coeffs = get_dftd2_pair_coeffs(inputs.lammps.structure)                        
+                        pair_coeffs = get_dftd2_pair_coeffs(inputs.lammps.structure)
                         pair_coeffs.append(get_mace_pair_coeff(inputs.lammps.structure, hybrid=True))
             input_parameters["potential"]["pair_coeff_list"] = pair_coeffs
 
-   
             parameters = recursive_merge(DEFAULT_parameters.get_dict(), input_parameters)
             lammps_inputs = self.inputs.md.lammps
-            if "settings" in lammps_inputs:                
-                inputs.lammps.settings = recursive_merge(DEFAULT_settings.get_dict(), self.inputs.md.lammps.settings.get_dict())
+            if "settings" in lammps_inputs:
+                inputs.lammps.settings = recursive_merge(
+                    DEFAULT_settings.get_dict(), self.inputs.md.lammps.settings.get_dict()
+                )
             else:
                 inputs.lammps.settings = DEFAULT_settings.get_dict()
             # if 'dump' not in parameters:

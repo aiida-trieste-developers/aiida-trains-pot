@@ -1,7 +1,3 @@
-"""
-aiida_diff
+"""AiiDA MetaTrainPlugin package."""
 
-AiiDA demo plugin that wraps the `diff` executable for computing the difference between two files.
-"""
-
-__version__ = "1.2.0"
+__version__ = "0.0.1"

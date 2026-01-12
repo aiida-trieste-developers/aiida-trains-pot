@@ -3,4 +3,3 @@ architecture:
   training:
     num_epochs: 5  # a very short training run
     batch_size: 2
-
