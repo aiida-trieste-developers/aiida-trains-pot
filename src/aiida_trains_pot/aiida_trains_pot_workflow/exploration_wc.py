@@ -203,7 +203,7 @@ class ExplorationWorkChain(WorkChain):
                             )
                     else:
                         input_parameters["potential"] = {
-                            "potential_style_options": "mace no_domain_decomposition" "momb 20.0 0.75 20.0"
+                            "potential_style_options": "mace no_domain_decomposition momb 20.0 0.75 20.0"
                         }
                     if generate_pair_coeff:
                         # Generate DFT-D2 pair coefficients, it overwrites the MACE pair_coeff generated above
