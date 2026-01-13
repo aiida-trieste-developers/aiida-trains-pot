@@ -268,8 +268,6 @@ def get_meta_pair_coeff(structure, hybrid=False) -> str:
     Returns:
         str: The METATrain pair coefficient.
     """
-    # if hybrid:
-    #    return "* * metatomic potential.dat " + " ".join(structure.get_symbols_set())
     symbols = sorted(structure.get_symbols_set())
     numbers = [str(atomic_numbers[s]) for s in symbols]
     return "* * " + " ".join(numbers)
