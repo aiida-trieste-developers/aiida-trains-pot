@@ -122,10 +122,12 @@ class TrainingWorkChain(WorkChain):
 
     @classmethod
     def define(cls, spec):
+        DEFAULT_training_engine = Str("MACE")
+
         """Input and output specification."""
         super().define(spec)
         spec.input("num_potentials", valid_type=Int, default=lambda: Int(1), required=False)
-        spec.input("engine", valid_type=Str, help="Training engine", required=False)
+        spec.input("engine", default=lambda: DEFAULT_training_engine, valid_type=Str, help="Training engine", required=False)
         spec.input(
             "dataset",
             valid_type=PESData,
@@ -157,7 +159,7 @@ class TrainingWorkChain(WorkChain):
         spec.outline(cls.run_training, cls.finalize)
 
     def run_training(self):
-        """Run MACEWorkChain for each structure."""
+        """Run training."""
         split_datasets = SplitDataset(self.inputs.dataset)
         train_set = split_datasets["train_set"]
         validation_set = split_datasets["validation_set"]
@@ -216,7 +218,7 @@ class TrainingWorkChain(WorkChain):
             pass
 
     def finalize(self):
-        """Collect and output results from all MACEWorkChain instances."""
+        """Collect and output results from all WorkChain instances."""
         results = {}
 
         if self.inputs.engine.value == "MACE":
@@ -225,7 +227,7 @@ class TrainingWorkChain(WorkChain):
                 for el in calc.outputs:
                     results[f"mace_{ii}"][el] = calc.outputs[el]
 
-                self.out("training", results)
+
 
         if self.inputs.engine.value == "META":
             for ii, calc in enumerate(self.ctx.meta_wc):
@@ -233,4 +235,4 @@ class TrainingWorkChain(WorkChain):
                 for el in calc.outputs:
                     results[f"meta_{ii}"][el] = calc.outputs[el]
 
-                self.out("training", results)
+        self.out("training", results)

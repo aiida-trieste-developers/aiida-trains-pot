@@ -201,8 +201,6 @@ class MetaTrainCalculation(CalcJob):
                     with folder.open("checkpoints/model.ckpt", "wb") as destination:
                         destination.write(source.read())
 
-        with folder.open("config.yml", "w") as yaml_file:
-            yaml.dump(meta_config_dict, yaml_file, default_flow_style=False)
         calcinfo = datastructures.CalcInfo()
         if finetune:
             calcinfo.local_copy_list = [

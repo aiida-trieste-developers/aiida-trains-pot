@@ -148,7 +148,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 input_structures = PESData([read(os.path.join(script_dir, "gr8x8.xyz"))])
 
 ###############################################
-# Setup TrainsPot worflow
+# Setup TrainsPot workflow
 ###############################################
 
 builder = TrainsPot.get_builder(
@@ -178,7 +178,7 @@ builder.max_loops = Int(2)
 # builder.models_ase = {"pot_1":load_node(85985), "pot_2":load_node(85996), "pot_3":load_node(86007), "pot_4":load_node(86018)} ## MACE potentials compiled for ASE
 
 ###############################################
-# Thresholds on committe evaluation to select
+# Thresholds on committee evaluation to select
 # structures to be labelled
 ###############################################
 builder.thr_energy = Float(2e-3)
