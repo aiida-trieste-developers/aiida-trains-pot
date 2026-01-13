@@ -122,12 +122,18 @@ class TrainingWorkChain(WorkChain):
 
     @classmethod
     def define(cls, spec):
-        DEFAULT_training_engine = Str("MACE")
-
         """Input and output specification."""
+        ######################################################
+        ##                 DEFAULT VALUES                   ##
+        ######################################################
+        DEFAULT_training_engine = Str("MACE")
+        ######################################################
+
         super().define(spec)
         spec.input("num_potentials", valid_type=Int, default=lambda: Int(1), required=False)
-        spec.input("engine", default=lambda: DEFAULT_training_engine, valid_type=Str, help="Training engine", required=False)
+        spec.input(
+            "engine", default=lambda: DEFAULT_training_engine, valid_type=Str, help="Training engine", required=False
+        )
         spec.input(
             "dataset",
             valid_type=PESData,
@@ -226,8 +232,6 @@ class TrainingWorkChain(WorkChain):
                 results[f"mace_{ii}"] = {}
                 for el in calc.outputs:
                     results[f"mace_{ii}"][el] = calc.outputs[el]
-
-
 
         if self.inputs.engine.value == "META":
             for ii, calc in enumerate(self.ctx.meta_wc):

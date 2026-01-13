@@ -276,15 +276,12 @@ class TrainsPotWorkChain(WorkChain):
         spec.input_namespace(
             "models_lammps", valid_type=SinglefileData, help="Potential for md exploration", required=False
         )
-        spec.input_namespace(
-            "models_ase", valid_type=SinglefileData, help="Potential for Evaluation", required=False
-        )
+        spec.input_namespace("models_ase", valid_type=SinglefileData, help="Potential for Evaluation", required=False)
         spec.input(
             "exploration.parameters", valid_type=Dict, help="List of parameters for md exploration", required=False
         )
         spec.input("explored_dataset", valid_type=PESData, help="List of structures from exploration", required=False)
 
-        
         spec.input(
             "frame_extraction.sampling_time",
             valid_type=Float,
