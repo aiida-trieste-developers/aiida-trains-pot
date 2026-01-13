@@ -202,7 +202,7 @@ class MetaBaseParser(Parser):
     def __init__(self, node):
         """Initialize Parser instance.
 
-        Checks that the ProcessNode being passed was produced by a DiffCalculation.
+        Checks that the ProcessNode being passed was produced by a MetaTrainCalculation.
 
         :param node: ProcessNode of calculation
         :param type node: :class:`aiida.orm.nodes.process.process.ProcessNode`
