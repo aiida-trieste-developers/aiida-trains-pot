@@ -349,6 +349,9 @@ def main(log_freq=100):  # noqa: PLR0912
     logging.info("Loading potentials...")
 
     calculators = load_potentials(potential_files)
+    if calculators is None:
+        logging.error("Failed to load any potentials. Aborting committee evaluation.")
+        return
 
     for jj, dataset in enumerate(datasets):
         dataset_name = dataset.replace(".xyz", "")
