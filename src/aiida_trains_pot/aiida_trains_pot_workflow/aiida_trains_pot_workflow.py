@@ -1,6 +1,7 @@
 """AiiDA WorkChain for active learning of interatomic potentials using LAMMPS and MACE."""
 
 import random
+import warnings
 
 from aiida import load_profile
 from aiida.common import AttributeDict
@@ -44,78 +45,58 @@ def SaveRMSE(rmse):
 def LammpsFrameExtraction(
     sampling_time,
     saving_frequency,
-    thermalization_time=0,
-    # check_vacuum=Bool(False),
-    min_vacuum=Float(5.0),  # noqa B008
-    target_vacuum=Float(15.0),  # noqa B008
+    thermalization_time=lambda: Float(0),
+    check_vacuum=lambda: Bool(False),
+    min_vacuum=lambda: Float(5.0),  # noqa B008
+    target_vacuum=lambda: Float(15.0),  # noqa B008
     **trajectories,
 ):
     """Extract frames from trajectory."""
     extracted_frames = []
     for _, trajectory in trajectories.items():
-        params = {}
-        for inc in trajectory.base.links.get_incoming().all():
-            if inc.node.process_type == "aiida.calculations:lammps.base":
-                lammps_id = inc.node.uuid
-            if inc.node.process_type == "aiida.workflows:lammps.base":
-                for inc2 in inc.node.base.links.get_incoming().all():
-                    if inc2.link_label == "lammps__parameters":
-                        params = Dict(dict=inc2.node).get_dict()
-                    elif inc2.link_label == "lammps__structure":
-                        input_structure = enlarge_vacuum(
-                            inc2.node.get_ase(),
-                            min_vacuum=min_vacuum,
-                            target_vacuum=target_vacuum,
-                        )
-                        input_structure_node = inc2.node
-                        masses = []
-                        symbols = []
-                        symbol = input_structure.get_chemical_symbols()
-                        for ii, mass in enumerate(input_structure.get_masses()):
-                            if mass not in masses:
-                                masses.append(mass)
-                                symbols.append(symbol[ii])
+        try:
+            calculation = next(
+                calc.node
+                for calc in trajectory.base.links.get_incoming().all()
+                if calc.node.process_type == "aiida.calculations:lammps.base"
+            )
+        except StopIteration:
+            # in principle should not happen, but in case skip this trajectory
+            continue
+        params = calculation.inputs.parameters
+        input_structure = calculation.inputs.structure
 
-                        masses, symbols = zip(*sorted(zip(masses, symbols, strict=False)), strict=False)
+        timestep = params["control"]["timestep"]
+        integration_style = params["md"]["integration"]["style"].lower()
+        temperature = params["md"]["integration"]["constraints"]["temp"]
 
-        # Convert AiiDA objects to Python types
-        thermalization_time_val = (
-            thermalization_time.value if hasattr(thermalization_time, "value") else float(thermalization_time)
-        )
-        sampling_time_val = sampling_time.value if hasattr(sampling_time, "value") else float(sampling_time)
-        saving_frequency_val = saving_frequency.value if hasattr(saving_frequency, "value") else int(saving_frequency)
+        i = int(thermalization_time.value / timestep / saving_frequency.value) if thermalization_time.value > 0 else 1
 
-        i = int(thermalization_time_val / params["control"]["timestep"] / saving_frequency_val)
-
-        if i == 0:
-            i = 1
         while i < trajectory.number_steps:
-            step_data = trajectory.get_step_data(i)
-            cell = step_data.cell
+            frame = trajectory.get_step_structure(i).get_ase()
+            if check_vacuum:
+                frame = enlarge_vacuum(
+                    frame,
+                    min_vacuum=min_vacuum.value,
+                    target_vacuum=target_vacuum.value,
+                )
 
             extracted_frames.append(
                 {
-                    "cell": cell.tolist(),
-                    "symbols": list(step_data[5]["element"]),
-                    "positions": [
-                        [
-                            step_data[5]["x"][jj],
-                            step_data[5]["y"][jj],
-                            step_data[5]["z"][jj],
-                        ]
-                        for jj, _ in enumerate(step_data[5]["y"])
-                    ],
-                    "input_structure_uuid": str(input_structure_node.uuid),
+                    "cell": frame.get_cell(),
+                    "symbols": frame.get_chemical_symbols(),
+                    "positions": frame.get_positions(),
+                    "input_structure_uuid": str(input_structure.uuid),
                     "gen_method": "LAMMPS",
-                    "pbc": trajectory.get_step_structure(i).pbc,
+                    "pbc": frame.get_pbc(),
                 }
             )
-            extracted_frames[-1]["style"] = params["md"]["integration"]["style"]
-            extracted_frames[-1]["temp"] = params["md"]["integration"]["constraints"]["temp"]
-            extracted_frames[-1]["timestep"] = params["control"]["timestep"]
-            extracted_frames[-1]["id_lammps"] = lammps_id
+            extracted_frames[-1]["style"] = integration_style
+            extracted_frames[-1]["temp"] = temperature
+            extracted_frames[-1]["timestep"] = timestep
+            extracted_frames[-1]["id_lammps"] = calculation.uuid
 
-            i = i + int(sampling_time_val / params["control"]["timestep"] / saving_frequency_val)
+            i = i + int(sampling_time.value / timestep / saving_frequency.value)
 
     pes_extracted_frames = PESData(extracted_frames)
     return {"explored_dataset": pes_extracted_frames}
@@ -170,37 +151,38 @@ def validate_engine(value, _):
     return None
 
 
+######################################################
+##                 DEFAULT VALUES                   ##
+######################################################
+DEFAULT_thr_energy = Float(0.001)
+DEFAULT_thr_forces = Float(0.1)
+DEFAULT_thr_stress = Float(0.001)
+
+DEFAULT_max_selected_frames = Int(1000)
+DEFAULT_random_input_structures_lammps = Bool(True)
+DEFAULT_num_random_structures_lammps = Int(20)
+
+DEFAULT_thermalization_time = Float(0.0)
+DEFAULT_sampling_time = Float(1.0)
+
+DEFAULT_max_loops = Int(10)
+
+DEFAULT_do_dataset_augmentation = Bool(True)
+DEFAULT_do_ab_initio_labelling = Bool(True)
+DEFAULT_training_engine = Str("MACE")
+DEFAULT_do_training = Bool(True)
+DEFAULT_do_exploration = Bool(True)
+
+DEFAULT_check_vacuum = Bool(True)
+######################################################
+
+
 class TrainsPotWorkChain(WorkChain):
     """WorkChain to launch LAMMPS calculations."""
 
     @classmethod
     def define(cls, spec):
         """Specify inputs and outputs."""
-        ######################################################
-        ##                 DEFAULT VALUES                   ##
-        ######################################################
-        DEFAULT_thr_energy = Float(0.001)
-        DEFAULT_thr_forces = Float(0.1)
-        DEFAULT_thr_stress = Float(0.001)
-
-        DEFAULT_max_selected_frames = Int(1000)
-        DEFAULT_random_input_structures_lammps = Bool(True)
-        DEFAULT_num_random_structures_lammps = Int(20)
-
-        DEFAULT_thermalization_time = Float(0.0)
-        DEFAULT_sampling_time = Float(1.0)
-
-        DEFAULT_max_loops = Int(10)
-
-        DEFAULT_do_dataset_augmentation = Bool(True)
-        DEFAULT_do_ab_initio_labelling = Bool(True)
-        DEFAULT_training_engine = Str("MACE")
-        DEFAULT_do_training = Bool(True)
-        DEFAULT_do_exploration = Bool(True)
-
-        DEFAULT_check_vacuum = Bool(True)
-        ######################################################
-
         super().define(spec)
         spec.input(
             "do_dataset_augmentation",
@@ -451,8 +433,26 @@ class TrainsPotWorkChain(WorkChain):
         )
 
     @classmethod
-    def validate_inputs(cls, inputs, namespace):
+    def validate_inputs(cls, inputs, _):
         """Validate the top-level inputs."""
+        if "exploration" in inputs:
+            md_params_list = inputs["exploration"].get("params_list", [])
+            if len(md_params_list) == 0:
+                return "The `exploration.params_list` input is required to perform exploration."
+
+            num_timesteps = [el["max_number_steps"] for el in md_params_list.get_list()]
+            timestep = inputs["exploration"]["parameters"]["control"]["timestep"]
+            frame_extraction = inputs.get("frame_extraction", {})
+            thermalization_time = frame_extraction.get("thermalization_time", DEFAULT_thermalization_time)
+            sampling_time = frame_extraction.get("sampling_time", DEFAULT_sampling_time)
+
+            if thermalization_time + sampling_time > min(num_timesteps) * timestep:
+                return (
+                    "The sum of `frame_extraction.thermalization_time` and `frame_extraction.sampling_time` "
+                    "cannot be greater than the shortest MD simulation time. "
+                    f"({thermalization_time.value} + {sampling_time.value} > {min(num_timesteps) * timestep})."
+                )
+
         if "check_vacuum" not in inputs:
             inputs["check_vacuum"] = Bool(True)
         if inputs["check_vacuum"]:
@@ -462,15 +462,17 @@ class TrainsPotWorkChain(WorkChain):
                     inputs["vacuum"]["min_vacuum"] = Float(
                         inputs["training"]["mace"]["train"]["mace_config"].get_dict()["r_max"]
                     )
-                    print(
+                    warnings.warn(
                         f"Warning: `vacuum.min_vacuum` not specified, using user-defined MACE "
-                        f"cutoff radius value of {inputs['vacuum']['min_vacuum']} Ang."
+                        f"cutoff radius value of {inputs['vacuum']['min_vacuum'].value} Ang.",
+                        stacklevel=2,
                     )
                 except Exception:
                     inputs["vacuum"]["min_vacuum"] = Float(5.0)  # Default value of MACE 0.3.13
-                    print(
+                    warnings.warn(
                         f"Warning: `vacuum.min_vacuum` not specified, using default MACE default "
-                        f"cutoff radius value of {inputs['vacuum']['min_vacuum'].value} Ang."
+                        f"cutoff radius value of {inputs['vacuum']['min_vacuum'].value} Ang.",
+                        stacklevel=2,
                     )
             if "vacuum" not in inputs or "target_vacuum" not in inputs["vacuum"]:
                 try:
@@ -480,10 +482,11 @@ class TrainsPotWorkChain(WorkChain):
                         "The `vacuum.target_vacuum` or `dataset_augmentation.vacuum` input is "
                         "required when using the 'check_vacuum' option."
                     )
-                print(
+                warnings.warn(
                     "Warning: `vacuum.target_vacuum` not specified, using "
                     "`dataset_augmentation.vacuum` value of "
-                    f"{inputs['vacuum']['target_vacuum'].value} Ang."
+                    f"{inputs['vacuum']['target_vacuum'].value} Ang.",
+                    stacklevel=2,
                 )
         cls.inputs = AttributeDict(inputs)
 
@@ -536,7 +539,9 @@ class TrainsPotWorkChain(WorkChain):
         if md_protocol == "vdw_d2":
             builder.exploration.potential_pair_style = Str("hybrid/overlay")
         builder.exploration.md.lammps.code = md_code
-        builder.exploration.params_list = generate_lammps_md_config()
+        builder.exploration.params_list = generate_lammps_md_config(
+            temperatures=[300], pressures=[0.0], steps=[50], styles=["nvt"]
+        )
         builder.exploration.protocol = md_protocol
         builder.exploration.parameters = Dict({"control": {"timestep": 0.001}})
 

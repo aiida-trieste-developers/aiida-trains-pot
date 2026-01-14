@@ -120,19 +120,26 @@ def SplitDataset(dataset):
 class TrainingWorkChain(WorkChain):
     """A workchain to loop over structures and submit MACEWorkChain."""
 
+    ######################################################
+    ##                 DEFAULT VALUES                   ##
+    ######################################################
+    DEFAULT_training_engine = "MACE"
+
+    ACCEPTED_ENGINES = ["MACE", "META"]
+    ######################################################
+
     @classmethod
     def define(cls, spec):
         """Input and output specification."""
-        ######################################################
-        ##                 DEFAULT VALUES                   ##
-        ######################################################
-        DEFAULT_training_engine = Str("MACE")
-        ######################################################
-
         super().define(spec)
         spec.input("num_potentials", valid_type=Int, default=lambda: Int(1), required=False)
         spec.input(
-            "engine", default=lambda: DEFAULT_training_engine, valid_type=Str, help="Training engine", required=False
+            "engine",
+            default=lambda: Str(cls.DEFAULT_training_engine),
+            valid_type=Str,
+            help="Training engine",
+            required=True,
+            validator=cls.validate_engine,
         )
         spec.input(
             "dataset",
@@ -163,6 +170,12 @@ class TrainingWorkChain(WorkChain):
             valid_type=PESData,
         )
         spec.outline(cls.run_training, cls.finalize)
+
+    @classmethod
+    def validate_engine(cls, value, _):
+        """Validate the engine input."""
+        if value.value not in cls.ACCEPTED_ENGINES:
+            return f"The `engine` input can only be {', '.join(cls.ACCEPTED_ENGINES)}."
 
     def run_training(self):
         """Run training."""

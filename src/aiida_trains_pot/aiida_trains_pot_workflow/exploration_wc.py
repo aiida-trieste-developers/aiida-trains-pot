@@ -147,6 +147,9 @@ class ExplorationWorkChain(WorkChain):
             exclude=("lammps.structure", "lammps.potential", "lammps.parameters"),
             namespace_options={"validator": None},
         )
+
+        spec.inputs.validator = cls.validate_inputs
+
         spec.output_namespace("md", dynamic=True, help="Exploration outputs")
 
         spec.outline(
@@ -160,6 +163,20 @@ class ExplorationWorkChain(WorkChain):
             ),
             cls.finalize_md,
         )
+
+    @classmethod
+    def validate_inputs(cls, inputs, _):
+        """Validate the top-level inputs."""
+        protocol = inputs.get("protocol", None)
+        pair_style = inputs.get("potential_pair_style", None)
+
+        if (
+            protocol is not None
+            and protocol.value == "vdw_d2"
+            and pair_style is not None
+            and "metatomic" in pair_style.value
+        ):
+            return "The 'vdw_d2' protocol is not compatible with the 'metatomic' potential pair style."
 
     def run_md(self):  # noqa: PLR0912
         """Run MD simulations for each structure and MD parameter set, with retries on failure."""
