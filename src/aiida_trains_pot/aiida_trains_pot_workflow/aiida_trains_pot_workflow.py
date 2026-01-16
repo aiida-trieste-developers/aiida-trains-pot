@@ -344,8 +344,8 @@ class TrainsPotWorkChain(WorkChain):
         spec.expose_inputs(
             TrainingWorkChain,
             namespace="training",
-            exclude=("dataset"),
-            namespace_options={"validator": None},
+            exclude=("dataset", "engine"),
+            namespace_options={"validator": None, "required": False, "populate_defaults": False},
         )
         spec.expose_inputs(
             ExplorationWorkChain,
@@ -656,6 +656,7 @@ class TrainsPotWorkChain(WorkChain):
         """Run training calculations."""
         inputs = self.exposed_inputs(TrainingWorkChain, namespace="training")
         inputs.dataset = self.ctx.dataset.get_labelled()
+        inputs.engine = self.inputs.training_engine
         if "potential_checkpoints" in self.ctx:
             inputs["checkpoints"] = {
                 f"chkpt_{ii+1}": self.ctx.potential_checkpoints[-ii]
