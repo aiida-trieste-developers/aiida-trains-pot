@@ -153,15 +153,15 @@ input_structures = PESData([read(os.path.join(script_dir, "gr8x8.xyz"))])
 
 builder = TrainsPot.get_builder(
     abinitiolabeling_code=QE_code,
-    abinitiolabeling_protocol="stringent",
-    pseudo_family="SSSP/1.3/PBEsol/precision",
+    abinitiolabeling_protocol="fast",
+    pseudo_family="SSSP/1.3/PBE/efficiency",
     md_code=LAMMPS_code,
-    # md_protocol               = 'vdw_d2',
-    # dataset                   = input_structures,
-    dataset=load_node(1912105),
+    md_protocol               = 'vdw_d2',
+    dataset                   = input_structures,
+    #dataset=load_node(1912105),
 )
-builder.do_dataset_augmentation = Bool(False)
-builder.do_ab_initio_labelling = Bool(False)
+builder.do_dataset_augmentation = Bool(True)
+builder.do_ab_initio_labelling = Bool(True)
 builder.training_engine = Str("META")
 builder.do_training = Bool(True)
 builder.do_exploration = Bool(True)

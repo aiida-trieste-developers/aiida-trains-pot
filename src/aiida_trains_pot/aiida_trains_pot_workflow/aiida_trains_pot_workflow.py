@@ -779,6 +779,9 @@ class TrainsPotWorkChain(WorkChain):
                 self.ctx.potentials_lammps.append(calc["model_stage2_lammps"])
             elif "model_stage1_lammps" in calc:
                 self.ctx.potentials_lammps.append(calc["model_stage1_lammps"])
+            if "model" in calc:
+                self.ctx.potentials_lammps.append(calc["model"])
+                self.ctx.potentials_ase.append(calc["model"])
 
         self.ctx.dataset = self.ctx.training.outputs.global_splitted
 
