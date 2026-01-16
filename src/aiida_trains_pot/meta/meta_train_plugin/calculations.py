@@ -92,15 +92,9 @@ class MetaTrainCalculation(CalcJob):
         spec.inputs.validator = validate_inputs
 
         spec.output(
-            "model_stage2_lammps",
+            "model",
             valid_type=SinglefileData,
-            help="Stage 2 model compiled for LAMMPS",
-        )
-
-        spec.output(
-            "meta_out",
-            valid_type=SinglefileData,
-            help="Meta output file",
+            help="Model",
         )
         spec.output(
             "checkpoints",

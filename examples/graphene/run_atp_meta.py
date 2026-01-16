@@ -50,7 +50,7 @@ QE_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "70GB",
-    "account": "CNHPC_1491920",
+    "account": "IsB32_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -62,7 +62,7 @@ MACE_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "CNHPC_1491920",
+    "account": "IsB32_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -74,7 +74,7 @@ META_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "CNHPC_1491920",
+    "account": "IsB32_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -86,7 +86,7 @@ LAMMPS_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "CNHPC_1491920",
+    "account": "IsB32_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -98,7 +98,7 @@ EVALUATION_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "CNHPC_1491920",
+    "account": "IsB32_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -319,10 +319,6 @@ with open(META_config) as yaml_file:
 builder.training.meta.train.meta_config = Dict(meta_config)
 
 builder.training.meta.train.code = META_train_code
-# builder.training.mace.train.preprocess_code                             = MACE_preprocess_code
-# builder.training.mace.train.postprocess_code                            = MACE_postprocess_code
-# builder.training.mace.train.do_preprocess                               = Bool(True)
-
 
 builder.training.meta.train.metadata.options.withmpi = False
 builder.training.meta.train.metadata.options.resources = {
@@ -337,10 +333,7 @@ builder.training.meta.train.metadata.options.account = META_machine["account"]
 builder.training.meta.train.metadata.options.queue_name = META_machine["partition"]
 builder.training.meta.train.metadata.options.qos = META_machine["qos"]
 builder.training.meta.train.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{META_machine['gpu']}"
-# builder.training.meta.train.metadata.options.prepend_text               = """function mace_run_train(){
-#    srun mace_run_train $@
-# }
-# export -f mace_run_train""" ### This is needed to parallelize the training of MACE on multiple GPUs.
+
 
 
 ###############################################

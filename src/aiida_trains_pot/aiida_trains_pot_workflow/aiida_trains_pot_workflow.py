@@ -733,8 +733,7 @@ class TrainsPotWorkChain(WorkChain):
     def run_committee_evaluation(self):
         """Run committee evaluation."""
         inputs = self.exposed_inputs(EvaluationCalculation, namespace="committee_evaluation")
-        if len(self.ctx.potentials_ase) == 0:
-            self.ctx.potentials_ase = self.ctx.potentials_lammps
+        
         inputs["ase_potentials"] = {
             f"pot_{ii}": self.ctx.potentials_ase[ii] for ii in range(len(self.ctx.potentials_ase))
         }

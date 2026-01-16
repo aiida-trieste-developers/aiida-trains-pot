@@ -156,17 +156,6 @@ class MaceTrainCalculation(CalcJob):
             valid_type=SinglefileData,
             help="Stage 2 model not compiled",
         )
-
-        spec.output(
-            "mace_out",
-            valid_type=SinglefileData,
-            help="Mace output file",
-        )
-        spec.output(
-            "logs",
-            valid_type=FolderData,
-            help="Logs file",
-        )
         spec.output(
             "checkpoints",
             valid_type=FolderData,

@@ -267,14 +267,12 @@ class MetaBaseParser(Parser):
 
                 # Simplify model detection logic
                 if "model.pt" in output_filename:
-                    self.out("model_stage2_lammps", output_node)
+                    self.out("model", output_node)
 
                 elif output_filename.endswith("model.ckpt"):
                     folder_node = FolderData()
                     with self.retrieved.open(output_filename, "rb") as handle:
                         folder_node.put_object_from_filelike(handle, output_filename)
                     self.out("checkpoints", folder_node)
-                elif output_filename.endswith(".out"):
-                    self.out(output_filename.replace(".out", "_out"), output_node)
 
         return ExitCode(0)
