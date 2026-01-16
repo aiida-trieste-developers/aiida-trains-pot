@@ -120,19 +120,26 @@ def SplitDataset(dataset):
 class TrainingWorkChain(WorkChain):
     """A workchain to loop over structures and submit MACEWorkChain."""
 
+    ######################################################
+    ##                 DEFAULT VALUES                   ##
+    ######################################################
+    DEFAULT_training_engine = "MACE"
+
+    ACCEPTED_ENGINES = ["MACE", "META"]
+    ######################################################
+
     @classmethod
     def define(cls, spec):
         """Input and output specification."""
-        ######################################################
-        ##                 DEFAULT VALUES                   ##
-        ######################################################
-        DEFAULT_training_engine = Str("MACE")
-        ######################################################
-
         super().define(spec)
         spec.input("num_potentials", valid_type=Int, default=lambda: Int(1), required=False)
         spec.input(
-            "engine", default=lambda: DEFAULT_training_engine, valid_type=Str, help="Training engine", required=False
+            "engine",
+            default=lambda: Str(cls.DEFAULT_training_engine),
+            valid_type=Str,
+            help="Training engine",
+            required=True,
+            validator=cls.validate_engine,
         )
         spec.input(
             "dataset",
@@ -149,20 +156,38 @@ class TrainingWorkChain(WorkChain):
             MaceWorkChain,
             namespace="mace",
             exclude=("train.training_set", "train.validation_set", "train.test_set"),
-            namespace_options={"validator": None},
+            namespace_options={"validator": None, "required": False, "populate_defaults": False},
         )
         spec.expose_inputs(
             MetaWorkChain,
             namespace="meta",
             exclude=("train.training_set", "train.validation_set", "train.test_set"),
-            namespace_options={"validator": None},
+            namespace_options={"validator": None, "required": False, "populate_defaults": False},
         )
+
+        spec.inputs.validator = cls.validate_inputs
         spec.output_namespace("training", dynamic=True, help="Training outputs")
         spec.output(
             "global_splitted",
             valid_type=PESData,
         )
         spec.outline(cls.run_training, cls.finalize)
+
+    @classmethod
+    def validate_inputs(cls, inputs, _):
+        """Validate the inputs based on the selected engine."""
+        engine = inputs["engine"].value
+        if engine == "MACE" and "mace" not in inputs:
+            return "Missing required `mace` inputs for engine='MACE'."
+        if engine == "META" and "meta" not in inputs:
+            return "Missing required `meta` inputs for engine='META'."
+        return None
+
+    @classmethod
+    def validate_engine(cls, value, _):
+        """Validate the engine input."""
+        if value.value not in cls.ACCEPTED_ENGINES:
+            return f"The `engine` input can only be {', '.join(cls.ACCEPTED_ENGINES)}."
 
     def run_training(self):
         """Run training."""
