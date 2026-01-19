@@ -50,7 +50,7 @@ QE_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "70GB",
-    "account": "IsB32_ASGARD",
+    "account": "IscrB_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -62,7 +62,7 @@ MACE_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "IsB32_ASGARD",
+    "account": "IscrB_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -74,7 +74,7 @@ META_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "IsB32_ASGARD",
+    "account": "IscrB_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -86,7 +86,7 @@ LAMMPS_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "IsB32_ASGARD",
+    "account": "IscrB_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -98,7 +98,7 @@ EVALUATION_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "IsB32_ASGARD",
+    "account": "IscrB_ASGARD",
     "partition": "boost_usr_prod",
     "qos": "boost_qos_dbg",
 }
@@ -156,12 +156,12 @@ builder = TrainsPot.get_builder(
     abinitiolabeling_protocol="fast",
     pseudo_family="SSSP/1.3/PBE/efficiency",
     md_code=LAMMPS_code,
-    md_protocol               = 'vdw_d2',
-    dataset                   = input_structures,
-    #dataset=load_node(1912105),
+    #md_protocol               = 'vdw_d2',
+    #dataset                   = input_structures,
+    dataset                    =load_node(2415935),
 )
-builder.do_dataset_augmentation = Bool(True)
-builder.do_ab_initio_labelling = Bool(True)
+builder.do_dataset_augmentation = Bool(False)
+builder.do_ab_initio_labelling = Bool(False)
 builder.training_engine = Str("META")
 builder.do_training = Bool(True)
 builder.do_exploration = Bool(True)
