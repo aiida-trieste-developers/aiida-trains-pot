@@ -156,9 +156,9 @@ builder = TrainsPot.get_builder(
     abinitiolabeling_protocol="fast",
     pseudo_family="SSSP/1.3/PBE/efficiency",
     md_code=LAMMPS_code,
-    #md_protocol               = 'vdw_d2',
-    #dataset                   = input_structures,
-    dataset                    =load_node(2415935),
+    # md_protocol               = 'vdw_d2',
+    # dataset                   = input_structures,
+    dataset=load_node(2415935),
 )
 builder.do_dataset_augmentation = Bool(False)
 builder.do_ab_initio_labelling = Bool(False)
@@ -333,7 +333,6 @@ builder.training.meta.train.metadata.options.account = META_machine["account"]
 builder.training.meta.train.metadata.options.queue_name = META_machine["partition"]
 builder.training.meta.train.metadata.options.qos = META_machine["qos"]
 builder.training.meta.train.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{META_machine['gpu']}"
-
 
 
 ###############################################
