@@ -1,40 +1,38 @@
-# ruff: noqa
+"""Example script to run the AiiDA TrainsPot workflow on graphene using MACE engine."""
+
 import os
 
 import yaml
+
 from aiida import load_profile
 from aiida.engine import submit
-from aiida.orm import Bool
-from aiida.orm import Dict
-from aiida.orm import Float
-from aiida.orm import Int
-from aiida.orm import List
-from aiida.orm import load_code
-from aiida.orm import load_computer
-from aiida.orm import Str
+from aiida.orm import Bool, Dict, Float, Int, List, Str, load_code, load_computer
 from aiida.plugins import DataFactory
-from aiida.plugins import WorkflowFactory
 from ase.io import read
 
+from aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow import TrainingWorkChain
+from aiida_trains_pot.data.pesdata import PESData
 from aiida_trains_pot.utils.generate_config import generate_lammps_md_config
 
 load_profile()
 
-PESData = DataFactory("pesdata")
 KpointsData = DataFactory("core.array.kpoints")
-TrainsPot = WorkflowFactory("trains_pot.workflow")
 
 ####################################################################
 #                     START MACHINE PARAMETERS                     #
 ####################################################################
 
 
-QE_code = load_code("qe7.2-pw@leo5_scratch_bind")
-MACE_train_code = load_code("mace0312@leo5_scratch")
-MACE_preprocess_code = load_code("mace_preprocess@leo5_scratch")
-MACE_postprocess_code = load_code("mace_postprocess@leo5_scratch")
-LAMMPS_code = load_code("lmp4mace@leo5_scratch")
-EVALUATION_code = load_code("cep0312")
+QE_code = load_code("<code>@<computer>")
+MACE_train_code = load_code("<code>@<computer>")
+MACE_preprocess_code = load_code("<code>@<computer>")
+MACE_postprocess_code = load_code("<code>@<computer>")
+META_train_code = load_code("<code>@<computer>")
+LAMMPS_code = load_code("<code>@<computer>")
+EVALUATION_code = load_code("<code>")
+EVALUATION_computer = load_computer("<computer>")
+
+HPC_account = "<account>"
 
 QE_machine = {
     "time": "00:05:00",
@@ -43,45 +41,57 @@ QE_machine = {
     "taskpn": 1,
     "cpupt": "8",
     "mem": "70GB",
-    "account": "CNHPC_1491920",
+    "account": HPC_account,
     "partition": "boost_usr_prod",
-    "qos": "boost_qos_dbg",
+    "qos": "normal",
 }
 
 MACE_machine = {
+    "time": "00:30:00",
+    "nodes": 1,
+    "gpu": "1",
+    "taskpn": 1,
+    "cpupt": "8",
+    "mem": "30GB",
+    "account": HPC_account,
+    "partition": "boost_usr_prod",
+    "qos": "normal",
+}
+
+META_machine = {
     "time": "00:05:00",
     "nodes": 1,
     "gpu": "1",
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "CNHPC_1491920",
+    "account": HPC_account,
     "partition": "boost_usr_prod",
-    "qos": "boost_qos_dbg",
+    "qos": "normal",
 }
 
 LAMMPS_machine = {
-    "time": "00:05:00",
+    "time": "00:30:00",
     "nodes": 1,
     "gpu": "1",
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "CNHPC_1491920",
+    "account": HPC_account,
     "partition": "boost_usr_prod",
-    "qos": "boost_qos_dbg",
+    "qos": "normal",
 }
 
 EVALUATION_machine = {
-    "time": "00:05:00",
+    "time": "00:30:00",
     "nodes": 1,
     "gpu": "1",
     "taskpn": 1,
     "cpupt": "8",
     "mem": "30GB",
-    "account": "CNHPC_1491920",
+    "account": HPC_account,
     "partition": "boost_usr_prod",
-    "qos": "boost_qos_dbg",
+    "qos": "normal",
 }
 
 ####################################################################
@@ -90,6 +100,7 @@ EVALUATION_machine = {
 
 
 def get_memory(mem):
+    """Convert memory in MB, GB, KB format to KB."""
     if mem.find("MB") != -1:
         mem = int(mem.replace("MB", "")) * 1024
     elif mem.find("GB") != -1:
@@ -100,6 +111,7 @@ def get_memory(mem):
 
 
 def get_time(time):
+    """Convert time in HH:MM:SS format to seconds."""
     time = time.split(":")
     time_sec = int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2])
     return time_sec
@@ -110,6 +122,9 @@ QE_time = get_time(QE_machine["time"])
 
 MACE_mem = get_memory(MACE_machine["mem"])
 MACE_time = get_time(MACE_machine["time"])
+
+META_mem = get_memory(META_machine["mem"])
+META_time = get_time(META_machine["time"])
 
 LAMMPS_mem = get_memory(LAMMPS_machine["mem"])
 LAMMPS_time = get_time(LAMMPS_machine["time"])
@@ -129,7 +144,7 @@ input_structures = PESData([read(os.path.join(script_dir, "gr8x8.xyz"))])
 # Setup TrainsPot workflow
 ###############################################
 
-builder = TrainsPot.get_builder(
+builder = TrainingWorkChain.get_builder(
     abinitiolabeling_code=QE_code,
     abinitiolabeling_protocol="fast",
     pseudo_family="SSSP/1.3/PBE/efficiency",
@@ -143,13 +158,22 @@ builder.do_training = Bool(True)
 builder.do_exploration = Bool(True)
 builder.max_loops = Int(2)
 
-## Additional inputs for restart from previous runs or to start with a previous dataset and/or previous MACE potentials ##
+## Additional inputs for restart from previous runs or to start
+## with a previous dataset and/or previous MACE potentials
 
-# builder.explored_dataset = load_node(748569) ## Dataset to be passed to the committe evaluation
-# builder.dataset = load_node(85953) ## Dataset selected to be labelled or already labelled (both labelled and unlabelled datasets are accepted in the same dataset)
-# builder = models_from_trainingwc(builder, 87443, get_labelled_dataset=True, get_config=True) ## populates builder with models (and eventually dataset and MACE parameters) from a previous training workflow
-# builder.models_lammps = {"pot_1":load_node(85984), "pot_2":load_node(85995), "pot_3":load_node(86006), "pot_4":load_node(86017)} ## MACE potentials compiled for LAMMPS
-# builder.models_ase = {"pot_1":load_node(85985), "pot_2":load_node(85996), "pot_3":load_node(86007), "pot_4":load_node(86018)} ## MACE potentials compiled for ASE
+## Dataset to be passed to the committe evaluation
+# builder.explored_dataset = load_node(<node_uuid>)
+
+## Dataset selected to be labelled or already labelled
+## (both labelled and unlabelled datasets are accepted in the same dataset)
+# builder.dataset = load_node(<node_uuid>)
+
+## populates builder with models (and eventually dataset and MACE parameters) from a previous training workflow
+# builder = models_from_trainingwc(builder, <node_uuid>, get_labelled_dataset=True, get_config=True)
+
+## MACE potentials compiled for LAMMPS and ASE from previous run
+# builder.models_lammps = {"pot_1":load_node(<node_uuid>), "pot_2":..., "pot_3":..., "pot_4":...}
+# builder.models_ase = {"pot_1":load_node(<node_uuid>), "pot_2":..., "pot_3":..., "pot_4":...}
 
 ###############################################
 # Thresholds on committee evaluation to select
@@ -268,6 +292,8 @@ export -f mace_run_train"""  ### This is needed to parallelize the training of M
 ###############################################
 builder.random_input_structures_lammps = Bool(True)
 builder.num_random_structures_lammps = Int(4)
+## PESData node containing structures to be used as input in MD
+# builder.lammps_input_structures = load_node(<node_uuid>)
 
 # Generate the simple configuration of md parameters for LAMMPS
 temperatures = [30, 35, 40, 45]
@@ -300,10 +326,10 @@ builder.exploration.md.lammps.metadata.options.qos = LAMMPS_machine["qos"]
 builder.exploration.md.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{LAMMPS_machine['gpu']}"
 
 
-builder.frame_extraction.sampling_time = Float(0.2)  # in ps how often frames are written to the trajectory file
-builder.frame_extraction.thermalization_time = Float(
-    0.0
-)  # in ps how long the thermalization time is. Frames in that time are not considered
+# How often to extract frames from the MD trajectory (in LAMMPS time units)
+builder.frame_extraction.sampling_time = Float(0.02)
+# Thermalization time (in LAMMPS units). Frames in thermalization_time are not considered
+builder.frame_extraction.thermalization_time = Float(0.0)
 
 
 ###############################################
