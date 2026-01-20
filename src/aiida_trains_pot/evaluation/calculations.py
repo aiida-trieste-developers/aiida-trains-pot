@@ -33,10 +33,10 @@ class EvaluationCalculation(CalcJob):
 
         # new ports
         spec.input_namespace(
-            "mace_potentials",
+            "ase_potentials",
             valid_type=SinglefileData,
             required=True,
-            help="Mace potentials",
+            help="Potentials for use in ASE",
         )
         spec.input_namespace(
             "datasets",
@@ -81,7 +81,7 @@ class EvaluationCalculation(CalcJob):
         calcinfo.local_copy_list = []
 
         n_pot = 0
-        for _, pot in self.inputs.mace_potentials.items():
+        for _, pot in self.inputs.ase_potentials.items():
             n_pot += 1
             calcinfo.local_copy_list.append((pot.uuid, pot.filename, f"potential_{n_pot}.dat"))
 

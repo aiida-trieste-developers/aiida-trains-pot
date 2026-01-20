@@ -1,4 +1,4 @@
-"""Example script to run the AiiDA TrainsPot workflow on graphene using MACE engine."""
+"""Example script to run the AiiDA TrainsPot workflow with META training on graphene."""
 
 import os
 
@@ -149,17 +149,17 @@ builder = TrainingWorkChain.get_builder(
     abinitiolabeling_protocol="fast",
     pseudo_family="SSSP/1.3/PBE/efficiency",
     md_code=LAMMPS_code,
-    md_protocol="vdw_d2",
+    # md_protocol               = 'vdw_d2',
     dataset=input_structures,
 )
-builder.do_dataset_augmentation = Bool(True)
-builder.do_ab_initio_labelling = Bool(True)
+builder.do_dataset_augmentation = Bool(False)
+builder.do_ab_initio_labelling = Bool(False)
+builder.training_engine = Str("META")
 builder.do_training = Bool(True)
 builder.do_exploration = Bool(True)
 builder.max_loops = Int(2)
 
-## Additional inputs for restart from previous runs or to start
-## with a previous dataset and/or previous MACE potentials
+## Additional inputs for restart from previous runs or to start with a previous dataset ##
 
 ## Dataset to be passed to the committe evaluation
 # builder.explored_dataset = load_node(<node_uuid>)
@@ -168,13 +168,6 @@ builder.max_loops = Int(2)
 ## (both labelled and unlabelled datasets are accepted in the same dataset)
 # builder.dataset = load_node(<node_uuid>)
 
-## populates builder with models (and eventually dataset and MACE parameters) from a previous training workflow
-# builder = models_from_trainingwc(builder, <node_uuid>, get_labelled_dataset=True, get_config=True)
-
-## MACE potentials compiled for LAMMPS and ASE from previous run
-# builder.models_lammps = {"pot_1":load_node(<node_uuid>), "pot_2":..., "pot_3":..., "pot_4":...}
-# builder.models_ase = {"pot_1":load_node(<node_uuid>), "pot_2":..., "pot_3":..., "pot_4":...}
-
 ###############################################
 # Thresholds on committee evaluation to select
 # structures to be labelled
@@ -182,7 +175,7 @@ builder.max_loops = Int(2)
 builder.thr_energy = Float(2e-3)
 builder.thr_forces = Float(5e-2)
 builder.thr_stress = Float(1e-2)
-builder.max_selected_frames = Int(1000)
+builder.max_selected_frames = Int(10)
 
 
 ###############################################
@@ -236,69 +229,70 @@ builder.ab_initio_labelling.quantumespresso.pw.metadata.options.resources = {
 builder.ab_initio_labelling.quantumespresso.pw.metadata.options.account = QE_machine["account"]
 builder.ab_initio_labelling.quantumespresso.pw.metadata.options.queue_name = QE_machine["partition"]
 builder.ab_initio_labelling.quantumespresso.pw.metadata.options.custom_scheduler_commands = (
-    f"#SBATCH --gres=gpu:{QE_machine['gpu']} "
+    f'#SBATCH --gres=gpu:{QE_machine["gpu"]} '
 )
 builder.ab_initio_labelling.quantumespresso.pw.metadata.options.qos = QE_machine["qos"]
 
-### PW parameters are already populated once defining the builder according to pseudo_family and protocol
-### Can be modified here if needed
+qe_parameters = builder.ab_initio_labelling.quantumespresso.pw.parameters.get_dict()
+qe_parameters["ELECTRONS"] = {
+    "conv_thr": Float(1.0e-8),
+    "mixing_beta": Float(0.5),
+    "mixing_mode": Str("local-TF"),
+}
 
-# builder.ab_initio_labelling.quantumespresso.pw.pseudos = ...
-# builder.ab_initio_labelling.quantumespresso.kpoints = KpointsData().set_kpoints_mesh([1, 1, 1])
+qe_parameters["SYSTEM"] = {
+    "degauss": 0.0125,
+    "occupations": "smearing",
+    "smearing": "cold",
+}
 
-# qe_parameters = builder.ab_initio_labelling.quantumespresso.pw.parameters.get_dict()
-# print(qe_parameters)
-# qe_parameters['ELECTRONS'] = {'conv_thr': Float(1.0e-8), 'mixing_beta': Float(0.5), 'mixing_mode': Str('local-TF'), }
-# builder.ab_initio_labelling.quantumespresso.pw.parameters = Dict(qe_parameters)
+builder.ab_initio_labelling.quantumespresso.pw.parameters = Dict(qe_parameters)
 
 
 ###############################################
-# Setup MACE
+# Setup TRAINING
 ###############################################
-
-MACE_config = os.path.join(script_dir, "mace_config.yml")
-with open(MACE_config) as yaml_file:
-    mace_config = yaml.safe_load(yaml_file)
-builder.training.mace.train.mace_config = Dict(mace_config)
-
-builder.training.mace.train.code = MACE_train_code
-builder.training.mace.train.preprocess_code = MACE_preprocess_code
-builder.training.mace.train.postprocess_code = MACE_postprocess_code
-builder.training.mace.train.do_preprocess = Bool(True)
-
 
 builder.training.num_potentials = Int(3)
-builder.training.mace.train.metadata.options.withmpi = False
-builder.training.mace.train.metadata.options.resources = {
-    "num_machines": MACE_machine["nodes"],
-    "num_mpiprocs_per_machine": MACE_machine["taskpn"],
-    "num_cores_per_mpiproc": MACE_machine["cpupt"],
+
+###############################################
+# Setup META
+###############################################
+
+META_config = os.path.join(script_dir, "meta_config.yml")
+with open(META_config) as yaml_file:
+    meta_config = yaml.safe_load(yaml_file)
+builder.training.meta.train.meta_config = Dict(meta_config)
+
+builder.training.meta.train.code = META_train_code
+
+builder.training.meta.train.metadata.options.withmpi = False
+builder.training.meta.train.metadata.options.resources = {
+    "num_machines": META_machine["nodes"],
+    "num_mpiprocs_per_machine": META_machine["taskpn"],
+    "num_cores_per_mpiproc": META_machine["cpupt"],
 }
-builder.training.mace.train.metadata.options.max_wallclock_seconds = MACE_time
-builder.training.mace.train.metadata.options.max_memory_kb = MACE_mem
-builder.training.mace.train.metadata.options.import_sys_environment = False
-builder.training.mace.train.metadata.options.account = MACE_machine["account"]
-builder.training.mace.train.metadata.options.queue_name = MACE_machine["partition"]
-builder.training.mace.train.metadata.options.qos = MACE_machine["qos"]
-builder.training.mace.train.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{MACE_machine['gpu']}"
-builder.training.mace.train.metadata.options.prepend_text = """function mace_run_train(){
-    srun mace_run_train $@
-}
-export -f mace_run_train"""  ### This is needed to parallelize the training of MACE on multiple GPUs.
+builder.training.meta.train.metadata.options.max_wallclock_seconds = META_time
+builder.training.meta.train.metadata.options.max_memory_kb = META_mem
+builder.training.meta.train.metadata.options.import_sys_environment = False
+builder.training.meta.train.metadata.options.account = META_machine["account"]
+builder.training.meta.train.metadata.options.queue_name = META_machine["partition"]
+builder.training.meta.train.metadata.options.qos = META_machine["qos"]
+builder.training.meta.train.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{META_machine['gpu']}"
 
 
 ###############################################
 # Setup LAMMPS
 ###############################################
-builder.random_input_structures_lammps = Bool(True)
-builder.num_random_structures_lammps = Int(4)
+builder.random_input_structures_lammps = Bool(False)
+builder.num_random_structures_lammps = Int(5)
 ## PESData node containing structures to be used as input in MD
 # builder.lammps_input_structures = load_node(<node_uuid>)
 
 # Generate the simple configuration of md parameters for LAMMPS
-temperatures = [30, 35, 40, 45]
+temperatures = [3000]
 pressures = [0]
-steps = [500]
+steps = [100]
 styles = ["npt"]
 timestep = 0.001
 builder.exploration.params_list = generate_lammps_md_config(temperatures, pressures, steps, styles, timestep)
@@ -307,11 +301,14 @@ builder.exploration.parameters = Dict(
         "control": {
             "timestep": timestep,
         },
+        "potential": {
+            "neighbor_modify": ["one", "20000", "page", "200000"],
+        },
     }
 )
+builder.exploration.potential_pair_style = Str("metatomic")
 
-
-builder.exploration.md.lammps.settings = Dict({"additional_cmdline_params": ["-k", "on", "g", "1", "-sf", "kk"]})
+# builder.exploration.md.lammps.settings = Dict({"additional_cmdline_params": ["-k", "on", "g", "1", "-sf", "kk"]})
 builder.exploration.md.lammps.metadata.options.resources = {
     "num_machines": LAMMPS_machine["nodes"],
     "num_mpiprocs_per_machine": LAMMPS_machine["taskpn"],
@@ -324,7 +321,6 @@ builder.exploration.md.lammps.metadata.options.account = LAMMPS_machine["account
 builder.exploration.md.lammps.metadata.options.queue_name = LAMMPS_machine["partition"]
 builder.exploration.md.lammps.metadata.options.qos = LAMMPS_machine["qos"]
 builder.exploration.md.lammps.metadata.options.custom_scheduler_commands = f"#SBATCH --gres=gpu:{LAMMPS_machine['gpu']}"
-
 
 # How often to extract frames from the MD trajectory (in LAMMPS time units)
 builder.frame_extraction.sampling_time = Float(0.02)
@@ -351,7 +347,7 @@ builder.committee_evaluation.metadata.options.custom_scheduler_commands = (
 )
 builder.committee_evaluation.metadata.options.qos = EVALUATION_machine["qos"]
 builder.committee_evaluation.metadata.options.account = EVALUATION_machine["account"]
-builder.committee_evaluation.metadata.computer = load_computer("leo5_scratch")
+builder.committee_evaluation.metadata.computer = EVALUATION_computer
 
 
 calc = submit(builder)

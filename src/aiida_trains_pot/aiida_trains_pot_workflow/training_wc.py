@@ -1,13 +1,14 @@
-"""Workchain to perform training of MACE potentials."""
+"""Training workchain for AiiDA TrainsPot."""
 
 import itertools
 import random
 import time
 
 from aiida.engine import WorkChain, append_, calcfunction
-from aiida.orm import Bool, FolderData, Int
+from aiida.orm import Bool, FolderData, Int, Str
 from aiida.plugins import DataFactory, WorkflowFactory
 
+MetaWorkChain = WorkflowFactory("trains_pot.metatrain")
 MaceWorkChain = WorkflowFactory("trains_pot.macetrain")
 PESData = DataFactory("pesdata")
 
@@ -15,7 +16,6 @@ PESData = DataFactory("pesdata")
 @calcfunction
 def SplitDataset(dataset):
     """Divide dataset into training, validation and test sets."""
-    # data = self.inputs.dataset_list.get_list()
     data = dataset.get_list()
 
     exclude_list = [
@@ -120,11 +120,27 @@ def SplitDataset(dataset):
 class TrainingWorkChain(WorkChain):
     """A workchain to loop over structures and submit MACEWorkChain."""
 
+    ######################################################
+    ##                 DEFAULT VALUES                   ##
+    ######################################################
+    DEFAULT_training_engine = "MACE"
+
+    ACCEPTED_ENGINES = ["MACE", "META"]
+    ######################################################
+
     @classmethod
     def define(cls, spec):
         """Input and output specification."""
         super().define(spec)
         spec.input("num_potentials", valid_type=Int, default=lambda: Int(1), required=False)
+        spec.input(
+            "engine",
+            default=lambda: Str(cls.DEFAULT_training_engine),
+            valid_type=Str,
+            help="Training engine",
+            required=True,
+            validator=cls.validate_engine,
+        )
         spec.input(
             "dataset",
             valid_type=PESData,
@@ -140,8 +156,16 @@ class TrainingWorkChain(WorkChain):
             MaceWorkChain,
             namespace="mace",
             exclude=("train.training_set", "train.validation_set", "train.test_set"),
-            namespace_options={"validator": None},
+            namespace_options={"validator": None, "required": False, "populate_defaults": False},
         )
+        spec.expose_inputs(
+            MetaWorkChain,
+            namespace="meta",
+            exclude=("train.training_set", "train.validation_set", "train.test_set"),
+            namespace_options={"validator": None, "required": False, "populate_defaults": False},
+        )
+
+        spec.inputs.validator = cls.validate_inputs
         spec.output_namespace("training", dynamic=True, help="Training outputs")
         spec.output(
             "global_splitted",
@@ -149,8 +173,24 @@ class TrainingWorkChain(WorkChain):
         )
         spec.outline(cls.run_training, cls.finalize)
 
+    @classmethod
+    def validate_inputs(cls, inputs, _):
+        """Validate the inputs based on the selected engine."""
+        engine = inputs["engine"].value
+        if engine == "MACE" and "mace" not in inputs:
+            return "Missing required `mace` inputs for engine='MACE'."
+        if engine == "META" and "meta" not in inputs:
+            return "Missing required `meta` inputs for engine='META'."
+        return None
+
+    @classmethod
+    def validate_engine(cls, value, _):
+        """Validate the engine input."""
+        if value.value not in cls.ACCEPTED_ENGINES:
+            return f"The `engine` input can only be {', '.join(cls.ACCEPTED_ENGINES)}."
+
     def run_training(self):
-        """Run MACEWorkChain for each structure."""
+        """Run training."""
         split_datasets = SplitDataset(self.inputs.dataset)
         train_set = split_datasets["train_set"]
         validation_set = split_datasets["validation_set"]
@@ -162,34 +202,66 @@ class TrainingWorkChain(WorkChain):
         self.report(f"Validation set size: {len(validation_set.get_list())}")
         self.report(f"Test set size: {len(test_set.get_list())}")
 
-        inputs = self.exposed_inputs(MaceWorkChain, namespace="mace")
+        if self.inputs.engine.value == "MACE":
+            inputs = self.exposed_inputs(MaceWorkChain, namespace="mace")
 
-        inputs.train["training_set"] = train_set
-        inputs.train["validation_set"] = validation_set
-        inputs.train["test_set"] = test_set
+            inputs.train["training_set"] = train_set
+            inputs.train["validation_set"] = validation_set
+            inputs.train["test_set"] = test_set
 
-        if "checkpoints" in self.inputs:
-            inputs["checkpoints"] = self.inputs.checkpoints
-            inputs.train["restart"] = Bool(True)
+            if "checkpoints" in self.inputs:
+                inputs["checkpoints"] = self.inputs.checkpoints
+                inputs.train["restart"] = Bool(True)
 
-        if "checkpoints" in inputs:
-            chkpts = list(dict(inputs.checkpoints).values())
+            if "checkpoints" in inputs:
+                chkpts = list(dict(inputs.checkpoints).values())
 
-        for ii in range(self.inputs.num_potentials.value):
-            if "checkpoints" in self.inputs and ii < len(chkpts):
-                inputs.train["checkpoints"] = chkpts[ii]
+            for ii in range(self.inputs.num_potentials.value):
+                if "checkpoints" in self.inputs and ii < len(chkpts):
+                    inputs.train["checkpoints"] = chkpts[ii]
 
-            inputs.train["index_pot"] = Int(ii)
-            future = self.submit(MaceWorkChain, **inputs)
-            self.to_context(mace_wc=append_(future))
-        pass
+                inputs.train["index_pot"] = Int(ii)
+                future = self.submit(MaceWorkChain, **inputs)
+                self.to_context(mace_wc=append_(future))
+            pass
+
+        if self.inputs.engine.value == "META":
+            inputs = self.exposed_inputs(MetaWorkChain, namespace="meta")
+
+            inputs.train["training_set"] = train_set
+            inputs.train["validation_set"] = validation_set
+            inputs.train["test_set"] = test_set
+
+            if "checkpoints" in self.inputs:
+                inputs["checkpoints"] = self.inputs.checkpoints
+                inputs.train["restart"] = Bool(True)
+
+            if "checkpoints" in inputs:
+                chkpts = list(dict(inputs.checkpoints).values())
+
+            for ii in range(self.inputs.num_potentials.value):
+                if "checkpoints" in self.inputs and ii < len(chkpts):
+                    inputs.train["checkpoints"] = chkpts[ii]
+
+                inputs.train["index_pot"] = Int(ii)
+                future = self.submit(MetaWorkChain, **inputs)
+                self.to_context(meta_wc=append_(future))
+            pass
 
     def finalize(self):
-        """Collect and output results from all MACEWorkChain instances."""
+        """Collect and output results from all WorkChain instances."""
         results = {}
-        for ii, calc in enumerate(self.ctx.mace_wc):
-            results[f"mace_{ii}"] = {}
-            for el in calc.outputs:
-                results[f"mace_{ii}"][el] = calc.outputs[el]
 
-            self.out("training", results)
+        if self.inputs.engine.value == "MACE":
+            for ii, calc in enumerate(self.ctx.mace_wc):
+                results[f"mace_{ii}"] = {}
+                for el in calc.outputs:
+                    results[f"mace_{ii}"][el] = calc.outputs[el]
+
+        if self.inputs.engine.value == "META":
+            for ii, calc in enumerate(self.ctx.meta_wc):
+                results[f"meta_{ii}"] = {}
+                for el in calc.outputs:
+                    results[f"meta_{ii}"][el] = calc.outputs[el]
+
+        self.out("training", results)

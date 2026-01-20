@@ -37,6 +37,11 @@ def models_from_trainingwc(builder, identifier, get_labelled_dataset=False, get_
                 models_lammps[trainings] = outputs["training"][trainings]["model_stage1_lammps"]
             if "checkpoints" in outputs["training"][trainings]:
                 models_checkpoints[trainings] = outputs["training"][trainings]["checkpoints"]
+        if trainings.startswith("meta"):
+            if "model_stage2_lammps" in outputs["training"][trainings]:
+                models_lammps[trainings] = outputs["training"][trainings]["model_stage2_lammps"]
+            if "checkpoints" in outputs["training"][trainings]:
+                models_checkpoints[trainings] = outputs["training"][trainings]["checkpoints"]
 
     builder.models_ase = models_ase
     builder.models_lammps = models_lammps

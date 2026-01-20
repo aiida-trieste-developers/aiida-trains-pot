@@ -11,7 +11,7 @@ from aiida.plugins import DataFactory, WorkflowFactory
 from aiida_lammps.data.potential import LammpsPotentialData
 from aiida_quantumespresso.workflows.protocols.utils import recursive_merge
 
-from aiida_trains_pot.utils.lammps_pair_coeffs import get_dftd2_pair_coeffs, get_mace_pair_coeff
+from aiida_trains_pot.utils.lammps_pair_coeffs import get_dftd2_pair_coeffs, get_mace_pair_coeff, get_meta_pair_coeff
 
 LammpsWorkChain = WorkflowFactory("lammps.base")
 PESData = DataFactory("pesdata")
@@ -147,6 +147,9 @@ class ExplorationWorkChain(WorkChain):
             exclude=("lammps.structure", "lammps.potential", "lammps.parameters"),
             namespace_options={"validator": None},
         )
+
+        spec.inputs.validator = cls.validate_inputs
+
         spec.output_namespace("md", dynamic=True, help="Exploration outputs")
 
         spec.outline(
@@ -160,6 +163,20 @@ class ExplorationWorkChain(WorkChain):
             ),
             cls.finalize_md,
         )
+
+    @classmethod
+    def validate_inputs(cls, inputs, _):
+        """Validate the top-level inputs."""
+        protocol = inputs.get("protocol", None)
+        pair_style = inputs.get("potential_pair_style", None)
+
+        if (
+            protocol is not None
+            and protocol.value == "vdw_d2"
+            and pair_style is not None
+            and "metatomic" in pair_style.value
+        ):
+            return "The 'vdw_d2' protocol is not compatible with the 'metatomic' potential pair style."
 
     def run_md(self):  # noqa: PLR0912
         """Run MD simulations for each structure and MD parameter set, with retries on failure."""
@@ -180,13 +197,20 @@ class ExplorationWorkChain(WorkChain):
                 if "pair_coeff_list" in self.inputs.parameters["potential"]:
                     generate_pair_coeff = False
 
-            # Pair coefficients for MACE potential without hybrid/overlay
-            # is always generated, if needed it is overwritten
+            # Pair coefficients for MACE potential without hybrid/overlay is always generated,
+            # if needed it is overwritten
             if generate_pair_coeff:
-                pair_coeffs = [get_mace_pair_coeff(inputs.lammps.structure, hybrid=False)]
+                if "metatomic" in self.inputs.potential_pair_style.value:
+                    pair_coeffs = [get_meta_pair_coeff(inputs.lammps.structure, hybrid=False)]
+                else:
+                    pair_coeffs = [get_mace_pair_coeff(inputs.lammps.structure, hybrid=False)]
 
             params_list = self.inputs.params_list.get_list()
             input_parameters = self.inputs.parameters.get_dict()
+            if "metatomic" in self.inputs.potential_pair_style.value:
+                if "potential" in self.inputs.parameters:
+                    if "potential_style_options" not in self.inputs.parameters["potential"]:
+                        input_parameters["potential"]["potential_style_options"] = "potential.dat"
             if self.inputs.protocol is not None:
                 if self.inputs.protocol == "vdw_d2":
                     if "potential" in self.inputs.parameters:
@@ -196,19 +220,22 @@ class ExplorationWorkChain(WorkChain):
                             )
                     else:
                         input_parameters["potential"] = {
-                            "potential_style_options": "mace no_domain_decomposition" "momb 20.0 0.75 20.0"
+                            "potential_style_options": "mace no_domain_decomposition momb 20.0 0.75 20.0"
                         }
                     if generate_pair_coeff:
-                        # Generate DFT-D2 pair coefficients,
-                        # it overwrites the MACE pair_coeff generated above
+                        # Generate DFT-D2 pair coefficients, it overwrites the MACE pair_coeff generated above
                         pair_coeffs = get_dftd2_pair_coeffs(inputs.lammps.structure)
                         pair_coeffs.append(get_mace_pair_coeff(inputs.lammps.structure, hybrid=True))
             input_parameters["potential"]["pair_coeff_list"] = pair_coeffs
 
             parameters = recursive_merge(DEFAULT_parameters.get_dict(), input_parameters)
-            inputs.lammps.settings = recursive_merge(
-                DEFAULT_settings.get_dict(), self.inputs.md.lammps.settings.get_dict()
-            )
+            lammps_inputs = self.inputs.md.lammps
+            if "settings" in lammps_inputs:
+                inputs.lammps.settings = recursive_merge(
+                    DEFAULT_settings.get_dict(), self.inputs.md.lammps.settings.get_dict()
+                )
+            else:
+                inputs.lammps.settings = DEFAULT_settings.get_dict()
             # if 'dump' not in parameters:
             #     parameters['dump'] = {}
             parameters["dump"]["dump_rate"] = int(self.inputs.sampling_time / parameters["control"]["timestep"])

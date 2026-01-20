@@ -11,7 +11,6 @@ import numpy as np
 import torch
 
 from ase.io import read
-from mace.calculators import MACECalculator
 from prettytable import PrettyTable
 
 
@@ -149,6 +148,42 @@ def rmse_table(RMSE) -> PrettyTable:
                     ]
                 )
     return table
+
+
+def load_potentials(potential_files):
+    """Load potentials from files.
+
+    :param potential_files: List of potential file paths
+    :return: List of loaded calculator instances or None if loading failed
+    """
+    calculators = []
+
+    # --- Try loading as MACE potentials ---
+    try:
+        from mace.calculators import MACECalculator
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        calculators = [MACECalculator(pot, device=device) for pot in potential_files]
+        logging.info(f"Loaded {len(calculators)} MACE potentials using {device}.")
+        return calculators  # ✅ success, return here
+
+    except Exception as e:
+        logging.warning(f"Failed to load MACE potentials: {e}")
+
+    # --- Try loading as METAtomic potentials ---
+    try:
+        from metatomic.torch.ase_calculator import MetatomicCalculator
+
+        calculators = [MetatomicCalculator(pot, extensions_directory="extensions/") for pot in potential_files]
+        logging.info(f"Loaded {len(calculators)} METAtomic potentials.")
+        return calculators  # ✅ success, return here
+
+    except Exception as e:
+        logging.error(f"Failed to load METAtomic potentials: {e}")
+
+    # --- If both failed ---
+    logging.error("❌ Unable to load any potential (MACE or METAtomic).")
+    return None
 
 
 def global_rmse(dataset):
@@ -312,12 +347,11 @@ def main(log_freq=100):  # noqa: PLR0912
     datasets = glob.glob("dataset*xyz")
 
     logging.info("Loading potentials...")
-    if torch.cuda.is_available():
-        calculators = [MACECalculator(potential_file, device="cuda") for potential_file in potential_files]
-    else:
-        calculators = [MACECalculator(potential_file, device="cpu") for potential_file in potential_files]
 
-    logging.info(f"Loaded {len(calculators)} potentials.\n")
+    calculators = load_potentials(potential_files)
+    if calculators is None:
+        logging.error("Failed to load any potentials. Aborting committee evaluation.")
+        return
 
     for jj, dataset in enumerate(datasets):
         dataset_name = dataset.replace(".xyz", "")
