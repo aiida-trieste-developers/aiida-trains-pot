@@ -883,6 +883,7 @@ class DatasetAugmentationWorkChain(WorkChain):
                 return "alloy_species must be specified when do_alloys is True"
             if inputs["alloys"]["num_structures"] < 1:
                 return "num_structures must be at least 1"
+
     def setup(self):
         """Setup workchain."""
         self.ctx.initial_dataset = self.inputs.structures
