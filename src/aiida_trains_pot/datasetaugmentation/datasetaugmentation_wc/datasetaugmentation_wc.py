@@ -877,12 +877,12 @@ class DatasetAugmentationWorkChain(WorkChain):
                 return "frac_vacancies must be between 0 and 1"
             if inputs["rsd"]["params"]["vacancies_per_config"] < 0:
                 return "vacancies_per_config must be non-negative"
-            if inputs["do_alloys"]:
-                if "alloy_species" not in inputs["alloys"] or len(inputs["alloys"]["alloy_species"]) == 0:
-                    return "alloy_species must be specified when do_alloys is True"
-                if inputs["alloys"]["num_structures"] < 1:
-                    return "num_structures must be at least 1"
 
+        if inputs["do_alloys"]:
+            if "alloy_species" not in inputs["alloys"] or len(inputs["alloys"]["alloy_species"]) == 0:
+                return "alloy_species must be specified when do_alloys is True"
+            if inputs["alloys"]["num_structures"] < 1:
+                return "num_structures must be at least 1"
     def setup(self):
         """Setup workchain."""
         self.ctx.initial_dataset = self.inputs.structures
