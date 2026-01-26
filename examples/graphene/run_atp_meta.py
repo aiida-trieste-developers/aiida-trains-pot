@@ -190,6 +190,7 @@ builder.dataset_augmentation.do_slabs = Bool(True)
 builder.dataset_augmentation.do_replication = Bool(True)
 builder.dataset_augmentation.do_check_vacuum = Bool(True)
 builder.dataset_augmentation.do_substitution = Bool(True)
+builder.dataset_augmentation.do_alloys = Bool(False)
 
 builder.dataset_augmentation.rsd.params.rattle_fraction = Float(0.6)
 builder.dataset_augmentation.rsd.params.max_compressive_strain = Float(0.3)
@@ -210,6 +211,10 @@ builder.dataset_augmentation.replicate.max_atoms = Int(6)
 builder.dataset_augmentation.vacuum = Float(10)
 builder.dataset_augmentation.substitution.switches_fraction = Float(0.2)
 builder.dataset_augmentation.substitution.structures_fraction = Float(0.1)
+builder.dataset_augmentation.alloys.fixed_species = List([])
+builder.dataset_augmentation.alloys.alloy_species = List(["B", "N"])
+builder.dataset_augmentation.alloys.num_structures = Int(8)
+builder.dataset_augmentation.alloys.fractions = List([0.1, 0.5, 0.9])
 
 ###############################################
 # Setup Ab initio labelling
