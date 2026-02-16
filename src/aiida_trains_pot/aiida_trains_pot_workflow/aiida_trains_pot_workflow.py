@@ -742,9 +742,9 @@ class TrainsPotWorkChain(WorkChain):
             self.inputs.frame_extraction.sampling_time,
             dump_rate,
             thermalization_time=self.inputs.frame_extraction.thermalization_time,
-            check_vacuum=self.inputs.check_vacuum,
-            min_vacuum=self.inputs.vacuum.min_vacuum,
-            target_vacuum=self.inputs.vacuum.target_vacuum,
+            check_vacuum=self.ctx.check_vacuum,
+            min_vacuum=self.ctx.min_vacuum,
+            target_vacuum=self.ctx.target_vacuum,
             **self.ctx.trajectories,
         )["explored_dataset"]
         if len(explored_dataset) == 0:
