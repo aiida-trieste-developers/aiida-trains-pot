@@ -435,60 +435,73 @@ class TrainsPotWorkChain(WorkChain):
     @classmethod
     def validate_inputs(cls, inputs, _):
         """Validate the top-level inputs."""
+
+        # --- Exploration validation ---
         if "exploration" in inputs:
-            md_params_list = inputs["exploration"].get("params_list", [])
-            if len(md_params_list) == 0:
+
+            md_params_list = inputs["exploration"].get("params_list")
+
+            if not md_params_list or len(md_params_list) == 0:
                 return "The `exploration.params_list` input is required to perform exploration."
 
-            num_timesteps = [el["max_number_steps"] for el in md_params_list.get_list()]
-            timestep = inputs["exploration"]["parameters"]["control"]["timestep"]
+            try:
+                num_timesteps = [el["max_number_steps"] for el in md_params_list.get_list()]
+            except Exception:
+                return "`exploration.params_list` must contain `max_number_steps`."
+
+            try:
+                timestep = inputs["exploration"]["parameters"]["control"]["timestep"]
+            except Exception:
+                return "Missing `exploration.parameters.control.timestep`."
+
             frame_extraction = inputs.get("frame_extraction", {})
-            thermalization_time = frame_extraction.get("thermalization_time", DEFAULT_thermalization_time)
-            sampling_time = frame_extraction.get("sampling_time", DEFAULT_sampling_time)
+            thermalization_time = frame_extraction.get(
+                "thermalization_time", DEFAULT_thermalization_time
+            )
+            sampling_time = frame_extraction.get(
+                "sampling_time", DEFAULT_sampling_time
+            )
 
             if thermalization_time + sampling_time > min(num_timesteps) * timestep:
                 return (
-                    "The sum of `frame_extraction.thermalization_time` and `frame_extraction.sampling_time` "
-                    "cannot be greater than the shortest MD simulation time. "
-                    f"({thermalization_time.value} + {sampling_time.value} > {min(num_timesteps) * timestep})."
+                    "The sum of `frame_extraction.thermalization_time` and "
+                    "`frame_extraction.sampling_time` cannot be greater than the "
+                    "shortest MD simulation time. "
+                    f"({thermalization_time.value} + {sampling_time.value} "
+                    f"> {min(num_timesteps) * timestep})."
                 )
 
-        if "check_vacuum" not in inputs:
-            inputs["check_vacuum"] = Bool(True)
-        if inputs["check_vacuum"]:
-            if "vacuum" not in inputs or "min_vacuum" not in inputs["vacuum"]:
-                inputs["vacuum"] = {}
-                try:
-                    inputs["vacuum"]["min_vacuum"] = Float(
-                        inputs["training"]["mace"]["train"]["mace_config"].get_dict()["r_max"]
-                    )
-                    warnings.warn(
-                        f"Warning: `vacuum.min_vacuum` not specified, using user-defined MACE "
-                        f"cutoff radius value of {inputs['vacuum']['min_vacuum'].value} Ang.",
-                        stacklevel=2,
-                    )
-                except Exception:
-                    inputs["vacuum"]["min_vacuum"] = Float(5.0)  # Default value of MACE 0.3.13
-                    warnings.warn(
-                        f"Warning: `vacuum.min_vacuum` not specified, using default MACE default "
-                        f"cutoff radius value of {inputs['vacuum']['min_vacuum'].value} Ang.",
-                        stacklevel=2,
-                    )
-            if "vacuum" not in inputs or "target_vacuum" not in inputs["vacuum"]:
-                try:
-                    inputs["vacuum"]["target_vacuum"] = inputs["dataset_augmentation"]["vacuum"]
-                except Exception:
-                    return (
-                        "The `vacuum.target_vacuum` or `dataset_augmentation.vacuum` input is "
-                        "required when using the 'check_vacuum' option."
-                    )
+        # --- Vacuum validation ---
+        check_vacuum = inputs.get("check_vacuum", Bool(True))
+
+        if check_vacuum:
+
+            vacuum_inputs = inputs.get("vacuum", {})
+
+            min_vacuum_present = "min_vacuum" in vacuum_inputs
+            target_vacuum_present = "target_vacuum" in vacuum_inputs
+
+            if not min_vacuum_present:
+                # Only warn — do NOT inject defaults here
                 warnings.warn(
-                    "Warning: `vacuum.target_vacuum` not specified, using "
-                    "`dataset_augmentation.vacuum` value of "
-                    f"{inputs['vacuum']['target_vacuum'].value} Ang.",
+                    "`vacuum.min_vacuum` not specified. Default will be resolved at runtime.",
                     stacklevel=2,
                 )
-        cls.inputs = AttributeDict(inputs)
+
+            if not target_vacuum_present:
+                if "dataset_augmentation" not in inputs or \
+                "vacuum" not in inputs.get("dataset_augmentation", {}):
+                    return (
+                        "The `vacuum.target_vacuum` or `dataset_augmentation.vacuum` "
+                        "input is required when using `check_vacuum`."
+                    )
+
+                warnings.warn(
+                    "`vacuum.target_vacuum` not specified. "
+                    "Will fallback to `dataset_augmentation.vacuum`.",
+                    stacklevel=2,
+                )
+
 
     @classmethod
     def get_builder(
@@ -502,50 +515,51 @@ class TrainsPotWorkChain(WorkChain):
         md_protocol=None,
         **kwargs,
     ):
-        """Return a builder prepopulated with inputs selected according to the chosen protocol.
+        """Return a builder prepopulated with protocol defaults."""
 
-        :param dataset: The dataset to use for the calculation.
-        :param abinitiolabeling_protocol: The protocol to use for the ab initio labelling calculation.
-        :param abinitiolabeling_code: The code to use for the ab initio labelling calculation.
-        :param pseudo_family: The pseudo family to use for the calculation.
-        :param md_protocol: The protocol to use for the MD calculation.
-        :param kwargs: Additional keyword arguments to pass to the builder.
-
-        :return: A builder prepopulated with inputs selected according to the chosen protocol.
-        """
         builder = super().get_builder(**kwargs)
         builder.dataset = dataset
 
-        ### Quantum ESPRESSO ###
+        # ---------- Quantum ESPRESSO ----------
         qe_protocol = abinitiolabeling_protocol or "stringent"
 
         atomic_species = dataset.get_atomic_species()
         fictitious_structure = StructureData(ase=Atoms(atomic_species))
-        if pseudo_family is not None:
-            overrides = {"pseudo_family": pseudo_family}
-        else:
-            overrides = {}
+
+        overrides = {"pseudo_family": pseudo_family} if pseudo_family else {}
+
         qe_builder = PwBaseWorkChain.get_builder_from_protocol(
             protocol=qe_protocol,
             code=abinitiolabeling_code,
             structure=fictitious_structure,
             overrides=overrides,
         )
+
         builder.ab_initio_labelling.quantumespresso = qe_builder
 
-        ### LAMMPS ###
-        if md_protocol not in ["vdw_d2", None]:
-            raise ValueError(f"MD protocol {md_protocol} not found.")
+        # ---------- LAMMPS ----------
+        if md_protocol not in (None, "vdw_d2"):
+            raise ValueError(f"MD protocol `{md_protocol}` not supported.")
+
         if md_protocol == "vdw_d2":
             builder.exploration.potential_pair_style = Str("hybrid/overlay")
+
         builder.exploration.md.lammps.code = md_code
+
         builder.exploration.params_list = generate_lammps_md_config(
-            temperatures=[300], pressures=[0.0], steps=[50], styles=["nvt"]
+            temperatures=[300],
+            pressures=[0.0],
+            steps=[50],
+            styles=["nvt"],
         )
+
         builder.exploration.protocol = md_protocol
-        builder.exploration.parameters = Dict({"control": {"timestep": 0.001}})
+        builder.exploration.parameters = Dict(
+            {"control": {"timestep": 0.001}}
+        )
 
         return builder
+
 
     def do_dataset_augmentation(self):
         """Check if dataset augmentation should be performed."""
@@ -578,58 +592,92 @@ class TrainsPotWorkChain(WorkChain):
         return self.ctx.iteration < self.inputs.max_loops + 1
 
     def initialization(self):
-        """Initialize variables."""
+        """Initialize workflow context."""
+
+        # --- Thresholds ---
         self.ctx.thr_energy = self.inputs.thr_energy
         self.ctx.thr_forces = self.inputs.thr_forces
         self.ctx.thr_stress = self.inputs.thr_stress
-        if "max_selected_frames" in self.inputs:
-            self.ctx.max_frames = self.inputs.max_selected_frames
-        else:
-            self.ctx.max_frames = None
 
+        self.ctx.max_frames = self.inputs.get("max_selected_frames")
+
+        # --- Base state ---
         self.ctx.rmse = []
         self.ctx.iteration = 0
-        if "dataset" in self.inputs:
-            self.ctx.dataset = self.inputs.dataset
-        else:
-            self.ctx.dataset = PESData()
+        self.ctx.dataset = self.inputs.get("dataset", PESData())
+
         self.ctx.do_dataset_augmentation = self.inputs.do_dataset_augmentation
         self.ctx.do_ab_initio_labelling = self.inputs.do_ab_initio_labelling
         self.ctx.do_training = self.inputs.do_training
         self.ctx.do_exploration = self.inputs.do_exploration
-        if not self.ctx.do_ab_initio_labelling and self.ctx.do_training:
-            if "dataset" in self.inputs:
-                if self.inputs.dataset.len_labelled > 0:
-                    self.ctx.dataset = self.inputs.dataset
-                else:
-                    return self.exit_codes.NO_LABELLED_STRUCTURES
 
+        # --- Dataset sanity ---
+        if not self.ctx.do_ab_initio_labelling and self.ctx.do_training:
+            if self.ctx.dataset.len_labelled == 0:
+                return self.exit_codes.NO_LABELLED_STRUCTURES
+
+        # --- Potentials ---
         if not self.ctx.do_training:
-            self.ctx.potentials_lammps = []
-            self.ctx.potentials_ase = []
-            self.ctx.potential_checkpoints = []
-            if "models_lammps" in self.inputs:
-                for _, pot in self.inputs.models_lammps.items():
-                    self.ctx.potentials_lammps.append(pot)
-            if "models_ase" in self.inputs:
-                for _, pot in self.inputs.models_ase.items():
-                    self.ctx.potentials_ase.append(pot)
-            if "checkpoints" in self.inputs:
-                for _, pot in self.inputs.training.checkpoints.items():
-                    self.ctx.potential_checkpoints.append(pot)
+
+            self.ctx.potentials_lammps = list(
+                self.inputs.get("models_lammps", {}).values()
+            )
+            self.ctx.potentials_ase = list(
+                self.inputs.get("models_ase", {}).values()
+            )
+            self.ctx.potential_checkpoints = list(
+                self.inputs.get("training", {})
+                .get("checkpoints", {})
+                .values()
+            )
+
+        # --- Exploration dataset ---
         if not self.ctx.do_exploration and "explored_dataset" in self.inputs:
             if len(self.inputs.explored_dataset) > 0:
                 self.ctx.explored_dataset = self.inputs.explored_dataset
 
+        # --- LAMMPS input structures ---
         if "lammps_input_structures" in self.inputs:
             self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
         else:
-            self.ctx.lammps_input_structures = PESData([atm for atm in self.inputs.dataset.get_ase_list()])
+            self.ctx.lammps_input_structures = PESData(
+                self.inputs.dataset.get_ase_list()
+            )
 
+        # --- Vacuum defaults resolution ---
+        self.ctx.check_vacuum = self.inputs.get("check_vacuum", Bool(True))
+
+        if self.ctx.check_vacuum:
+
+            vacuum_inputs = self.inputs.get("vacuum", {})
+
+            # Resolve min_vacuum
+            if "min_vacuum" in vacuum_inputs:
+                self.ctx.min_vacuum = vacuum_inputs["min_vacuum"]
+            else:
+                try:
+                    self.ctx.min_vacuum = Float(
+                        self.inputs.training.mace.train.mace_config
+                        .get_dict()["r_max"]
+                    )
+                except Exception:
+                    self.ctx.min_vacuum = Float(5.0)
+
+            # Resolve target_vacuum
+            if "target_vacuum" in vacuum_inputs:
+                self.ctx.target_vacuum = vacuum_inputs["target_vacuum"]
+            else:
+                self.ctx.target_vacuum = (
+                    self.inputs.dataset_augmentation.vacuum
+                )
+
+        # --- Pseudopotential validation ---
         atomic_species = self.ctx.dataset.get_atomic_species()
-        for specie in atomic_species:
-            if specie not in self.inputs.ab_initio_labelling.quantumespresso.pw.pseudos.keys():
-                return self.exit_codes.MISSING_PSEUDOS
+        pseudos = self.inputs.ab_initio_labelling.quantumespresso.pw.pseudos
+
+        missing = [s for s in atomic_species if s not in pseudos]
+        if missing:
+            return self.exit_codes.MISSING_PSEUDOS
 
     def dataset_augmentation(self):
         """Generate data for the dataset."""
