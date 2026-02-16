@@ -10,10 +10,9 @@ from aiida.orm import Bool, Dict, Float, Int, List, Str, load_code, load_compute
 from aiida.plugins import DataFactory
 from ase.io import read
 
-
+from aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow import TrainsPotWorkChain
 from aiida_trains_pot.data.pesdata import PESData
 from aiida_trains_pot.utils.generate_config import generate_lammps_md_config
-from aiida_trains_pot.aiida_trains_pot_workflow.aiida_trains_pot_workflow import TrainsPotWorkChain
 
 load_profile()
 

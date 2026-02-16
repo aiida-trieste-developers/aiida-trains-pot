@@ -435,10 +435,8 @@ class TrainsPotWorkChain(WorkChain):
     @classmethod
     def validate_inputs(cls, inputs, _):
         """Validate the top-level inputs."""
-
         # --- Exploration validation ---
         if "exploration" in inputs:
-
             md_params_list = inputs["exploration"].get("params_list")
 
             if not md_params_list or len(md_params_list) == 0:
@@ -455,12 +453,8 @@ class TrainsPotWorkChain(WorkChain):
                 return "Missing `exploration.parameters.control.timestep`."
 
             frame_extraction = inputs.get("frame_extraction", {})
-            thermalization_time = frame_extraction.get(
-                "thermalization_time", DEFAULT_thermalization_time
-            )
-            sampling_time = frame_extraction.get(
-                "sampling_time", DEFAULT_sampling_time
-            )
+            thermalization_time = frame_extraction.get("thermalization_time", DEFAULT_thermalization_time)
+            sampling_time = frame_extraction.get("sampling_time", DEFAULT_sampling_time)
 
             if thermalization_time + sampling_time > min(num_timesteps) * timestep:
                 return (
@@ -475,7 +469,6 @@ class TrainsPotWorkChain(WorkChain):
         check_vacuum = inputs.get("check_vacuum", Bool(True))
 
         if check_vacuum:
-
             vacuum_inputs = inputs.get("vacuum", {})
 
             min_vacuum_present = "min_vacuum" in vacuum_inputs
@@ -489,19 +482,16 @@ class TrainsPotWorkChain(WorkChain):
                 )
 
             if not target_vacuum_present:
-                if "dataset_augmentation" not in inputs or \
-                "vacuum" not in inputs.get("dataset_augmentation", {}):
+                if "dataset_augmentation" not in inputs or "vacuum" not in inputs.get("dataset_augmentation", {}):
                     return (
                         "The `vacuum.target_vacuum` or `dataset_augmentation.vacuum` "
                         "input is required when using `check_vacuum`."
                     )
 
                 warnings.warn(
-                    "`vacuum.target_vacuum` not specified. "
-                    "Will fallback to `dataset_augmentation.vacuum`.",
+                    "`vacuum.target_vacuum` not specified. " "Will fallback to `dataset_augmentation.vacuum`.",
                     stacklevel=2,
                 )
-
 
     @classmethod
     def get_builder(
@@ -516,7 +506,6 @@ class TrainsPotWorkChain(WorkChain):
         **kwargs,
     ):
         """Return a builder prepopulated with protocol defaults."""
-
         builder = super().get_builder(**kwargs)
         builder.dataset = dataset
 
@@ -554,12 +543,9 @@ class TrainsPotWorkChain(WorkChain):
         )
 
         builder.exploration.protocol = md_protocol
-        builder.exploration.parameters = Dict(
-            {"control": {"timestep": 0.001}}
-        )
+        builder.exploration.parameters = Dict({"control": {"timestep": 0.001}})
 
         return builder
-
 
     def do_dataset_augmentation(self):
         """Check if dataset augmentation should be performed."""
@@ -593,7 +579,6 @@ class TrainsPotWorkChain(WorkChain):
 
     def initialization(self):
         """Initialize workflow context."""
-
         # --- Thresholds ---
         self.ctx.thr_energy = self.inputs.thr_energy
         self.ctx.thr_forces = self.inputs.thr_forces
@@ -618,18 +603,9 @@ class TrainsPotWorkChain(WorkChain):
 
         # --- Potentials ---
         if not self.ctx.do_training:
-
-            self.ctx.potentials_lammps = list(
-                self.inputs.get("models_lammps", {}).values()
-            )
-            self.ctx.potentials_ase = list(
-                self.inputs.get("models_ase", {}).values()
-            )
-            self.ctx.potential_checkpoints = list(
-                self.inputs.get("training", {})
-                .get("checkpoints", {})
-                .values()
-            )
+            self.ctx.potentials_lammps = list(self.inputs.get("models_lammps", {}).values())
+            self.ctx.potentials_ase = list(self.inputs.get("models_ase", {}).values())
+            self.ctx.potential_checkpoints = list(self.inputs.get("training", {}).get("checkpoints", {}).values())
 
         # --- Exploration dataset ---
         if not self.ctx.do_exploration and "explored_dataset" in self.inputs:
@@ -640,15 +616,12 @@ class TrainsPotWorkChain(WorkChain):
         if "lammps_input_structures" in self.inputs:
             self.ctx.lammps_input_structures = self.inputs.lammps_input_structures
         else:
-            self.ctx.lammps_input_structures = PESData(
-                self.inputs.dataset.get_ase_list()
-            )
+            self.ctx.lammps_input_structures = PESData(self.inputs.dataset.get_ase_list())
 
         # --- Vacuum defaults resolution ---
         self.ctx.check_vacuum = self.inputs.get("check_vacuum", Bool(True))
 
         if self.ctx.check_vacuum:
-
             vacuum_inputs = self.inputs.get("vacuum", {})
 
             # Resolve min_vacuum
@@ -656,10 +629,7 @@ class TrainsPotWorkChain(WorkChain):
                 self.ctx.min_vacuum = vacuum_inputs["min_vacuum"]
             else:
                 try:
-                    self.ctx.min_vacuum = Float(
-                        self.inputs.training.mace.train.mace_config
-                        .get_dict()["r_max"]
-                    )
+                    self.ctx.min_vacuum = Float(self.inputs.training.mace.train.mace_config.get_dict()["r_max"])
                 except Exception:
                     self.ctx.min_vacuum = Float(5.0)
 
@@ -667,9 +637,7 @@ class TrainsPotWorkChain(WorkChain):
             if "target_vacuum" in vacuum_inputs:
                 self.ctx.target_vacuum = vacuum_inputs["target_vacuum"]
             else:
-                self.ctx.target_vacuum = (
-                    self.inputs.dataset_augmentation.vacuum
-                )
+                self.ctx.target_vacuum = self.inputs.dataset_augmentation.vacuum
 
         # --- Pseudopotential validation ---
         atomic_species = self.ctx.dataset.get_atomic_species()
