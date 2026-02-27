@@ -97,6 +97,26 @@ def SplitDataset(dataset):
         if "gen_method" not in test_set[ii].keys():
             test_set[ii]["gen_method"] = "UNKNOWN"
 
+    def _pop_non_isolated(training_set):
+        """Pop a random non-ISOLATED_ATOM element from training_set."""
+        non_isolated_indices = [
+            i for i, el in enumerate(training_set) if el.get("gen_method", "UNKNOWN") != "ISOLATED_ATOM"
+        ]
+
+        if not non_isolated_indices:
+            raise ValueError("Dataset too small: cannot split into TRAINING, VALIDATION, and TEST sets.")
+
+        idx = random.choice(non_isolated_indices)
+        return training_set.pop(idx)
+
+    # test or validation can be accidentally empty if the dataset is small
+    # in that case we move one element from the training set to the empty set
+    if len(validation_set) == 0:
+        validation_set.append(_pop_non_isolated(training_set))
+
+    if len(test_set) == 0:
+        test_set.append(_pop_non_isolated(training_set))
+
     pes_training_set = PESData()
     pes_training_set.set_list(training_set)
 

@@ -213,6 +213,8 @@ class MaceTrainCalculation(CalcJob):
                 "dft_forces",
                 "--stress_key",
                 "dft_stress",
+                "--num_process",
+                "1",
                 "--compute_statistics",
                 "--h5_prefix",
                 "processed_data/",
