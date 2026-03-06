@@ -31,6 +31,17 @@ def validate_inputs(inputs, _):
             if "finetune_replay_dataset" not in inputs:
                 return "The `finetune_replay_dataset` input is required when using the 'replay-finetune' protocol."
 
+    parent_folder = inputs.get("parent_folder")
+
+    if parent_folder and parent_folder.computer.uuid != inputs["code"].computer.uuid:
+        return "parent_folder must be on the same computer as the code."
+
+    do_preprocess = inputs.get("do_preprocess")
+
+    if do_preprocess and do_preprocess.value:
+        if "preprocess_code" not in inputs:
+            return "Preprocess code is required if do_preprocess is True."
+
 
 class MaceTrainCalculation(CalcJob):
     """AiiDA calculation plugin wrapping the diff executable.
@@ -56,16 +67,19 @@ class MaceTrainCalculation(CalcJob):
             "training_set",
             valid_type=PESData,
             help="Training dataset list",
+            required=False,
         )
         spec.input(
             "validation_set",
             valid_type=PESData,
             help="Validation dataset list",
+            required=False,
         )
         spec.input(
             "test_set",
             valid_type=PESData,
             help="Test dataset list",
+            required=False,
         )
         spec.input(
             "mace_config",
@@ -204,8 +218,6 @@ class MaceTrainCalculation(CalcJob):
         parent_folder = self.inputs.get("parent_folder", None)
 
         if do_preprocess:
-            if "preprocess_code" not in self.inputs:
-                raise ValueError("Preprocess code is required if do_preprocess is True")
             preprocess_code = self.inputs.preprocess_code
 
         if do_preprocess:
@@ -270,7 +282,15 @@ class MaceTrainCalculation(CalcJob):
             with folder.open("test.xyz", "w") as handle:
                 handle.write(test_txt)
 
-        mace_config_dict["seed"] = random.randint(0, 10000)
+        seed = random.randint(0, 10000)
+
+        if parent_folder:
+            parent_calc = parent_folder.creator
+            if parent_calc:
+                seed = parent_calc.base.extras.get("mace_seed", seed)
+
+        mace_config_dict["seed"] = seed
+        self.node.base.extras.set("mace_seed", seed)
 
         if do_preprocess:
             mace_config_dict["train_file"] = "processed_data/train/"
@@ -286,7 +306,7 @@ class MaceTrainCalculation(CalcJob):
         mace_config_dict["forces_key"] = "dft_forces"
         mace_config_dict["stress_key"] = "dft_stress"
 
-        if "E0s" not in mace_config_dict:
+        if parent_folder is None and "E0s" not in mace_config_dict:
             e0s = self.inputs.training_set.get_e0s()
             if None not in e0s.values():
                 mace_config_dict["E0s"] = str(e0s)
@@ -330,7 +350,7 @@ class MaceTrainCalculation(CalcJob):
                 checkpoints_folder = self.inputs.checkpoints
                 folder.get_subfolder("checkpoints", create=True)
                 for checkpoint_file in checkpoints_folder.list_object_names():
-                    if "_epoch" in checkpoint_file and "_swa":
+                    if "_epoch" in checkpoint_file and "_swa" in checkpoint_file:
                         with checkpoints_folder.open(checkpoint_file, "rb") as source:
                             new_checkpoint_file = f"aiida_run-{str(mace_config_dict['seed'])}_epoch-0_swa.pt"
                             with folder.open(f"checkpoints/{new_checkpoint_file}", "wb") as destination:
@@ -363,12 +383,8 @@ class MaceTrainCalculation(CalcJob):
         calcinfo.local_copy_list = []
 
         if parent_folder is not None:
-            if parent_folder.computer.uuid != self.inputs.code.computer.uuid:
-                raise ValueError("parent_folder must be on the same computer as the code.")
-
             remote_path = parent_folder.get_remote_path()
             computer_uuid = parent_folder.computer.uuid
-
             if do_preprocess:
                 calcinfo.remote_symlink_list.append(
                     (
@@ -386,7 +402,6 @@ class MaceTrainCalculation(CalcJob):
                     ]
                 )
 
-            # Always reuse checkpoints if restarting
             calcinfo.remote_symlink_list.append(
                 (
                     computer_uuid,
@@ -396,18 +411,6 @@ class MaceTrainCalculation(CalcJob):
             )
 
             mace_config_dict["restart_latest"] = True
-
-            transport = self.inputs.code.computer.get_transport()
-            remote_checkpoints = os.path.join(remote_path, "checkpoints")
-
-            with transport:
-                files = transport.listdir(remote_checkpoints)
-
-            for f in files:
-                match = re.search(r"-(\d+)_", f)
-                if match:
-                    mace_config_dict["seed"] = int(match.group(1))
-                    break
 
         with folder.open("config.yml", "w") as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
