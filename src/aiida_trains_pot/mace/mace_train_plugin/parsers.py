@@ -211,6 +211,7 @@ class MaceBaseParser(Parser):
         # Check that folder content is as expected
         files_retrieved = self.retrieved.list_object_names()
         files_expected = ["aiida.model"]
+        exit_code = None
 
         do_preprocess = getattr(self.node.inputs, "do_preprocess", None)
 
