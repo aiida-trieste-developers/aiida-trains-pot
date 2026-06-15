@@ -356,7 +356,7 @@ builder.committee_evaluation.metadata.options.custom_scheduler_commands = (
 )
 builder.committee_evaluation.metadata.options.qos = EVALUATION_machine["qos"]
 builder.committee_evaluation.metadata.options.account = EVALUATION_machine["account"]
-builder.committee_evaluation.metadata.computer = load_computer("leo5_scratch")
+builder.committee_evaluation.metadata.computer = EVALUATION_computer
 
 
 calc = submit(builder)

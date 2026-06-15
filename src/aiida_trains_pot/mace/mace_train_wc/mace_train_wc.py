@@ -107,9 +107,7 @@ class MaceTrainWorkChain(BaseRestartWorkChain):
         self.report("Walltime reached attempting restart")
 
         if "retrieved" in calculation.outputs:
-            self.set_restart(
-                calculation=calculation,
-            )
+            self.ctx.inputs.parent_folder = calculation.outputs.remote_folder
             self.report_error_handled(
                 calculation,
                 "restarting from the stored checkpoints",

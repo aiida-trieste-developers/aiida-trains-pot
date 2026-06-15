@@ -1,5 +1,6 @@
 """AiiDA calculation plugin for the MACE training code."""
 
+import os
 import random
 import re
 
@@ -7,7 +8,7 @@ import yaml
 
 from aiida.common import datastructures
 from aiida.engine import CalcJob
-from aiida.orm import Bool, Code, Dict, FolderData, List, SinglefileData, Str
+from aiida.orm import Bool, Code, Dict, FolderData, List, RemoteData, SinglefileData, Str
 from aiida.plugins import DataFactory
 
 PESData = DataFactory("pesdata")
@@ -29,6 +30,17 @@ def validate_inputs(inputs, _):
                 return "The `finetune_model` input is required when using the 'replay-finetune' protocol."
             if "finetune_replay_dataset" not in inputs:
                 return "The `finetune_replay_dataset` input is required when using the 'replay-finetune' protocol."
+
+    parent_folder = inputs.get("parent_folder")
+
+    if parent_folder and parent_folder.computer.uuid != inputs["code"].computer.uuid:
+        return "parent_folder must be on the same computer as the code."
+
+    do_preprocess = inputs.get("do_preprocess")
+
+    if do_preprocess and do_preprocess.value:
+        if "preprocess_code" not in inputs:
+            return "Preprocess code is required if do_preprocess is True."
 
 
 class MaceTrainCalculation(CalcJob):
@@ -55,16 +67,19 @@ class MaceTrainCalculation(CalcJob):
             "training_set",
             valid_type=PESData,
             help="Training dataset list",
+            required=False,
         )
         spec.input(
             "validation_set",
             valid_type=PESData,
             help="Validation dataset list",
+            required=False,
         )
         spec.input(
             "test_set",
             valid_type=PESData,
             help="Test dataset list",
+            required=False,
         )
         spec.input(
             "mace_config",
@@ -91,6 +106,12 @@ class MaceTrainCalculation(CalcJob):
             required=False,
         )
         spec.input("postprocess_code", valid_type=Code, help="Postprocess code", required=False)
+        spec.input(
+            "parent_folder",
+            valid_type=RemoteData,
+            required=False,
+            help="Remote folder of a previous MACE training to reuse datasets/checkpoints",
+        )
         spec.input(
             "restart",
             valid_type=Bool,
@@ -209,9 +230,11 @@ class MaceTrainCalculation(CalcJob):
         """
         mace_config_dict = self.inputs.mace_config.get_dict()
         do_preprocess = self.inputs.do_preprocess.value
+
+        # Detect parent folder
+        parent_folder = self.inputs.get("parent_folder", None)
+
         if do_preprocess:
-            if "preprocess_code" not in self.inputs:
-                raise ValueError("Preprocess code is required if do_preprocess is True")
             preprocess_code = self.inputs.preprocess_code
 
         if do_preprocess:
@@ -258,23 +281,36 @@ class MaceTrainCalculation(CalcJob):
         codeinfo_postprocess2.cmdline_params = ["aiida.model"]
 
         codeinfo = datastructures.CodeInfo()
-        codeinfo.cmdline_params = """--config config.yml""".split()
-
+        codeinfo.cmdline_params = ["--config", "config.yml"]
         codeinfo.code_uuid = self.inputs.code.uuid
         codeinfo.stdout_name = "mace.out"
 
-        training_txt = self.inputs.training_set.get_txt(write_params=False, key_prefix="dft")
-        validation_txt = self.inputs.validation_set.get_txt(write_params=False, key_prefix="dft")
-        test_txt = self.inputs.test_set.get_txt(write_params=False, key_prefix="dft")
+        # ------------------------------------------------------------------
+        # DATASET HANDLING
+        # ------------------------------------------------------------------
 
-        with folder.open("training.xyz", "w") as handle:
-            handle.write(training_txt)
-        with folder.open("validation.xyz", "w") as handle:
-            handle.write(validation_txt)
-        with folder.open("test.xyz", "w") as handle:
-            handle.write(test_txt)
+        if parent_folder is None:
+            training_txt = self.inputs.training_set.get_txt(write_params=False, key_prefix="dft")
+            validation_txt = self.inputs.validation_set.get_txt(write_params=False, key_prefix="dft")
+            test_txt = self.inputs.test_set.get_txt(write_params=False, key_prefix="dft")
 
-        mace_config_dict["seed"] = random.randint(0, 10000)
+            with folder.open("training.xyz", "w") as handle:
+                handle.write(training_txt)
+            with folder.open("validation.xyz", "w") as handle:
+                handle.write(validation_txt)
+            with folder.open("test.xyz", "w") as handle:
+                handle.write(test_txt)
+
+        seed = random.randint(0, 10000)
+
+        if parent_folder:
+            parent_calc = parent_folder.creator
+            if parent_calc:
+                seed = parent_calc.base.extras.get("mace_seed", seed)
+
+        mace_config_dict["seed"] = seed
+        self.node.base.extras.set("mace_seed", seed)
+
         if do_preprocess:
             mace_config_dict["train_file"] = "processed_data/train/"
             mace_config_dict["valid_file"] = "processed_data/val/"
@@ -289,7 +325,7 @@ class MaceTrainCalculation(CalcJob):
         mace_config_dict["forces_key"] = "dft_forces"
         mace_config_dict["stress_key"] = "dft_stress"
 
-        if "E0s" not in mace_config_dict:
+        if parent_folder is None and "E0s" not in mace_config_dict:
             e0s = self.inputs.training_set.get_e0s()
             if None not in e0s.values():
                 mace_config_dict["E0s"] = str(e0s)
@@ -305,11 +341,12 @@ class MaceTrainCalculation(CalcJob):
         finetune = False
         if "protocol" in self.inputs:
             finetune = True
+            mace_config_dict["foundation_model"] = "finetune_model.dat"
+
             if self.inputs.protocol.value == "naive-finetune":
-                mace_config_dict["foundation_model"] = "finetune_model.dat"
                 mace_config_dict["multiheads_finetuning"] = False
+
             if self.inputs.protocol.value == "replay-finetune":
-                mace_config_dict["foundation_model"] = "finetune_model.dat"
                 mace_config_dict["multiheads_finetuning"] = True
                 replay_txt = self.inputs.finetune_replay_dataset.get_txt(write_params=False, key_prefix="dft")
                 with folder.open("replay.xyz", "w") as handle:
@@ -320,60 +357,83 @@ class MaceTrainCalculation(CalcJob):
 
         if "checkpoints" in self.inputs:
             mace_config_dict["restart_latest"] = True
-
-        # for training_structure in self.inputs.training_set:
-        #     training_dict = dict(training_structure)
-        #     if len(training_dict['symbols']) != 1:
-        #         mace_config_dict['E0s'] = "average"
-        #         break
-
-        with folder.open("config.yml", "w") as yaml_file:
-            yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
-
         if (
             not mace_config_dict.get("distributed", False)
             and self.inputs["metadata"]["options"]["resources"].get("num_mpiprocs_per_machine") > 1
         ):
             mace_config_dict["distributed"] = True
 
-        # Save the checkpoints folder
-        if "checkpoints" in self.inputs and self.inputs.restart.value:
-            mace_config_dict["restart_latest"] = True
-            checkpoints_folder = self.inputs.checkpoints
-            folder.get_subfolder("checkpoints", create=True)  # Create the checkpoints directory
-            for checkpoint_file in checkpoints_folder.list_object_names():
-                if "_epoch" in checkpoint_file and "_swa":
-                    with checkpoints_folder.open(checkpoint_file, "rb") as source:
-                        new_checkpoint_file = f"aiida_run-{str(mace_config_dict['seed'])}_epoch-0_swa.pt"
-                        with folder.open(f"checkpoints/{new_checkpoint_file}", "wb") as destination:
-                            destination.write(source.read())
-                elif "_epoch" in checkpoint_file:
-                    with checkpoints_folder.open(checkpoint_file, "rb") as source:
-                        new_checkpoint_file = f"aiida_run-{str(mace_config_dict['seed'])}_epoch-0.pt"
-                        with folder.open(f"checkpoints/{new_checkpoint_file}", "wb") as destination:
-                            destination.write(source.read())
+        if parent_folder is None:
+            if "checkpoints" in self.inputs and self.inputs.restart.value:
+                mace_config_dict["restart_latest"] = True
+                checkpoints_folder = self.inputs.checkpoints
+                folder.get_subfolder("checkpoints", create=True)
+                for checkpoint_file in checkpoints_folder.list_object_names():
+                    if "_epoch" in checkpoint_file and "_swa" in checkpoint_file:
+                        with checkpoints_folder.open(checkpoint_file, "rb") as source:
+                            new_checkpoint_file = f"aiida_run-{str(mace_config_dict['seed'])}_epoch-0_swa.pt"
+                            with folder.open(f"checkpoints/{new_checkpoint_file}", "wb") as destination:
+                                destination.write(source.read())
+                    elif "_epoch" in checkpoint_file:
+                        with checkpoints_folder.open(checkpoint_file, "rb") as source:
+                            new_checkpoint_file = f"aiida_run-{str(mace_config_dict['seed'])}_epoch-0.pt"
+                            with folder.open(f"checkpoints/{new_checkpoint_file}", "wb") as destination:
+                                destination.write(source.read())
 
-        if "checkpoints_restart" in self.inputs:
+            if "checkpoints_restart" in self.inputs:
+                mace_config_dict["restart_latest"] = True
+                checkpoints_folder = self.inputs.checkpoints_restart
+                folder.get_subfolder("checkpoints", create=True)
+                for checkpoint_file in checkpoints_folder.list_object_names():
+                    if "_epoch" in checkpoint_file and "_swa":
+                        match = re.search(r"-(\d+)_", checkpoint_file)
+                        if match:
+                            mace_config_dict["seed"] = int(match.group(1))
+                        with checkpoints_folder.open(checkpoint_file, "rb") as source:
+                            with folder.open(f"checkpoints/{checkpoint_file}", "wb") as destination:
+                                destination.write(source.read())
+                    elif "_epoch" in checkpoint_file:
+                        with checkpoints_folder.open(checkpoint_file, "rb") as source:
+                            with folder.open(f"checkpoints/{checkpoint_file}", "wb") as destination:
+                                destination.write(source.read())
+
+        calcinfo = datastructures.CalcInfo()
+        calcinfo.remote_symlink_list = []
+        calcinfo.local_copy_list = []
+
+        if parent_folder is not None:
+            remote_path = parent_folder.get_remote_path()
+            computer_uuid = parent_folder.computer.uuid
+            if do_preprocess:
+                calcinfo.remote_symlink_list.append(
+                    (
+                        computer_uuid,
+                        os.path.join(remote_path, "processed_data"),
+                        "processed_data",
+                    )
+                )
+            else:
+                calcinfo.remote_symlink_list.extend(
+                    [
+                        (computer_uuid, os.path.join(remote_path, "training.xyz"), "training.xyz"),
+                        (computer_uuid, os.path.join(remote_path, "validation.xyz"), "validation.xyz"),
+                        (computer_uuid, os.path.join(remote_path, "test.xyz"), "test.xyz"),
+                    ]
+                )
+
+            calcinfo.remote_symlink_list.append(
+                (
+                    computer_uuid,
+                    os.path.join(remote_path, "checkpoints"),
+                    "checkpoints",
+                )
+            )
+
             mace_config_dict["restart_latest"] = True
-            checkpoints_folder = self.inputs.checkpoints_restart
-            folder.get_subfolder("checkpoints", create=True)  # Create the checkpoints directory
-            for checkpoint_file in checkpoints_folder.list_object_names():
-                if "_epoch" in checkpoint_file and "_swa":
-                    # Regular expression to extract the seed (assumed to be numeric after the first '-')
-                    match = re.search(r"-(\d+)_", checkpoint_file)
-                    if match:
-                        mace_config_dict["seed"] = int(match.group(1))
-                    with checkpoints_folder.open(checkpoint_file, "rb") as source:
-                        with folder.open(f"checkpoints/{checkpoint_file}", "wb") as destination:
-                            destination.write(source.read())
-                elif "_epoch" in checkpoint_file:
-                    with checkpoints_folder.open(checkpoint_file, "rb") as source:
-                        with folder.open(f"checkpoints/{checkpoint_file}", "wb") as destination:
-                            destination.write(source.read())
 
         with folder.open("config.yml", "w") as yaml_file:
             yaml.dump(mace_config_dict, yaml_file, default_flow_style=False)
-        calcinfo = datastructures.CalcInfo()
+
         if finetune:
             calcinfo.local_copy_list = [
                 (
