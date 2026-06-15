@@ -182,6 +182,23 @@ class MaceTrainCalculation(CalcJob):
             "ERROR_OUT_OF_WALLTIME",
             message="The calculation stopped prematurely because it ran out of walltime.",
         )
+        spec.exit_code(
+            410,
+            "ERROR_PREPROCESS_FAILED",
+            message="Preprocessing stage failed or did not produce expected outputs.",
+        )
+
+        spec.exit_code(
+            420,
+            "ERROR_TRAINING_FAILED",
+            message="Training stage failed or did not complete successfully.",
+        )
+
+        spec.exit_code(
+            430,
+            "ERROR_POSTPROCESS_FAILED",
+            message="Postprocessing stage failed or final model files are missing.",
+        )
 
     def prepare_for_submission(self, folder):
         """Create input files.
@@ -387,6 +404,7 @@ class MaceTrainCalculation(CalcJob):
             "results",
             "logs",
             "_scheduler-std*",
+            "processed_data",
         ]
 
         return calcinfo
