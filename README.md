@@ -48,7 +48,7 @@ Please follow our [contributing guidelines](CONTRIBUTING.md) to get started.
 
 If you use this plugin in your research, please cite:
 
-**D. Bidoggia, N. Manko, M. Peressi and A. Marrazzo,**  *Automated training of neural-network interatomic potentials*  [_arXiv:2509.11703_ (physics.comp-ph), 2025](https://doi.org/10.48550/arXiv.2509.11703)
+**D. Bidoggia, N. Manko, M. Peressi and A. Marrazzo,**  *AiiDA-TrainsPot: towards automated training of neural-network interatomic potentials*  [_Digital Discovery_, 2026](https://doi.org/10.1039/d6dd00005c)
 
 ## Acknowledgments
 
