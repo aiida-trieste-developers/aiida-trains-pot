@@ -1,6 +1,5 @@
 """AiiDA WorkChain for active learning of interatomic potentials using LAMMPS and MACE."""
 
-import random
 import warnings
 
 from aiida import load_profile
@@ -107,6 +106,9 @@ def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_fra
     """Select configurations to label."""
     if max_frames:
         max_frames = max_frames.value
+    thr_e = thr_energy.value
+    thr_f = thr_forces.value
+    thr_s = thr_stress.value
     selected_dataset = []
     energy_deviation = []
     forces_deviation = []
@@ -117,21 +119,21 @@ def SelectToLabel(evaluated_dataset, thr_energy, thr_forces, thr_stress, max_fra
         forces_deviation.append(config["forces_deviation"])
         stress_deviation.append(config["stress_deviation"])
         if (
-            config["energy_deviation"] > thr_energy
-            or config["forces_deviation"] > thr_forces
-            or config["stress_deviation"] > thr_stress
+            config["energy_deviation"] > thr_e
+            or config["forces_deviation"] > thr_f
+            or config["stress_deviation"] > thr_s
         ):
             selected_dataset.append(config)
             if max_frames:
                 loss.append(
-                    config["energy_deviation"] / thr_energy
-                    + config["forces_deviation"] / thr_forces
-                    + config["stress_deviation"] / thr_stress
+                    config["energy_deviation"] / thr_e
+                    + config["forces_deviation"] / thr_f
+                    + config["stress_deviation"] / thr_s
                 )
     if max_frames:
         if len(selected_dataset) > max_frames:
-            random.shuffle(selected_dataset)
-            selected_dataset = selected_dataset[:max_frames]
+            combined = sorted(zip(loss, selected_dataset, strict=False), key=lambda x: x[0], reverse=True)
+            selected_dataset = [item[1] for item in combined[:max_frames]]
     pes_selected_dataset = PESData(selected_dataset)
     return {
         "selected_dataset": pes_selected_dataset,
@@ -172,6 +174,7 @@ DEFAULT_do_ab_initio_labelling = Bool(True)
 DEFAULT_training_engine = Str("MACE")
 DEFAULT_do_training = Bool(True)
 DEFAULT_do_exploration = Bool(True)
+DEFAULT_do_evaluation = Bool(True)
 
 DEFAULT_check_vacuum = Bool(True)
 ######################################################
@@ -218,6 +221,13 @@ class TrainsPotWorkChain(WorkChain):
             valid_type=Bool,
             default=lambda: DEFAULT_do_exploration,
             help="Do exploration calculations",
+            required=False,
+        )
+        spec.input(
+            "do_evaluation",
+            valid_type=Bool,
+            default=lambda: DEFAULT_do_evaluation,
+            help="Do evaluation calculation",
             required=False,
         )
         spec.input(
@@ -565,7 +575,10 @@ class TrainsPotWorkChain(WorkChain):
 
     def do_evaluation(self):
         """Check if committee evaluation should be performed."""
-        return bool("explored_dataset" in self.ctx)
+        if bool("explored_dataset" in self.ctx) or self.inputs.do_evaluation:
+            return True
+        else:
+            return False
 
     def check_iteration(self):
         """Check if the maximum number of iterations has been reached."""
@@ -701,27 +714,21 @@ class TrainsPotWorkChain(WorkChain):
                 else:
                     self.ctx.lammps_input_structures = self.ctx.dataset
 
-        # Select random input structures for LAMMPS avoiding isolated atoms
+        # Select input structures for LAMMPS avoiding isolated atoms (deterministic: first N)
         discarded = set()
         selected = []
         num_structures = self.inputs.num_random_structures_lammps.value
-        while len(selected) < num_structures:
-            # If choosed all non-discarded unique values, break
-            remaining_capacity = len(self.ctx.lammps_input_structures) - len(discarded)
-            if remaining_capacity == len(selected):
-                self.report(
-                    f"Only {len(selected)} random input structures for LAMMPS are selected "
-                    f"({num_structures} where requested)."
-                )
+        for x in range(len(self.ctx.lammps_input_structures)):
+            if len(selected) >= num_structures:
                 break
-
-            x = random.choice(range(len(self.ctx.lammps_input_structures)))
             if len(self.ctx.lammps_input_structures.get_ase_item(x)) < 2:  # noqa: PLR2004
                 discarded.add(x)
-                continue  # reject isolated atoms
-            if x in selected:
-                continue  # reject duplicate
+                continue  # skip isolated atoms
             selected.append(x)
+        if len(selected) < num_structures:
+            self.report(
+                f"Only {len(selected)} input structures for LAMMPS are selected " f"({num_structures} were requested)."
+            )
 
         self.ctx.lammps_input_structures = PESData([self.ctx.lammps_input_structures.get_item(key) for key in selected])
 
@@ -759,7 +766,10 @@ class TrainsPotWorkChain(WorkChain):
         inputs["ase_potentials"] = {
             f"pot_{ii}": self.ctx.potentials_ase[ii] for ii in range(len(self.ctx.potentials_ase))
         }
-        inputs["datasets"] = {"labelled": self.ctx.dataset, "exploration": self.ctx.explored_dataset}
+        if "explored_dataset" in self.ctx:
+            inputs["datasets"] = {"labelled": self.ctx.dataset, "exploration": self.ctx.explored_dataset}
+        else:
+            inputs["datasets"] = {"labelled": self.ctx.dataset}
 
         future = self.submit(EvaluationCalculation, **inputs)
         self.to_context(committee_evaluation=future)

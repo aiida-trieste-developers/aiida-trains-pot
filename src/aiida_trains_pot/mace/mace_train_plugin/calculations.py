@@ -1,14 +1,13 @@
 """AiiDA calculation plugin for the MACE training code."""
 
 import os
-import random
 import re
 
 import yaml
 
 from aiida.common import datastructures
 from aiida.engine import CalcJob
-from aiida.orm import Bool, Code, Dict, FolderData, List, RemoteData, SinglefileData, Str
+from aiida.orm import Bool, Code, Dict, FolderData, Int, List, RemoteData, SinglefileData, Str
 from aiida.plugins import DataFactory
 
 PESData = DataFactory("pesdata")
@@ -144,6 +143,13 @@ class MaceTrainCalculation(CalcJob):
             help="Dataset for replay finetune",
             required=False,
         )
+        spec.input(
+            "seed",
+            valid_type=Int,
+            help="Random seed for MACE training (set per potential for committee)",
+            required=False,
+            default=lambda: Int(1),
+        )
         spec.inputs.validator = validate_inputs
 
         spec.output(
@@ -259,7 +265,7 @@ class MaceTrainCalculation(CalcJob):
                 "--h5_prefix",
                 "processed_data/",
                 "--seed",
-                str(random.randint(0, 10000)),
+                str(self.inputs.seed.value),
             ]
             if "r_max" in mace_config_dict:
                 codeinfo_preprocess.cmdline_params += [
@@ -301,7 +307,7 @@ class MaceTrainCalculation(CalcJob):
             with folder.open("test.xyz", "w") as handle:
                 handle.write(test_txt)
 
-        seed = random.randint(0, 10000)
+        seed = self.inputs.seed.value
 
         if parent_folder:
             parent_calc = parent_folder.creator

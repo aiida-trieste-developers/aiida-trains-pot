@@ -108,7 +108,7 @@ def SplitDataset(
         if not non_isolated_indices:
             raise ValueError("Dataset too small: cannot split into TRAINING, VALIDATION, and TEST sets.")
 
-        idx = random.choice(non_isolated_indices)
+        idx = non_isolated_indices[0]
         return training_set.pop(idx)
 
     # test or validation can be accidentally empty if the dataset is small
@@ -244,6 +244,7 @@ class TrainingWorkChain(WorkChain):
                     inputs.train["checkpoints"] = chkpts[ii]
 
                 inputs.train["index_pot"] = Int(ii)
+                inputs.train["seed"] = Int(ii + 1)
                 future = self.submit(MaceWorkChain, **inputs)
                 self.to_context(mace_wc=append_(future))
             pass

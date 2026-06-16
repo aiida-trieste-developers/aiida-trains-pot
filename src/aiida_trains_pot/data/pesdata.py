@@ -45,8 +45,7 @@ class PESData(Data):
 
     @property
     def _list_key(self):
-        """Generate a unique filename for the list based on the node's UUID."""
-        return f"psedata_{self.uuid}.npz"  # Unique filename with the node's UUID
+        return "pesdata.h5"
 
     def __init__(self, data=None, save_labels=True, **kwargs):
         """Initialize a PESData instance.

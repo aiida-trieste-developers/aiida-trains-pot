@@ -2,11 +2,7 @@
 
 import math
 import random
-import time
 
-from random import randint, uniform
-
-import numba
 import numpy as np
 
 from aiida import load_profile
@@ -178,6 +174,8 @@ def RattleStrainDefectsStructureGenerator(
     :param vacuum: Float with the vacuum along non periodic directions
     :param input_structures: A PESData dataset with the input structures
     """
+    rng_py = random.Random(42)
+    np.random.seed(42)
     structures = []
     input_structures = input_structures.get_ase_list()
     for structure in input_structures:
@@ -196,7 +194,7 @@ def RattleStrainDefectsStructureGenerator(
                 n_vacancies = 0
 
             mod_structure = ase_structure.copy()
-            sigma_strain = uniform(1 - max_compressive_strain.value, 1 + max_tensile_strain.value)
+            sigma_strain = rng_py.uniform(1 - max_compressive_strain.value, 1 + max_tensile_strain.value)
             mod_structure.set_cell(ase_structure.get_cell() * sigma_strain, scale_atoms=True)
             mod_structure.set_positions(
                 uniform_random_atomic_displacement(
@@ -206,7 +204,7 @@ def RattleStrainDefectsStructureGenerator(
                 )
             )
             for _ in range(int(n_vacancies)):
-                rnd = randint(0, len(mod_structure.get_positions()) - 1)
+                rnd = rng_py.randint(0, len(mod_structure.get_positions()) - 1)
                 del mod_structure[rnd]
 
             structures.append(ase_to_dict(wrap_and_restore_pbc(mod_structure)))
@@ -286,19 +284,20 @@ def ClustersGenerator(n_clusters, max_atoms, interatomic_distance, vacuum, input
             if atm_type not in atomic_species:
                 atomic_species.append(atm_type)
 
+    rng_py = random.Random(42)
     structures = []
     n_clusters = n_clusters.value
     max_atoms = max_atoms.value
     interatomic_distance = interatomic_distance.value
     for _ in range(n_clusters):
-        species = [random.choice(atomic_species)]
+        species = [rng_py.choice(atomic_species)]
         positions = [np.array([0, 0, 0])]
-        for _ in range(random.randint(2, max_atoms)):
-            species.append(random.choice(atomic_species))
+        for _ in range(rng_py.randint(2, max_atoms)):
+            species.append(rng_py.choice(atomic_species))
             while True:
                 position = (
-                    np.array([random.uniform(-interatomic_distance, interatomic_distance) for _ in range(3)])
-                    + positions[random.randint(0, len(positions) - 1)]
+                    np.array([rng_py.uniform(-interatomic_distance, interatomic_distance) for _ in range(3)])
+                    + positions[rng_py.randint(0, len(positions) - 1)]
                 )
 
                 if all(np.linalg.norm(position - np.array(pos)) >= interatomic_distance for pos in positions):
@@ -319,11 +318,12 @@ def SubstitutionGenerator(fraction_substitutions, fraction_structures, **input_d
     :param fraction_substitutions: Float with the fraction of substitutions
     :param fraction_structures: Float with the fraction of structures to generate
     """
+    rng_np = np.random.default_rng(42)
     structures = []
     for _, input_dataset in input_datasets.items():
         input_structures = input_dataset.get_ase_list()
         for structure in input_structures:
-            if np.random.random() < fraction_structures.value:
+            if rng_np.random() < fraction_structures.value:
                 structures.append(
                     ase_to_dict(wrap_and_restore_pbc(atoms_substitution(structure, fraction_substitutions.value)))
                 )
@@ -417,7 +417,7 @@ def AlloysGenerator(fixed_species, alloy_species, num_structures, alloy_fraction
     input_structures = []
     for _, input_dataset in input_datasets.items():
         input_structures += input_dataset.get_ase_list()
-    rng = np.random.default_rng(int(time.time()))
+    rng = np.random.default_rng(42)
     input_structures = [input_structures[0]]
     while len(alloys) < num_structures:
         sel = input_structures[rng.integers(len(input_structures))]
@@ -438,40 +438,23 @@ def WriteDataset(**dataset_in):
     return {"global_structures": pes_dataset_out}
 
 
-@numba.njit(parallel=True)
 def get_min_interatomic_distances(positions, cell):
     """For each atom, calculate the minimum distance to any other atom in the structure.
 
     :param positions: A numpy array of atomic positions
     :param cell: A numpy array of the cell vectors
     """
-    N_P, _ = positions.shape
-    N_C, _ = cell.shape
-    min_dist = np.zeros(N_P)
-    dist = np.zeros((N_P, N_P))
-    for ii in numba.prange(N_P):
-        for jj in numba.prange(N_P):
-            hidden_dist = np.zeros((N_C, N_C, N_C))
-            for i in numba.prange(-1, 2):
-                for j in numba.prange(-1, 2):
-                    for k in numba.prange(-1, 2):
-                        for li in numba.prange(N_C):
-                            hidden_dist[i, j, k] += (
-                                positions[ii, li]
-                                - positions[jj, li]
-                                + i * cell[0, li]
-                                + j * cell[1, li]
-                                + k * cell[2, li]
-                            ) ** 2
-                        hidden_dist[i, j, k] = np.sqrt(hidden_dist[i, j, k])
-            dist[ii, jj] = np.min(hidden_dist)
-            if ii == jj:
-                dist[ii, jj] = np.inf
-        min_dist[ii] = np.min(dist[ii, :])
-    return min_dist
+    offsets = np.array([[i, j, k] for i in range(-1, 2) for j in range(-1, 2) for k in range(-1, 2)])
+    shifts = offsets @ cell  # (27, 3)
+    diff = positions[:, np.newaxis, :] - positions[np.newaxis, :, :]  # (N, N, 3)
+    dist = np.full((positions.shape[0], positions.shape[0]), np.inf)
+    for shift in shifts:
+        d = np.sqrt(np.sum((diff + shift) ** 2, axis=-1))
+        dist = np.minimum(dist, d)
+    np.fill_diagonal(dist, np.inf)
+    return np.min(dist, axis=1)
 
 
-@numba.njit(parallel=True)
 def uniform_random_atomic_displacement(positions, min_distances, max_displacement_fraction):
     """Displace atoms randomly in a uniform manner.
 
@@ -480,11 +463,12 @@ def uniform_random_atomic_displacement(positions, min_distances, max_displacemen
     :param max_displacement_fraction: A float that determines the maximum displacement
         as a fraction of the minimum interatomic distance
     """
-    N_P, _ = positions.shape
-    for ii in numba.prange(N_P):
-        rand_dir = np.array([uniform(0, 1), uniform(0, 1), uniform(0, 1)])
-        rand_dir /= np.sqrt(rand_dir[0] ** 2 + rand_dir[1] ** 2 + rand_dir[2] ** 2)
-        positions[ii] += uniform(0, 1) * min_distances[ii] * max_displacement_fraction * rand_dir
+    N_P = positions.shape[0]
+    rand_dir = np.random.uniform(0, 1, (N_P, 3))
+    norms = np.linalg.norm(rand_dir, axis=1, keepdims=True)
+    rand_dir /= norms
+    magnitudes = np.random.uniform(0, 1, N_P) * min_distances * max_displacement_fraction
+    positions = positions + magnitudes[:, np.newaxis] * rand_dir
     return positions
 
 
@@ -498,7 +482,7 @@ def random_substitute_atoms(
     if substitute_species is None or len(substitute_species) == 0:
         return None
 
-    rng = np.random.default_rng(int(time.time()))
+    rng = np.random.default_rng(42)
     fixed_species = list(fixed_species) if fixed_species else []
 
     syms = atoms.get_chemical_symbols()
@@ -554,15 +538,16 @@ def atoms_substitution(structure, fraction_substitution):
     :param structure: An ASE structure
     :param fraction_substitution: A float that determines the fraction of atoms to be substituted
     """
+    rng = np.random.default_rng(42)
     symbols = structure.get_chemical_symbols()
     fraction_substitution = 0.2
 
-    num_substitutions = np.random.randint(0, len(symbols)) * fraction_substitution
+    num_substitutions = rng.integers(0, len(symbols)) * fraction_substitution
     count_substitutions = 0
     substituted_symbols = symbols.copy()
     while count_substitutions < num_substitutions:
-        rnd1 = np.random.randint(0, len(symbols))
-        rnd2 = np.random.randint(0, len(symbols))
+        rnd1 = rng.integers(0, len(symbols))
+        rnd2 = rng.integers(0, len(symbols))
         if symbols[rnd1] == substituted_symbols[rnd1] and symbols[rnd2] == substituted_symbols[rnd2]:
             substituted_symbols[rnd1] = symbols[rnd2]
             substituted_symbols[rnd2] = symbols[rnd1]
