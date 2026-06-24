@@ -817,7 +817,7 @@ class TrainsPotWorkChain(WorkChain):
             return self.exit_codes.NO_MD_CALCULATIONS
 
         self.ctx.trajectories = {}
-        for ii, calc in enumerate(self.ctx.exploration.outputs.md.values()):
+        for ii, (_, calc) in enumerate(sorted(self.ctx.exploration.outputs.md.items())):
             for key, value in calc.items():
                 if key == "trajectories":
                     self.ctx.trajectories[f"exploration_{ii}"] = value
